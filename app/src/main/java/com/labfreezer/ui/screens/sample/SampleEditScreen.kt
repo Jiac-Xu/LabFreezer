@@ -251,12 +251,23 @@ fun SampleEditScreen(
                 }
                 if (state.photoPath != null) {
                     TextButton(
-                        onClick = { viewModel.runOcrNow() },
+                        onClick = { if (state.ocrEnabled) viewModel.runOcrNow() },
+                        enabled = state.ocrEnabled,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.DocumentScanner, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Icon(
+                            Icons.Default.DocumentScanner,
+                            contentDescription = null,
+                            modifier = Modifier.size(20.dp),
+                            tint = if (state.ocrEnabled) MaterialTheme.colorScheme.primary
+                                   else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
                         Spacer(Modifier.width(4.dp))
-                        Text("OCR \u8bc6\u522b")
+                        Text(
+                            "OCR 识别",
+                            color = if (state.ocrEnabled) MaterialTheme.colorScheme.onSurface
+                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                        )
                     }
                 }
             }

@@ -43,7 +43,8 @@ data class SampleEditState(
     val assignedTagIds: Set<Long> = emptySet(),
     val deviceName: String = "",
     val layerName: String = "",
-    val boxName: String = ""
+    val boxName: String = "",
+    val ocrEnabled: Boolean = true
 )
 
 @HiltViewModel
@@ -107,6 +108,7 @@ class SampleEditViewModel @Inject constructor(
                 date = sample.date ?: "",
                 note = sample.note ?: "",
                 photoPath = sample.photoPath,
+                ocrEnabled = ocrPreferences.isEnabled(),
                 assignedTagIds = tags.map { it.id }.toSet(),
                 deviceName = device?.name ?: "",
                 layerName = layer?.name ?: "",
