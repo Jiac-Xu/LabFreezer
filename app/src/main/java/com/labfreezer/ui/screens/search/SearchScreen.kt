@@ -127,8 +127,8 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel = hilt
                     items(results, key = { when (it) { is SearchResultItem.Device -> "dev_${it.entity.id}"; is SearchResultItem.Layer -> "lay_${it.entity.id}"; is SearchResultItem.Box -> "box_${it.entity.id}"; is SearchResultItem.Sample -> "smp_${it.sample.sampleId}" } }) { result ->
                         when (result) {
                             is SearchResultItem.Device -> SearchDeviceItem(result.entity, onClick = { navController.navigate(Screen.DeviceDetail.createRoute(result.entity.id)) })
-                            is SearchResultItem.Layer -> SearchLayerItem(result.entity, onClick = { navController.navigate(Screen.LayerDetail.createRoute(result.entity.id)) })
-                            is SearchResultItem.Box -> SearchBoxItem(result.entity, onClick = { navController.navigate(Screen.BoxGrid.createRoute(result.entity.id)) })
+                            is SearchResultItem.Layer -> SearchLayerItem(result.entity, result.deviceName, onClick = { navController.navigate(Screen.LayerDetail.createRoute(result.entity.id)) })
+                            is SearchResultItem.Box -> SearchBoxItem(result.entity, result.deviceName, result.layerName, onClick = { navController.navigate(Screen.BoxGrid.createRoute(result.entity.id)) })
                             is SearchResultItem.Sample -> SearchSampleItem(result.sample, onClick = { navController.navigate(Screen.SampleEdit.createRoute(result.sample.sampleId)) })
                         }
                     }
@@ -193,7 +193,7 @@ private fun SearchDeviceItem(entity: StorageDeviceEntity, onClick: () -> Unit) {
 }
 
 @Composable
-private fun SearchLayerItem(entity: StorageLayerEntity, onClick: () -> Unit) {
+private fun SearchLayerItem(entity: StorageLayerEntity, deviceName: String, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick), shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
@@ -202,14 +202,14 @@ private fun SearchLayerItem(entity: StorageLayerEntity, onClick: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(entity.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("层", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text("层 > $deviceName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             }
         }
     }
 }
 
 @Composable
-private fun SearchBoxItem(entity: StorageBoxEntity, onClick: () -> Unit) {
+private fun SearchBoxItem(entity: StorageBoxEntity, deviceName: String, layerName: String, onClick: () -> Unit) {
     Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick), shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
@@ -218,7 +218,7 @@ private fun SearchBoxItem(entity: StorageBoxEntity, onClick: () -> Unit) {
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(entity.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("盒子 (${entity.rows}×${entity.cols})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text("盒子 > $deviceName > $layerName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             }
         }
     }

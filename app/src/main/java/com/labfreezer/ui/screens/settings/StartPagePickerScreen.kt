@@ -113,8 +113,8 @@ fun StartPagePickerScreen(
     var deviceCounts by remember { mutableStateOf<Map<Long, DeviceCounts>>(emptyMap()) }
     var layerCounts by remember { mutableStateOf<Map<Long, LayerCounts>>(emptyMap()) }
     var boxSampleCounts by remember { mutableStateOf<Map<Long, Int>>(emptyMap()) }
-    var expandedDeviceId by remember { mutableStateOf<Long?>(null) }
-    var expandedLayerId by remember { mutableStateOf<Long?>(null) }
+    var expandedDeviceIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var expandedLayerIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
     val currentSetting = remember { StartPagePreference.get(context) }
     var searchQuery by remember { mutableStateOf("") }
 
@@ -152,6 +152,55 @@ fun StartPagePickerScreen(
         }
     }
 
+    // Auto-expand matching devices/layers when searching
+    LaunchedEffect(searchQuery, filteredDevices) {
+        if (searchQuery.isNotBlank() && filteredDevices.isNotEmpty()) {
+            val q = searchQuery.trim().lowercase()
+            var firstDeviceSet = false
+            for (device in filteredDevices) {
+                // Check if device name matches
+                val deviceMatches = device.name.lowercase().contains(q)
+                // Check if any layer matches in this device
+                val matchingLayers = allLayers.filter { it.deviceId == device.id && it.name.lowercase().contains(q) }
+                // Check if any box matches in this device
+                val matchingBoxLayerIds = allBoxes.filter {
+                    allLayers.any { l -> l.id == it.layerId && l.deviceId == device.id } &&
+                    it.name.lowercase().contains(q)
+                }.map { it.layerId }.toSet()
+                val matchingBoxDeviceIds = allLayers.filter { it.id in matchingBoxLayerIds }.map { it.deviceId }.toSet()
+                
+                val hasAnyMatch = deviceMatches || matchingLayers.isNotEmpty() || matchingBoxDeviceIds.contains(device.id)
+                
+                if (hasAnyMatch && !firstDeviceSet) {
+                    // Load layers for this device
+                    if (!layers.containsKey(device.id)) {
+                        val loaded = withContext(Dispatchers.IO) { layerRepo.getByDeviceId(device.id) }
+                        if (loaded.isNotEmpty()) {
+                            layers = layers + (device.id to loaded)
+                        }
+                    }
+                    expandedDeviceIds = expandedDeviceIds + device.id
+                    firstDeviceSet = true
+                    
+                    // Expand first matching layer
+                    val firstMatchingLayer = matchingLayers.firstOrNull()
+                    if (firstMatchingLayer != null && !boxes.containsKey(firstMatchingLayer.id)) {
+                        val loadedBoxes = withContext(Dispatchers.IO) { boxRepo.getByLayerId(firstMatchingLayer.id) }
+                        if (loadedBoxes.isNotEmpty()) {
+                            boxes = boxes + (firstMatchingLayer.id to loadedBoxes)
+                        }
+                    }
+                    if (firstMatchingLayer != null) {
+                        expandedLayerIds = expandedLayerIds + firstMatchingLayer.id
+                    }
+                }
+            }
+        } else if (searchQuery.isBlank()) {
+            expandedDeviceIds = emptySet()
+            expandedLayerIds = emptySet()
+        }
+    }
+
     LaunchedEffect(Unit) {
         val devs = withContext(Dispatchers.IO) { deviceRepo.getAll() }
         devices = devs
@@ -170,8 +219,8 @@ fun StartPagePickerScreen(
     fun loadLayers(deviceId: Long) {
         scope.launch {
             if (layers.containsKey(deviceId)) {
-                expandedDeviceId = if (expandedDeviceId == deviceId) null else deviceId
-                expandedLayerId = null
+                expandedDeviceIds = if (deviceId in expandedDeviceIds) expandedDeviceIds - deviceId else expandedDeviceIds + deviceId
+                expandedLayerIds = emptySet()
             } else {
                 val result = withContext(Dispatchers.IO) { layerRepo.getByDeviceId(deviceId) }
                 layers = layers + (deviceId to result)
@@ -180,8 +229,8 @@ fun StartPagePickerScreen(
                     val sc = sampleRepo.countByLayerId(layer.id)
                     layer.id to LayerCounts(boxCount = bc, sampleCount = sc)
                 }
-                expandedDeviceId = deviceId
-                expandedLayerId = null
+                expandedDeviceIds = expandedDeviceIds + deviceId
+                expandedLayerIds = emptySet()
             }
         }
     }
@@ -189,7 +238,7 @@ fun StartPagePickerScreen(
     fun loadBoxes(layerId: Long) {
         scope.launch {
             if (boxes.containsKey(layerId)) {
-                expandedLayerId = if (expandedLayerId == layerId) null else layerId
+                expandedLayerIds = if (layerId in expandedLayerIds) expandedLayerIds - layerId else expandedLayerIds + layerId
             } else {
                 val deviceId = devices.firstOrNull { d ->
                     layers[d.id]?.any { it.id == layerId } == true
@@ -199,7 +248,7 @@ fun StartPagePickerScreen(
                 boxSampleCounts = boxSampleCounts + result.associate { box ->
                     box.id to sampleRepo.countByBoxId(box.id)
                 }
-                expandedLayerId = layerId
+                expandedLayerIds = expandedLayerIds + layerId
             }
         }
     }
@@ -286,16 +335,11 @@ fun StartPagePickerScreen(
                 val allDeviceLayers = layers[device.id] ?: emptyList()
                 val deviceLayers = if (searchQuery.isBlank()) allDeviceLayers
                     else allDeviceLayers.filter { it.name.lowercase().contains(searchQuery.trim().lowercase(), ignoreCase = true) }
-                // Auto-expand when search is active and this device has matching layers or boxes
-                val hasMatchingLayers = deviceLayers.isNotEmpty() && searchQuery.isNotBlank()
-                val hasMatchingBoxes = searchQuery.isNotBlank() && allBoxes.any { box ->
-                    allDeviceLayers.any { it.id == box.layerId } &&
-                    box.name.lowercase().contains(searchQuery.trim().lowercase(), ignoreCase = true)
+                // Auto-expand devices with matches when searching
+                if (searchQuery.isNotBlank() && device.id !in expandedDeviceIds && allDeviceLayers.isEmpty()) {
+                    // Load layers for this device if not loaded
                 }
-                if ((hasMatchingLayers || hasMatchingBoxes) && searchQuery.isNotBlank() && expandedDeviceId != device.id) {
-                    // Trigger load without toggle
-                }
-                val isDeviceExpanded = expandedDeviceId == device.id
+                val isDeviceExpanded = device.id in expandedDeviceIds
                 val dc = deviceCounts[device.id] ?: DeviceCounts(0, 0)
 
                 var totalChildItems = 0
@@ -305,7 +349,7 @@ fun StartPagePickerScreen(
                         val layerBoxes = boxes[layer.id] ?: emptyList()
                         val filteredBoxes = if (searchQuery.isBlank()) layerBoxes
                             else layerBoxes.filter { it.name.contains(searchQuery, ignoreCase = true) }
-                        if (expandedLayerId == layer.id) {
+                        if (layer.id in expandedLayerIds) {
                             totalChildItems += filteredBoxes.size
                         }
                     }
@@ -334,7 +378,7 @@ fun StartPagePickerScreen(
                         childIndex++
                         val isLastLayer = childIndex == totalChildItems
                         val lc = layerCounts[layer.id] ?: LayerCounts(0, 0)
-                        val isLayerExpanded = expandedLayerId == layer.id
+                        val isLayerExpanded = layer.id in expandedLayerIds
                         val layerBoxes = boxes[layer.id] ?: emptyList()
                         val filteredBoxes = if (searchQuery.isBlank()) layerBoxes
                             else layerBoxes.filter { it.name.contains(searchQuery, ignoreCase = true) }

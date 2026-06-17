@@ -22,8 +22,8 @@ import javax.inject.Inject
 
 sealed class SearchResultItem {
     data class Device(val entity: StorageDeviceEntity) : SearchResultItem()
-    data class Layer(val entity: StorageLayerEntity) : SearchResultItem()
-    data class Box(val entity: StorageBoxEntity) : SearchResultItem()
+    data class Layer(val entity: StorageLayerEntity, val deviceName: String) : SearchResultItem()
+    data class Box(val entity: StorageBoxEntity, val deviceName: String, val layerName: String) : SearchResultItem()
     data class Sample(val sample: SampleWithPath) : SearchResultItem()
 }
 
@@ -86,8 +86,17 @@ class SearchViewModel @Inject constructor(
             val tagIds = _selectedTagIds.value.toList()
 
             val deviceResults = deviceRepository.searchByName(trimmed).map { SearchResultItem.Device(it) }
-            val layerResults = layerRepository.searchByName(trimmed).map { SearchResultItem.Layer(it) }
-            val boxResults = boxRepository.searchByName(trimmed).map { SearchResultItem.Box(it) }
+
+            val layerResults = layerRepository.searchByName(trimmed).map { layer ->
+                val device = deviceRepository.getById(layer.deviceId)
+                SearchResultItem.Layer(layer, device?.name ?: "")
+            }
+
+            val boxResults = boxRepository.searchByName(trimmed).map { box ->
+                val layer = layerRepository.getById(box.layerId)
+                val device = layer?.let { deviceRepository.getById(it.deviceId) }
+                SearchResultItem.Box(box, device?.name ?: "", layer?.name ?: "")
+            }
 
             val sampleResults = if (tagIds.isEmpty()) {
                 sampleRepository.searchWithPath(trimmed)
