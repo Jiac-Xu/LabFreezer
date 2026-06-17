@@ -1,5 +1,6 @@
 package com.labfreezer.ui.screens.settings
 
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -68,6 +69,11 @@ fun AboutScreen(onBack: () -> Unit) {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "未知"
         } catch (e: Exception) { "未知" }
 
+        // 从 SharedPreferences 读取上次保存的蒲公英自增 build 号
+        val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        val savedBuildVersion = prefs.getInt("pgyer_build_build_version", -1)
+        val buildBuildVersionParam = if (savedBuildVersion >= 0) savedBuildVersion else null
+
         // Silent update check via PGYER AppUpdateChecker
         updateInfo = try {
             val result = withContext(Dispatchers.IO) {
@@ -75,10 +81,13 @@ fun AboutScreen(onBack: () -> Unit) {
                     UpdateChecker(API_KEY).check(
                         APP_KEY,
                         versionName,
-                        null,  // buildBuildVersion
-                        null,  // channelKey
+                        buildBuildVersionParam,  // 传入上次保存的 buildBuildVersion，初次为 null
+                        null,
                         object : UpdateChecker.Callback {
                             override fun result(updateInfo: UpdateChecker.UpdateInfo) {
+                                // 保存本次返回的自增 build 号，供下次检查使用
+                                prefs.edit().putInt("pgyer_build_build_version", updateInfo.buildBuildVersion).apply()
+
                                 if (updateInfo.buildHaveNewVersion) {
                                     val desc = if (updateInfo.buildUpdateDescription.isNullOrBlank()) ""
                                         else ": ${updateInfo.buildUpdateDescription}"
