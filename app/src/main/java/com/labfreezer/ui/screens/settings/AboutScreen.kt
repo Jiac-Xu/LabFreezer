@@ -1,6 +1,8 @@
 package com.labfreezer.ui.screens.settings
 
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -15,6 +17,8 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -147,6 +151,22 @@ fun AboutScreen(onBack: () -> Unit) {
                        else MaterialTheme.colorScheme.outline,
                 textAlign = TextAlign.Center
             )
+
+            if (updateInfo.startsWith("发现")) {
+                Spacer(Modifier.height(20.dp))
+                Button(
+                    onClick = {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.pgyer.com/labfreezer"))
+                        context.startActivity(intent)
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.primary
+                    ),
+                    shape = MaterialTheme.shapes.small
+                ) {
+                    Text("去下载", modifier = Modifier.padding(horizontal = 16.dp))
+                }
+            }
         }
     }
 }
