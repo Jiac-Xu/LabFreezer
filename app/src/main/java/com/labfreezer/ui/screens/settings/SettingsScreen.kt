@@ -255,10 +255,13 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(8.dp))
 
+            val versionName = try {
+                activity.packageManager.getPackageInfo(activity.packageName, 0).versionName ?: ""
+            } catch (e: Exception) { "" }
             SettingsCard(
                 icon = Icons.Default.Info,
                 title = "关于",
-                subtitle = "版本信息与更新检查",
+                subtitle = "版本 $versionName",
                 onClick = onNavigateToAbout
             )
 

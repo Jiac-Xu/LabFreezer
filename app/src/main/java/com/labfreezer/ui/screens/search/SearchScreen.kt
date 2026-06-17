@@ -98,7 +98,7 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel = hilt
             OutlinedTextField(
                 value = query,
                 onValueChange = { viewModel.onQueryChange(it) },
-                label = { Text("输入样本名称或备注进行搜索") },
+                label = { Text("输入名称或备注进行搜索") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { viewModel.onQueryChange("") }) { Icon(Icons.Default.Clear, contentDescription = "清除") } },
                 singleLine = true,
@@ -202,7 +202,7 @@ private fun SearchLayerItem(entity: StorageLayerEntity, deviceName: String, onCl
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(entity.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("层 > $deviceName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text("$deviceName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             }
         }
     }
@@ -218,7 +218,7 @@ private fun SearchBoxItem(entity: StorageBoxEntity, deviceName: String, layerNam
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(entity.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("盒子 > $deviceName > $layerName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text("$deviceName > $layerName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             }
         }
     }
