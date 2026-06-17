@@ -12,6 +12,12 @@ import kotlinx.coroutines.flow.Flow
 @Dao
 interface StorageBoxDao {
 
+    @Query("SELECT * FROM storage_box WHERE name LIKE '%' || :query || '%' ORDER BY sort_order ASC, name ASC")
+    suspend fun searchByName(query: String): List<StorageBoxEntity>
+
+    @Query("SELECT * FROM storage_box ORDER BY sort_order ASC, name ASC")
+    suspend fun getAll(): List<StorageBoxEntity>
+
     @Query("SELECT * FROM storage_box WHERE layer_id = :layerId ORDER BY sort_order ASC, name ASC")
     fun getByLayerIdFlow(layerId: Long): Flow<List<StorageBoxEntity>>
 

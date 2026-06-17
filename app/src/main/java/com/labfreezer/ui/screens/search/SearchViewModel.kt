@@ -3,8 +3,14 @@ package com.labfreezer.ui.screens.search
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labfreezer.data.db.dao.SampleWithPath
+import com.labfreezer.data.db.entity.StorageBoxEntity
+import com.labfreezer.data.db.entity.StorageDeviceEntity
+import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.entity.TagEntity
 import com.labfreezer.data.repository.SamplePositionRepository
+import com.labfreezer.data.repository.StorageBoxRepository
+import com.labfreezer.data.repository.StorageDeviceRepository
+import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.TagRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
@@ -14,17 +20,27 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+sealed class SearchResultItem {
+    data class Device(val entity: StorageDeviceEntity) : SearchResultItem()
+    data class Layer(val entity: StorageLayerEntity) : SearchResultItem()
+    data class Box(val entity: StorageBoxEntity) : SearchResultItem()
+    data class Sample(val sample: SampleWithPath) : SearchResultItem()
+}
+
 @HiltViewModel
 class SearchViewModel @Inject constructor(
     private val sampleRepository: SamplePositionRepository,
-    private val tagRepository: TagRepository
+    private val tagRepository: TagRepository,
+    private val deviceRepository: StorageDeviceRepository,
+    private val layerRepository: StorageLayerRepository,
+    private val boxRepository: StorageBoxRepository
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
     val query: StateFlow<String> = _query
 
-    private val _results = MutableStateFlow<List<SampleWithPath>>(emptyList())
-    val results: StateFlow<List<SampleWithPath>> = _results
+    private val _results = MutableStateFlow<List<SearchResultItem>>(emptyList())
+    val results: StateFlow<List<SearchResultItem>> = _results
 
     private val _isSearching = MutableStateFlow(false)
     val isSearching: StateFlow<Boolean> = _isSearching
@@ -66,13 +82,20 @@ class SearchViewModel @Inject constructor(
         _isSearching.value = true
         searchJob = viewModelScope.launch {
             delay(300)
+            val trimmed = q.trim()
             val tagIds = _selectedTagIds.value.toList()
-            val found = if (tagIds.isEmpty()) {
-                sampleRepository.searchWithPath(q.trim())
+
+            val deviceResults = deviceRepository.searchByName(trimmed).map { SearchResultItem.Device(it) }
+            val layerResults = layerRepository.searchByName(trimmed).map { SearchResultItem.Layer(it) }
+            val boxResults = boxRepository.searchByName(trimmed).map { SearchResultItem.Box(it) }
+
+            val sampleResults = if (tagIds.isEmpty()) {
+                sampleRepository.searchWithPath(trimmed)
             } else {
-                sampleRepository.searchWithPathByTags(q.trim(), tagIds)
-            }
-            _results.value = found
+                sampleRepository.searchWithPathByTags(trimmed, tagIds)
+            }.map { SearchResultItem.Sample(it) }
+
+            _results.value = deviceResults + layerResults + boxResults + sampleResults
             _isSearching.value = false
         }
     }

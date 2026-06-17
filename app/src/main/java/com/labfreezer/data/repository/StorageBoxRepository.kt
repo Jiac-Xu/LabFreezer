@@ -13,6 +13,10 @@ class StorageBoxRepository @Inject constructor(
     fun getByLayerIdFlow(layerId: Long): Flow<List<StorageBoxEntity>> =
         boxDao.getByLayerIdFlow(layerId)
 
+    suspend fun searchByName(query: String): List<StorageBoxEntity> = boxDao.searchByName(query)
+
+    suspend fun getAll(): List<StorageBoxEntity> = boxDao.getAll()
+
     suspend fun getByLayerId(layerId: Long): List<StorageBoxEntity> =
         boxDao.getByLayerId(layerId)
 

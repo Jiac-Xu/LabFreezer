@@ -15,6 +15,9 @@ interface StorageDeviceDao {
     @Query("SELECT * FROM storage_device ORDER BY sort_order ASC, name ASC")
     fun getAllFlow(): Flow<List<StorageDeviceEntity>>
 
+    @Query("SELECT * FROM storage_device WHERE name LIKE '%' || :query || '%' ORDER BY sort_order ASC, name ASC")
+    suspend fun searchByName(query: String): List<StorageDeviceEntity>
+
     @Query("SELECT * FROM storage_device ORDER BY sort_order ASC, name ASC")
     suspend fun getAll(): List<StorageDeviceEntity>
 

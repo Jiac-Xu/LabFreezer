@@ -3,6 +3,7 @@ package com.labfreezer.ui.screens.search
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -23,6 +24,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.DeviceHub
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -53,6 +57,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.labfreezer.data.db.entity.StorageBoxEntity
+import com.labfreezer.data.db.entity.StorageDeviceEntity
+import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.dao.SampleWithPath
 import com.labfreezer.data.db.entity.TagEntity
 import com.labfreezer.ui.navigation.Screen
@@ -111,14 +118,19 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel = hilt
             when {
                 query.isBlank() -> Text("输入样本名称或备注进行搜索", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 32.dp).fillMaxWidth())
                 isSearching -> Text("搜索中...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 32.dp).fillMaxWidth())
-                results.isEmpty() -> Text("未找到匹配样本", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 32.dp).fillMaxWidth())
+                results.isEmpty() -> Text("未找到匹配项", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 32.dp).fillMaxWidth())
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     contentPadding = PaddingValues(vertical = 12.dp)
                 ) {
-                    items(results, key = { it.sampleId }) { result ->
-                        SearchResultItem(result = result, onClick = { navController.navigate(Screen.SampleEdit.createRoute(result.sampleId)) })
+                    items(results, key = { when (it) { is SearchResultItem.Device -> "dev_${it.entity.id}"; is SearchResultItem.Layer -> "lay_${it.entity.id}"; is SearchResultItem.Box -> "box_${it.entity.id}"; is SearchResultItem.Sample -> "smp_${it.sample.sampleId}" } }) { result ->
+                        when (result) {
+                            is SearchResultItem.Device -> SearchDeviceItem(result.entity, onClick = { navController.navigate(Screen.DeviceDetail.createRoute(result.entity.id)) })
+                            is SearchResultItem.Layer -> SearchLayerItem(result.entity, onClick = { navController.navigate(Screen.LayerDetail.createRoute(result.entity.id)) })
+                            is SearchResultItem.Box -> SearchBoxItem(result.entity, onClick = { navController.navigate(Screen.BoxGrid.createRoute(result.entity.id)) })
+                            is SearchResultItem.Sample -> SearchSampleItem(result.sample, onClick = { navController.navigate(Screen.SampleEdit.createRoute(result.sample.sampleId)) })
+                        }
                     }
                 }
             }
@@ -165,7 +177,55 @@ private fun TagFilterRow(
 }
 
 @Composable
-private fun SearchResultItem(result: SampleWithPath, onClick: () -> Unit) {
+private fun SearchDeviceItem(entity: StorageDeviceEntity, onClick: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick), shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.DeviceHub, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(entity.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("设备", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchLayerItem(entity: StorageLayerEntity, onClick: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick), shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Layers, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(entity.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("层", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchBoxItem(entity: StorageBoxEntity, onClick: () -> Unit) {
+    Card(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick), shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)) {
+        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
+            Spacer(Modifier.width(12.dp))
+            Column {
+                Text(entity.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text("盒子 (${entity.rows}×${entity.cols})", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            }
+        }
+    }
+}
+
+@Composable
+private fun SearchSampleItem(result: SampleWithPath, onClick: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
         shape = RoundedCornerShape(16.dp),

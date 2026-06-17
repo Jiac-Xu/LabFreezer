@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material3.Card
@@ -67,6 +68,7 @@ fun SettingsScreen(
     onNavigateToStartPagePicker: () -> Unit = {},
     onNavigateToImageCleanup: () -> Unit = {},
     onNavigateToOcrSettings: () -> Unit = {},
+    onNavigateToAbout: () -> Unit = {},
     viewModel: ExportViewModel = hiltViewModel()
 ) {
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
@@ -245,6 +247,19 @@ fun SettingsScreen(
                 subtitle = "\u4ece .zip \u6570\u636e\u5305\u6062\u590d",
                 onClick = { importLauncher.launch(arrayOf("application/zip")) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
+            )
+
+            Spacer(Modifier.height(16.dp))
+
+            Text("  关于", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+
+            Spacer(Modifier.height(8.dp))
+
+            SettingsCard(
+                icon = Icons.Default.Info,
+                title = "关于",
+                subtitle = "版本信息与更新检查",
+                onClick = onNavigateToAbout
             )
 
             Spacer(Modifier.height(100.dp))

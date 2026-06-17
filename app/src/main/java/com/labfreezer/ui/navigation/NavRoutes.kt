@@ -28,5 +28,6 @@ sealed class Screen(val route: String) {
     data object OcrSettings : Screen("ocr_settings")
     data object MoveBrowser : Screen("move_browser")
     data object DeviceTypeManage : Screen("device_type_manage")
+    data object About : Screen("about")
     data object MainTabs : Screen("main_tabs")
 }

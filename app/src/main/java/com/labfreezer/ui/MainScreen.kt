@@ -68,6 +68,7 @@ import com.labfreezer.ui.screens.settings.OcrSettingsScreen
 import com.labfreezer.ui.screens.settings.SettingsScreen
 import com.labfreezer.ui.screens.settings.StartPagePickerScreen
 import com.labfreezer.ui.screens.settings.StartPagePickerViewModel
+import com.labfreezer.ui.screens.settings.AboutScreen
 import com.labfreezer.ui.screens.settings.StartPagePreference
 import com.labfreezer.ui.theme.LabFreezerTheme
 import com.labfreezer.ui.theme.LocalThemeMode
@@ -95,17 +96,27 @@ fun MainScreen() {
 
         LaunchedEffect(Unit) {
             when (startPage.route) {
-                Screen.TagManage.route -> currentTabIndex = 1
-                Screen.Settings.route -> currentTabIndex = 2
+                Screen.Search.route -> navController.navigate(Screen.Search.route)
                 Screen.DeviceDetail.route -> navController.navigate(Screen.DeviceDetail.createRoute(startPage.id))
                 Screen.LayerDetail.route -> navController.navigate(Screen.LayerDetail.createRoute(startPage.id))
                 Screen.BoxGrid.route -> navController.navigate(Screen.BoxGrid.createRoute(startPage.id))
             }
         }
 
+        val initialTabIndex = remember(startPage) {
+            when (startPage.route) {
+                Screen.TagManage.route -> 1
+                Screen.Settings.route -> 2
+                else -> 0
+            }
+        }
+        // Re-read currentTabIndex in case LaunchedEffect navigated away from tabs
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         val showBottomBar = currentRoute == Screen.MainTabs.route
+        if (currentTabIndex != initialTabIndex && currentTabIndex == 0) {
+            currentTabIndex = initialTabIndex
+        }
 
         val bottomTabs = listOf(
             BottomNavItem("\u5e93", Icons.Default.Home),
@@ -154,7 +165,8 @@ fun MainScreen() {
                         },
                         onNavigateToStartPagePicker = { navController.navigate(Screen.StartPagePicker.route) },
                         onNavigateToImageCleanup = { navController.navigate(Screen.ImageCleanup.route) },
-                        onNavigateToOcrSettings = { navController.navigate(Screen.OcrSettings.route) }
+                        onNavigateToOcrSettings = { navController.navigate(Screen.OcrSettings.route) },
+                        onNavigateToAbout = { navController.navigate(Screen.About.route) }
                     )
                 }
                 composable(
@@ -219,6 +231,9 @@ fun MainScreen() {
                 }
                 composable(Screen.OcrSettings.route) {
                     OcrSettingsScreen(onBack = { navController.popBackStack() })
+                }
+                composable(Screen.About.route) {
+                    AboutScreen(onBack = { navController.popBackStack() })
                 }
             }
             if (showBottomBar) {
@@ -329,6 +344,7 @@ private fun MainTabPager(
     onNavigateToStartPagePicker: () -> Unit,
     onNavigateToImageCleanup: () -> Unit,
     onNavigateToOcrSettings: () -> Unit = {},
+    onNavigateToAbout: () -> Unit = {},
 ) {
     val pagerState = rememberPagerState(
         pageCount = { 3 },
@@ -359,7 +375,8 @@ private fun MainTabPager(
                 onThemeChanged = onThemeChanged,
                 onNavigateToStartPagePicker = onNavigateToStartPagePicker,
                 onNavigateToImageCleanup = onNavigateToImageCleanup,
-                onNavigateToOcrSettings = onNavigateToOcrSettings
+                onNavigateToOcrSettings = onNavigateToOcrSettings,
+                onNavigateToAbout = onNavigateToAbout
             )
         }
     }

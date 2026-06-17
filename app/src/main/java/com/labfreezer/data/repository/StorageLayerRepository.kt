@@ -20,6 +20,10 @@ class StorageLayerRepository @Inject constructor(
     fun getByDeviceIdFlow(deviceId: Long): Flow<List<StorageLayerEntity>> =
         layerDao.getByDeviceIdFlow(deviceId)
 
+    suspend fun searchByName(query: String): List<StorageLayerEntity> = layerDao.searchByName(query)
+
+    suspend fun getAll(): List<StorageLayerEntity> = layerDao.getAll()
+
     suspend fun getByDeviceId(deviceId: Long): List<StorageLayerEntity> =
         layerDao.getByDeviceId(deviceId)
 
