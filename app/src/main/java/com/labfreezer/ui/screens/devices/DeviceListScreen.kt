@@ -26,6 +26,8 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Search
@@ -47,6 +49,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -55,6 +58,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import com.labfreezer.ui.screens.devices.DeleteConfirmDialog
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -84,6 +88,7 @@ fun DeviceListScreen(
     val editingDevice by viewModel.editingDevice.collectAsStateWithLifecycle()
     val deletingDevice by viewModel.deletingDevice.collectAsStateWithLifecycle()
     var showDeleteBatchConfirm by remember { mutableStateOf(false) }
+    var expandedTypes by remember { mutableStateOf<Set<String>>(emptySet()) }
 
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -174,6 +179,12 @@ fun DeviceListScreen(
                 }
             }
         } else {
+            val groupedTypes = devices.groupBy { it.type }.keys
+            LaunchedEffect(devices) {
+                if (expandedTypes.isEmpty() && devices.isNotEmpty()) {
+                    expandedTypes = groupedTypes
+                }
+            }
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -193,23 +204,38 @@ fun DeviceListScreen(
                 }
                 item {
                     Spacer(Modifier.height(4.dp))
-                    Text("\u8bbe\u5907", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+                    Text("设备", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(12.dp))
                 }
-                items(devices, key = { it.id }) { device ->
-                    val isSelected = device.id in selectedIds
-                    DeviceCard(
-                        device = device,
-                        isSelected = isSelected,
-                        isSelecting = isSelecting,
-                        onClick = {
-                            if (isSelecting) viewModel.toggleSelection(device.id)
-                            else navController.navigate(Screen.DeviceDetail.createRoute(device.id))
-                        },
-                        onLongClick = { viewModel.startSelection(device.id) },
-                        onEdit = { viewModel.showEditDialog(device) },
-                        onDelete = { viewModel.showDeleteConfirm(device) }
-                    )
+                val grouped = devices.groupBy { it.type }
+                grouped.forEach { (type, typeDevices) ->
+                    val isExpanded = type in expandedTypes
+                    item(key = "header_$type") {
+                        DeviceGroupHeader(
+                            typeName = type,
+                            isExpanded = isExpanded,
+                            onToggle = {
+                                expandedTypes = if (isExpanded) expandedTypes - type else expandedTypes + type
+                            }
+                        )
+                    }
+                    if (isExpanded) {
+                        items(typeDevices, key = { "dev_${it.id}" }) { device ->
+                            val isSelected = device.id in selectedIds
+                            DeviceCard(
+                                device = device,
+                                isSelected = isSelected,
+                                isSelecting = isSelecting,
+                                onClick = {
+                                    if (isSelecting) viewModel.toggleSelection(device.id)
+                                    else navController.navigate(Screen.DeviceDetail.createRoute(device.id))
+                                },
+                                onLongClick = { viewModel.startSelection(device.id) },
+                                onEdit = { viewModel.showEditDialog(device) },
+                                onDelete = { viewModel.showDeleteConfirm(device) }
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -345,11 +371,6 @@ private fun DeviceCard(
     onEdit: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val typeName = when (device.type) {
-        "FREEZER_M80" -> "-80\u00b0C \u51b0\u7bb1"
-        "LIQUID_NITROGEN" -> "\u6db2\u6c2e\u7f50"
-        else -> device.type
-    }
     Card(
         modifier = Modifier.fillMaxWidth().combinedClickable(
             onClick = onClick,
@@ -379,8 +400,6 @@ private fun DeviceCard(
             }
             Column(modifier = Modifier.weight(1f)) {
                 Text(device.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Spacer(Modifier.height(4.dp))
-                Text(typeName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                 device.note?.let { note ->
                     Spacer(Modifier.height(2.dp))
                     Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -394,3 +413,36 @@ private fun DeviceCard(
         }
     }
 }
+
+@Composable
+private fun DeviceGroupHeader(
+    typeName: String,
+    isExpanded: Boolean,
+    onToggle: () -> Unit
+) {
+    val displayName = when (typeName) {
+        "FREEZER_M80" -> "-80°C 冰箱"
+        "LIQUID_NITROGEN" -> "液氮罐"
+        else -> typeName
+    }
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(12.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onToggle).padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(displayName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+            Icon(
+                if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                contentDescription = if (isExpanded) "收起" else "展开",
+                tint = MaterialTheme.colorScheme.outline,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+    }
+}
+

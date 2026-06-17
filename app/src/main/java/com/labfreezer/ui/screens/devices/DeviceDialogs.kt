@@ -87,7 +87,7 @@ fun DeviceDialog(
                     OutlinedTextField(
                         value = type,
                         onValueChange = {},
-                        label = { Text("设备类型") },
+                        label = { Text("设备组") },
                         readOnly = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = fieldShape,
