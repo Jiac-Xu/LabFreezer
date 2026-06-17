@@ -35,15 +35,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.labfreezer.R
+import com.labfreezer.util.UpdateChecker
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
-import org.json.JSONObject
-import java.net.HttpURLConnection
-import java.net.URL
-import java.io.OutputStreamWriter
+import kotlin.coroutines.resume
 
 private const val API_KEY = "ac51db043f72100c2a4ba0eca0e13282"
-private const val USER_KEY = "47af7f598157a74533e25b2a37d9858e"
 private const val APP_KEY = "1691ea53a9fc98f9fa65d05c76c37bbd"
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -55,7 +53,6 @@ fun AboutScreen(onBack: () -> Unit) {
     var versionName by remember { mutableStateOf("") }
     var updateInfo by remember { mutableStateOf("") }
 
-    // Use "冰盒" in Chinese, "LabFreezer" otherwise
     val appName = if (configuration.locales[0].language == "zh") {
         "冰盒"
     } else {
@@ -67,78 +64,36 @@ fun AboutScreen(onBack: () -> Unit) {
             context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "未知"
         } catch (e: Exception) { "未知" }
 
-        // Silent update check via AppUpdateChecker API
-        try {
+        // Silent update check via PGYER AppUpdateChecker
+        updateInfo = try {
             val result = withContext(Dispatchers.IO) {
-                val url = URL("https://api.appupdatechecker.com/v1/check")
-                val conn = url.openConnection() as HttpURLConnection
-                conn.requestMethod = "POST"
-                conn.doOutput = true
-                conn.setRequestProperty("Content-Type", "application/json")
-                conn.connectTimeout = 8000
-                conn.readTimeout = 8000
+                suspendCancellableCoroutine { cont ->
+                    UpdateChecker(API_KEY).check(
+                        APP_KEY,
+                        versionName,
+                        null,  // buildBuildVersion
+                        null,  // channelKey
+                        object : UpdateChecker.Callback {
+                            override fun result(updateInfo: UpdateChecker.UpdateInfo) {
+                                if (updateInfo.buildHaveNewVersion) {
+                                    val desc = if (updateInfo.buildUpdateDescription.isNullOrBlank()) ""
+                                        else ": ${updateInfo.buildUpdateDescription}"
+                                    cont.resume("发现新版本 ${updateInfo.buildVersion}$desc")
+                                } else {
+                                    cont.resume("已是最新版本 ($versionName)")
+                                }
+                            }
 
-                val body = JSONObject().apply {
-                    put("api_key", API_KEY)
-                    put("user_key", USER_KEY)
-                    put("app_key", APP_KEY)
-                    put("version_name", versionName)
-                    put("package_name", "com.labfreezer")
-                }.toString()
-
-                OutputStreamWriter(conn.outputStream).use { it.write(body) }
-
-                val responseCode = conn.responseCode
-                val responseBody = if (responseCode in 200..299) {
-                    conn.inputStream.bufferedReader().readText()
-                } else {
-                    ""
-                }
-                conn.disconnect()
-                Pair(responseCode, responseBody)
-            }
-
-            val (code, body) = result
-            if (code in 200..299 && body.isNotBlank()) {
-                val json = JSONObject(body)
-                val data = json.optJSONObject("data")
-                if (data != null) {
-                    val latestVersion = data.optString("version_name", "")
-                    val updateDesc = data.optString("update_description", "")
-                    when {
-                        latestVersion.isBlank() -> "检查失败：无版本信息"
-                        latestVersion == versionName -> "已是最新版本 ($latestVersion)"
-                        else -> "发现新版本 $latestVersion${if (updateDesc.isNotBlank()) ": $updateDesc" else ""}"
-                    }
-                } else {
-                    json.optString("message", "检查失败")
-                }
-            } else {
-                // Fallback to GitHub API
-                try {
-                    val ghUrl = URL("https://api.github.com/repos/xujiacheng8511/LabFreezer/releases/latest")
-                    val ghConn = ghUrl.openConnection() as HttpURLConnection
-                    ghConn.requestMethod = "GET"
-                    ghConn.setRequestProperty("Accept", "application/vnd.github.v3+json")
-                    ghConn.connectTimeout = 8000
-                    ghConn.readTimeout = 8000
-                    val ghBody = ghConn.inputStream.bufferedReader().readText()
-                    ghConn.disconnect()
-                    val tagMatch = Regex("\"tag_name\"\\s*:\\s*\"([^\"]+)\"").find(ghBody)
-                    val latest = tagMatch?.groupValues?.getOrNull(1)?.removePrefix("v") ?: ""
-                    if (latest.isBlank()) "检查失败"
-                    else if (latest == versionName) "已是最新版本 ($latest)"
-                    else "发现新版本 $latest"
-                } catch (_: Exception) {
-                    "检查更新失败"
+                            override fun error(message: String) {
+                                cont.resume("检查更新失败")
+                            }
+                        }
+                    )
                 }
             }
+            result as String
         } catch (e: Exception) {
-            updateInfo = "检查更新失败"
-        }
-
-        if (updateInfo.isEmpty()) {
-            updateInfo = "检查更新失败"
+            "检查更新失败"
         }
     }
 
