@@ -45,6 +45,8 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeviceHub
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.ZoomIn
+import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material.icons.filled.OpenWith
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -55,6 +57,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -286,16 +289,29 @@ fun BoxGridScreen(
                                     .padding(horizontal = 20.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.OpenWith, contentDescription = "\u653e\u5927", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                Icon(Icons.Default.ZoomOut, contentDescription = "缩小", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Slider(
                                     value = visibleCols,
                                     onValueChange = { visibleCols = it },
                                     valueRange = 3f..max(3f, cols.toFloat()),
-                                    modifier = Modifier.weight(1f)
+                                    modifier = Modifier.weight(1f),
+                                    colors = SliderDefaults.colors(
+                                        thumbColor = MaterialTheme.colorScheme.primary,
+                                        activeTrackColor = MaterialTheme.colorScheme.primary,
+                                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                    ),
+                                    thumb = {
+                                        Box(
+                                            modifier = Modifier
+                                                .size(16.dp)
+                                                .clip(androidx.compose.foundation.shape.CircleShape)
+                                                .background(MaterialTheme.colorScheme.primary)
+                                        )
+                                    }
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.Layers, contentDescription = "\u7f29\u5c0f", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                Icon(Icons.Default.ZoomIn, contentDescription = "放大", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }
