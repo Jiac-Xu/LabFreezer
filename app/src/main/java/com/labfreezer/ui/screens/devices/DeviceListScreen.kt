@@ -220,34 +220,22 @@ fun DeviceListScreen(
                 val grouped = devices.groupBy { it.type }
                 grouped.forEach { (type, typeDevices) ->
                     val isExpanded = type in expandedTypes
-                    val deviceCount = typeDevices.size
-                    val headerShape = if (isExpanded && deviceCount > 0) cornerStyleToShape(CornerStyle.TOP) else cornerStyleToShape(CornerStyle.ALL)
                     item(key = "header_$type") {
                         DeviceGroupHeader(
                             typeName = type,
                             isExpanded = isExpanded,
                             onToggle = {
                                 expandedTypes = if (isExpanded) expandedTypes - type else expandedTypes + type
-                            },
-                            shape = headerShape
+                            }
                         )
                     }
                     if (isExpanded) {
                         items(typeDevices, key = { "dev_${it.id}" }) { device ->
-                            val idx = typeDevices.indexOf(device)
                             val isSelected = device.id in selectedIds
-                            val cardShape: CornerStyle = when {
-                                    deviceCount == 1 -> CornerStyle.ALL
-                                    idx == 0 -> CornerStyle.NONE
-                                    idx == deviceCount - 1 -> CornerStyle.BOTTOM
-                                    else -> CornerStyle.NONE
-                                }
-                            val cardShape2 = cornerStyleToShape(cardShape)
                             DeviceCard(
                                 device = device,
                                 isSelected = isSelected,
                                 isSelecting = isSelecting,
-                                shape = cardShape2,
                                 onClick = {
                                     if (isSelecting) viewModel.toggleSelection(device.id)
                                     else navController.navigate(Screen.DeviceDetail.createRoute(device.id))
@@ -391,15 +379,14 @@ private fun DeviceCard(
     onClick: () -> Unit,
     onLongClick: () -> Unit,
     onEdit: () -> Unit,
-    onDelete: () -> Unit,
-    shape: androidx.compose.ui.graphics.Shape = MaterialTheme.shapes.medium
+    onDelete: () -> Unit
 ) {
     Card(
         modifier = Modifier.fillMaxWidth().combinedClickable(
             onClick = onClick,
             onLongClick = onLongClick
         ),
-        shape = shape,
+        shape = RoundedCornerShape(12.dp),
         colors = CardDefaults.cardColors(
             containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
                             else MaterialTheme.colorScheme.surfaceContainerLow
@@ -438,24 +425,12 @@ private fun DeviceCard(
 }
 
 
-private enum class CornerStyle { ALL, TOP, BOTTOM, NONE }
-
-private fun cornerStyleToShape(style: CornerStyle): androidx.compose.ui.graphics.Shape {
-    val r = 12.dp
-    return when (style) {
-        CornerStyle.ALL -> RoundedCornerShape(r)
-        CornerStyle.TOP -> RoundedCornerShape(topStart = r, topEnd = r)
-        CornerStyle.BOTTOM -> RoundedCornerShape(bottomStart = r, bottomEnd = r)
-        CornerStyle.NONE -> RoundedCornerShape(0.dp)
-    }
-}
-
 @Composable
 private fun DeviceGroupHeader(
     typeName: String,
     isExpanded: Boolean,
     onToggle: () -> Unit,
-    shape: androidx.compose.ui.graphics.Shape = RoundedCornerShape(12.dp)
+    shape: androidx.compose.ui.graphics.Shape = MaterialTheme.shapes.small
 ) {
     val displayName = when (typeName) {
         "FREEZER_M80" -> "-80°C 冰箱"
