@@ -27,6 +27,12 @@ android {
             enableV3Signing = false
             enableV4Signing = false
         }
+        create("release") {
+            storeFile = rootProject.file("release.keystore")
+            storePassword = "labfreezer"
+            keyAlias = "release"
+            keyPassword = "labfreezer"
+        }
     }
 
     buildTypes {
@@ -35,6 +41,7 @@ android {
         }
         release {
             isMinifyEnabled = true
+            signingConfig = signingConfigs.getByName("release")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
