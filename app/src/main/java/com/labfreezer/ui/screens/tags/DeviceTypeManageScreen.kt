@@ -61,7 +61,7 @@ fun DeviceTypeManageScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("\u8bbe\u5907\u7c7b\u578b\u7ba1\u7406", fontWeight = FontWeight.SemiBold) },
+                title = { Text("\u8bbe\u5907\u7ec4\u7ba1\u7406", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u8fd4\u56de")
@@ -131,7 +131,7 @@ fun DeviceTypeManageScreen(
         var typeName by remember { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { viewModel.hideAddTypeDialog() },
-            title = { Text("\u6dfb\u52a0\u8bbe\u5907\u7c7b\u578b", fontWeight = FontWeight.SemiBold) },
+            title = { Text("\u6dfb\u52a0\u8bbe\u5907\u7ec4", fontWeight = FontWeight.SemiBold) },
             text = {
                 OutlinedTextField(
                     value = typeName,

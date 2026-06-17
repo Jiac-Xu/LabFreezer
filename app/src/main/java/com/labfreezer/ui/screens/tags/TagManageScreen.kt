@@ -126,7 +126,7 @@ fun TagManageScreen(navController: NavController, viewModel: TagManageViewModel 
                     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.DeviceHub, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text("\u8bbe\u5907\u7c7b\u578b\u7ba1\u7406", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                        Text("\u8bbe\u5907\u7ec4\u7ba1\u7406", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
                         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
                     }
                 }
