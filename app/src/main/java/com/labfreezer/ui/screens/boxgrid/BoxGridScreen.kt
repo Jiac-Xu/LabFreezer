@@ -1,0 +1,401 @@
+package com.labfreezer.ui.screens.boxgrid
+
+import android.Manifest
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.CameraAlt
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.DeviceHub
+import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.OpenWith
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import com.labfreezer.ui.navigation.Screen
+import com.labfreezer.ui.screens.move.MoveState
+import com.labfreezer.ui.screens.move.MoveTarget
+import kotlin.math.max
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun BoxGridScreen(
+    navController: NavController,
+    boxId: Long,
+    viewModel: BoxGridViewModel = hiltViewModel()
+) {
+    LaunchedEffect(boxId) { viewModel.loadBox(boxId) }
+
+    val box by viewModel.box.collectAsStateWithLifecycle()
+    val cellsState by viewModel.cells.collectAsStateWithLifecycle()
+    val cells = cellsState.list
+    val pendingSampleId by viewModel.pendingSampleId.collectAsStateWithLifecycle()
+    val isSelecting by viewModel.isSelecting.collectAsStateWithLifecycle()
+    val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
+    var showDeleteBatchConfirm by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
+    val cameraLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.TakePicture()
+    ) { success ->
+        viewModel.onCameraResult(success)
+    }
+
+    val cameraPermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val uri = viewModel.createPhotoUri()
+            cameraLauncher.launch(uri)
+        } else {
+            Toast.makeText(context, "\u9700\u8981\u76f8\u673a\u6743\u9650\u624d\u80fd\u62cd\u7167", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(pendingSampleId) {
+        if (pendingSampleId != null) {
+            if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                val uri = viewModel.createPhotoUri()
+                cameraLauncher.launch(uri)
+            } else {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+            }
+        }
+    }
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = {
+                    if (isSelecting) {
+                        Text("\u5df2\u9009 ${selectedIds.size} \u9879", fontWeight = FontWeight.SemiBold)
+                    } else {
+                        Text(box?.name ?: "", fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                },
+                navigationIcon = {
+                    if (isSelecting) {
+                        IconButton(onClick = { viewModel.exitSelection() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u53d6\u6d88")
+                        }
+                    } else {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u8fd4\u56de")
+                        }
+                    }
+                },
+                actions = {
+                    if (isSelecting) {
+                        val sampleCount = cells.count { it.sampleId != null }
+                        TextButton(onClick = { viewModel.selectAll() }) {
+                            Text(if (selectedIds.size == sampleCount) "\u5168\u4e0d\u9009" else "\u5168\u9009", fontWeight = FontWeight.Medium)
+                        }
+                        IconButton(onClick = {
+                            MoveState.selectedItemIds = selectedIds
+                            MoveState.moveTarget = MoveTarget.BOX
+                            MoveState.sourceBoxId = boxId
+                            navController.navigate(Screen.MoveBrowser.route)
+                        }) {
+                            Icon(Icons.Default.OpenWith, contentDescription = "\u79fb\u52a8", tint = MaterialTheme.colorScheme.primary)
+                        }
+                        IconButton(onClick = { showDeleteBatchConfirm = true }) {
+                            Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error)
+                        }
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
+            )
+        }
+    ) { padding ->
+        if (box == null) {
+            Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
+                Text("\u52a0\u8f7d\u4e2d...", style = MaterialTheme.typography.bodyLarge)
+            }
+        } else {
+            val cols = box!!.cols
+            var visibleCols by remember(cols) { mutableFloatStateOf(cols.toFloat()) }
+
+            val configuration = LocalConfiguration.current
+            val screenWidth = configuration.screenWidthDp.dp
+            val cellWidth = screenWidth / visibleCols
+            val totalGridWidth = cellWidth * cols
+
+            val showDetails by remember {
+                derivedStateOf { visibleCols <= 5f }
+            }
+
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .horizontalScroll(rememberScrollState())
+                ) {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(cols),
+                        modifier = Modifier.width(totalGridWidth).padding(horizontal = 4.dp),
+                        contentPadding = PaddingValues(start = 4.dp, top = 4.dp, end = 4.dp, bottom = 100.dp),
+                        horizontalArrangement = Arrangement.spacedBy(2.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        items(
+                            items = cells,
+                            key = { cell -> cell.row * 1000 + cell.col },
+                            contentType = { cell -> cell.status }
+                        ) { cell ->
+                            val currentOnClick: () -> Unit = remember(cell, isSelecting, selectedIds) {
+                                {
+                                    if (isSelecting) {
+                                        cell.sampleId?.let { viewModel.toggleSelection(it) }
+                                    } else {
+                                        if (cell.status == GridCellStatus.EMPTY) {
+                                            viewModel.onCellClick(cell)
+                                        } else {
+                                            cell.sampleId?.let { sampleId ->
+                                                navController.navigate(Screen.SampleEdit.createRoute(sampleId))
+                                            }
+                                        }
+                                    }
+                                    Unit
+                                }
+                            }
+
+                            val currentOnLongClick: () -> Unit = remember(cell.sampleId) {
+                                {
+                                    cell.sampleId?.let { viewModel.startSelection(it) }
+                                    Unit
+                                }
+                            }
+
+                            GridCellView(
+                                cell = cell,
+                                isSelected = cell.sampleId != null && cell.sampleId in selectedIds,
+                                isSelecting = isSelecting,
+                                showDetails = showDetails,
+                                onClick = currentOnClick,
+                                onLongClick = currentOnLongClick
+                            )
+                        }
+                    }
+                }
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .align(Alignment.BottomCenter)
+                        .navigationBarsPadding()
+                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+                ) {
+                    Surface(
+                        color = MaterialTheme.colorScheme.surface,
+                        tonalElevation = 6.dp,
+                        shadowElevation = 8.dp,
+                        shape = RoundedCornerShape(24.dp)
+                    ) {
+                        Box {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .background(
+                                        Brush.verticalGradient(
+                                            colors = listOf(
+                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                                            )
+                                        )
+                                    )
+                            )
+                            Row(
+                                modifier = Modifier.fillMaxWidth().height(64.dp)
+                                    .padding(horizontal = 20.dp, vertical = 12.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(Icons.Default.OpenWith, contentDescription = "\u653e\u5927", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Slider(
+                                    value = visibleCols,
+                                    onValueChange = { visibleCols = it },
+                                    valueRange = 3f..max(3f, cols.toFloat()),
+                                    modifier = Modifier.weight(1f)
+                                )
+                                Spacer(modifier = Modifier.width(12.dp))
+                                Icon(Icons.Default.Layers, contentDescription = "\u7f29\u5c0f", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    if (showDeleteBatchConfirm) {
+        AlertDialog(
+            onDismissRequest = { showDeleteBatchConfirm = false },
+            title = { Text("\u786e\u8ba4\u5220\u9664") },
+            text = { Text("\u786e\u8ba4\u5220\u9664\u9009\u4e2d\u7684 ${selectedIds.size} \u4e2a\u6837\u672c\uff1f\u8be5\u64cd\u4f5c\u4e0d\u53ef\u64a4\u9500\u3002") },
+            confirmButton = { TextButton(onClick = { showDeleteBatchConfirm = false; viewModel.deleteSelected() }) { Text("\u5220\u9664", color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = { showDeleteBatchConfirm = false }) { Text("\u53d6\u6d88") } }
+        )
+    }
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun GridCellView(
+    cell: GridCell,
+    isSelected: Boolean,
+    isSelecting: Boolean,
+    showDetails: Boolean,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit
+) {
+    val bgColor = when {
+        isSelected -> MaterialTheme.colorScheme.primaryContainer
+        cell.status == GridCellStatus.EMPTY -> MaterialTheme.colorScheme.surfaceVariant
+        cell.status == GridCellStatus.PHOTO_ONLY -> MaterialTheme.colorScheme.primaryContainer
+        else -> MaterialTheme.colorScheme.tertiaryContainer
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth().aspectRatio(1f).then(
+            if (isSelecting && cell.sampleId != null) Modifier.clickable { onClick() }
+            else Modifier.combinedClickable(onClick = onClick, onLongClick = onLongClick)
+        ),
+        colors = CardDefaults.cardColors(containerColor = bgColor),
+        shape = RoundedCornerShape(4.dp)
+    ) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            when (cell.status) {
+                GridCellStatus.EMPTY -> {
+                    Text(text = cell.label, fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                GridCellStatus.PHOTO_ONLY -> {
+                    if (cell.photoPath != null) {
+                        AsyncImage(model = Uri.parse(cell.photoPath), contentDescription = null, modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp)), contentScale = ContentScale.Crop)
+                    } else {
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.primary)
+                    }
+                }
+                GridCellStatus.COMPLETE -> {
+                    Column(modifier = Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                        if (cell.photoPath != null) {
+                            AsyncImage(model = Uri.parse(cell.photoPath), contentDescription = null, modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(4.dp)), contentScale = ContentScale.Crop)
+                        } else {
+                            Text(text = cell.label, fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiaryContainer)
+                        }
+                    }
+                }
+            }
+            androidx.compose.animation.AnimatedVisibility(
+                visible = showDetails && cell.status != GridCellStatus.EMPTY,
+                enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
+                exit = fadeOut(),
+                modifier = Modifier.align(Alignment.BottomCenter)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .background(
+                            Brush.verticalGradient(
+                                colors = listOf(Color.Transparent, Color.Black.copy(alpha = 0.7f))
+                            )
+                        )
+                        .padding(4.dp)
+                ) {
+                    Column {
+                        cell.sampleName?.let {
+                            Text(it, style = MaterialTheme.typography.labelSmall, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                        Text(cell.label, style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
+                    }
+                }
+            }
+            if (isSelecting && cell.sampleId != null) {
+                Box(
+                    modifier = Modifier.align(Alignment.TopStart).padding(4.dp).size(22.dp).clip(CircleShape)
+                        .background(if (isSelected) MaterialTheme.colorScheme.primary else Color.White.copy(alpha = 0.8f))
+                        .then(if (!isSelected) Modifier.border(2.dp, MaterialTheme.colorScheme.outline, CircleShape) else Modifier),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (isSelected) Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(14.dp))
+                }
+            }
+        }
+    }
+}
