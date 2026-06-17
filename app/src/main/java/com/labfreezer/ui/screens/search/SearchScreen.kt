@@ -27,6 +27,8 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DeviceHub
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -117,9 +119,21 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel = hilt
             }
             Spacer(Modifier.height(8.dp))
             when {
-                query.isBlank() -> Text("输入名称或备注进行搜索", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, textAlign = TextAlign.Center, modifier = Modifier.padding(top = 32.dp).fillMaxWidth())
-                isSearching -> Text("搜索中...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 32.dp).fillMaxWidth())
-                results.isEmpty() -> Text("未找到匹配项", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline, modifier = Modifier.padding(top = 32.dp).fillMaxWidth())
+                query.isBlank() -> Column(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                    Spacer(Modifier.height(16.dp))
+                    Text("输入名称或备注进行搜索", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+                }
+                isSearching -> Column(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                    Spacer(Modifier.height(16.dp))
+                    Text("搜索中...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+                }
+                results.isEmpty() -> Column(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Outlined.SearchOff, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                    Spacer(Modifier.height(16.dp))
+                    Text("未找到匹配项", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+                }
                 else -> LazyColumn(
                     modifier = Modifier.fillMaxWidth().weight(1f),
                     verticalArrangement = Arrangement.spacedBy(12.dp),
