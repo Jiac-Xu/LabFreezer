@@ -195,6 +195,11 @@ fun DeviceListScreen(
                     prefs.edit().putStringSet("expanded_types", expandedTypes).apply()
                 }
             }
+            var groupByType by remember { mutableStateOf(true) }
+            LaunchedEffect(Unit) {
+                groupByType = context.getSharedPreferences("device_group_prefs", android.content.Context.MODE_PRIVATE)
+                    .getBoolean("group_by_type_enabled", true)
+            }
             LazyColumn(
                 modifier = Modifier.fillMaxSize().padding(padding),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -217,34 +222,52 @@ fun DeviceListScreen(
                     Text("设备", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(12.dp))
                 }
-                val grouped = devices.groupBy { it.type }
-                grouped.forEach { (type, typeDevices) ->
-                    val isExpanded = type in expandedTypes
-                    item(key = "header_$type") {
-                        DeviceGroupHeader(
-                            typeName = type,
-                            isExpanded = isExpanded,
-                            onToggle = {
-                                expandedTypes = if (isExpanded) expandedTypes - type else expandedTypes + type
-                            }
-                        )
-                    }
-                    if (isExpanded) {
-                        items(typeDevices, key = { "dev_${it.id}" }) { device ->
-                            val isSelected = device.id in selectedIds
-                            DeviceCard(
-                                device = device,
-                                isSelected = isSelected,
-                                isSelecting = isSelecting,
-                                onClick = {
-                                    if (isSelecting) viewModel.toggleSelection(device.id)
-                                    else navController.navigate(Screen.DeviceDetail.createRoute(device.id))
-                                },
-                                onLongClick = { viewModel.startSelection(device.id) },
-                                onEdit = { viewModel.showEditDialog(device) },
-                                onDelete = { viewModel.showDeleteConfirm(device) }
+                if (groupByType) {
+                    val grouped = devices.groupBy { it.type }
+                    grouped.forEach { (type, typeDevices) ->
+                        val isExpanded = type in expandedTypes
+                        item(key = "header_$type") {
+                            DeviceGroupHeader(
+                                typeName = type,
+                                isExpanded = isExpanded,
+                                onToggle = {
+                                    expandedTypes = if (isExpanded) expandedTypes - type else expandedTypes + type
+                                }
                             )
                         }
+                        if (isExpanded) {
+                            items(typeDevices, key = { "dev_${it.id}" }) { device ->
+                                val isSelected = device.id in selectedIds
+                                DeviceCard(
+                                    device = device,
+                                    isSelected = isSelected,
+                                    isSelecting = isSelecting,
+                                    onClick = {
+                                        if (isSelecting) viewModel.toggleSelection(device.id)
+                                        else navController.navigate(Screen.DeviceDetail.createRoute(device.id))
+                                    },
+                                    onLongClick = { viewModel.startSelection(device.id) },
+                                    onEdit = { viewModel.showEditDialog(device) },
+                                    onDelete = { viewModel.showDeleteConfirm(device) }
+                                )
+                            }
+                        }
+                    }
+                } else {
+                    items(devices.sortedBy { it.name }, key = { "dev_${it.id}" }) { device ->
+                        val isSelected = device.id in selectedIds
+                        DeviceCard(
+                            device = device,
+                            isSelected = isSelected,
+                            isSelecting = isSelecting,
+                            onClick = {
+                                if (isSelecting) viewModel.toggleSelection(device.id)
+                                else navController.navigate(Screen.DeviceDetail.createRoute(device.id))
+                            },
+                            onLongClick = { viewModel.startSelection(device.id) },
+                            onEdit = { viewModel.showEditDialog(device) },
+                            onDelete = { viewModel.showDeleteConfirm(device) }
+                        )
                     }
                 }
             }
