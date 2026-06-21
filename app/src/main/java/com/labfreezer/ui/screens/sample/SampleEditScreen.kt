@@ -134,7 +134,6 @@ fun SampleEditScreen(
     var offsetX by remember { mutableFloatStateOf(0f) }
     val threshold = with(LocalDensity.current) { 50.dp.toPx() }
 
-    LaunchedEffect(state.saved) { if (state.saved) navController.popBackStack() }
     LaunchedEffect(state.deleted) { if (state.deleted) navController.popBackStack() }
     LaunchedEffect(MoveState.resultBoxId) {
         MoveState.resultBoxId?.let { boxId ->

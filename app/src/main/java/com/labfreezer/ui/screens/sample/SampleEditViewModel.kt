@@ -38,7 +38,6 @@ data class SampleEditState(
     val date: String = "",
     val note: String = "",
     val photoPath: String? = null,
-    val saved: Boolean = false,
     val deleted: Boolean = false,
     val assignedTagIds: Set<Long> = emptySet(),
     val deviceName: String = "",
@@ -212,7 +211,7 @@ class SampleEditViewModel @Inject constructor(
             )
             sampleRepository.update(updatedSample)
             tagRepository.setSampleTags(sampleId, _state.value.assignedTagIds.toList())
-            _state.update { it.copy(saved = true) }
+            _toastEvent.emit("已保存")
         }
     }
 
