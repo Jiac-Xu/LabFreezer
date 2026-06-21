@@ -27,6 +27,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DeviceHub
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.filled.Search
@@ -114,7 +115,8 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel = hilt
                 TagFilterRow(
                     tags = allTags,
                     selectedIds = selectedTagIds,
-                    onToggle = { viewModel.toggleTag(it) }
+                    onToggle = { viewModel.toggleTag(it) },
+                    onNavigateToTagManage = { navController.navigate(Screen.TagManage.route) }
                 )
             }
             Spacer(Modifier.height(8.dp))
@@ -158,7 +160,8 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel = hilt
 private fun TagFilterRow(
     tags: List<TagEntity>,
     selectedIds: Set<Long>,
-    onToggle: (Long) -> Unit
+    onToggle: (Long) -> Unit,
+    onNavigateToTagManage: () -> Unit = {}
 ) {
     FlowRow(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -186,6 +189,26 @@ private fun TagFilterRow(
                     Spacer(Modifier.width(6.dp))
                     Text(tag.name, style = MaterialTheme.typography.labelMedium)
                 }
+            }
+        }
+        // 标签管理入口
+        Surface(
+            onClick = onNavigateToTagManage,
+            shape = RoundedCornerShape(20.dp),
+            color = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Tag,
+                    contentDescription = null,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(Modifier.width(4.dp))
+                Text("标签管理", style = MaterialTheme.typography.labelMedium)
             }
         }
     }

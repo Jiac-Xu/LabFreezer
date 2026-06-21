@@ -110,13 +110,16 @@ fun MainScreen() {
                 else -> 0
             }
         }
-        // Re-read currentTabIndex in case LaunchedEffect navigated away from tabs
+        // ★ wrap在remember(Unit)中，仅在首帧执行一次，后续用户点击底栏不再干预
+        remember(Unit) {
+            if (currentTabIndex != initialTabIndex && currentTabIndex == 0) {
+                currentTabIndex = initialTabIndex
+            }
+        }
+
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         val showBottomBar = currentRoute == Screen.MainTabs.route
-        if (currentTabIndex != initialTabIndex && currentTabIndex == 0) {
-            currentTabIndex = initialTabIndex
-        }
 
         val bottomTabs = listOf(
             BottomNavItem("\u5e93", Icons.Default.Home),

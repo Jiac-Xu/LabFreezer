@@ -65,7 +65,7 @@ private val TAG_COLORS = listOf("#1565C0","#2E7D32","#E65100","#6A1B9A","#AD1457
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TagManageScreen(navController: NavController, viewModel: TagManageViewModel = hiltViewModel()) {
-    val tags by viewModel.tags.collectAsStateWithLifecycle()
+    val tagsWithCount by viewModel.tagsWithCount.collectAsStateWithLifecycle()
     val showAddDialog by viewModel.showAddDialog.collectAsStateWithLifecycle()
     val editingTag by viewModel.editingTag.collectAsStateWithLifecycle()
     val deletingTag by viewModel.deletingTag.collectAsStateWithLifecycle()
@@ -97,7 +97,7 @@ fun TagManageScreen(navController: NavController, viewModel: TagManageViewModel 
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 100.dp)
         ) {
-            if (tags.isEmpty()) {
+            if (tagsWithCount.isEmpty()) {
                 item {
                     Box(modifier = Modifier.fillMaxWidth().padding(vertical = 48.dp), contentAlignment = Alignment.Center) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -110,8 +110,8 @@ fun TagManageScreen(navController: NavController, viewModel: TagManageViewModel 
                     }
                 }
             } else {
-                items(tags, key = { it.id }) { tag ->
-                    TagItem(tag = tag, onClick = { navController.navigate(Screen.TagDetail.createRoute(tag.id)) }, onEdit = { viewModel.showEditDialog(tag) }, onDelete = { viewModel.showDeleteConfirm(tag) })
+                items(tagsWithCount, key = { it.tag.id }) { tagWithCount ->
+                    TagItem(tag = tagWithCount.tag, sampleCount = tagWithCount.sampleCount, onClick = { navController.navigate(Screen.TagDetail.createRoute(tagWithCount.tag.id)) }, onEdit = { viewModel.showEditDialog(tagWithCount.tag) }, onDelete = { viewModel.showDeleteConfirm(tagWithCount.tag) })
                 }
             }
 
@@ -141,7 +141,7 @@ fun TagManageScreen(navController: NavController, viewModel: TagManageViewModel 
 }
 
 @Composable
-private fun TagItem(tag: TagEntity, onClick: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
+private fun TagItem(tag: TagEntity, sampleCount: Int = 0, onClick: () -> Unit, onEdit: () -> Unit, onDelete: () -> Unit) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         onClick = onClick,
@@ -152,7 +152,10 @@ private fun TagItem(tag: TagEntity, onClick: () -> Unit, onEdit: () -> Unit, onD
         Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(modifier = Modifier.size(24.dp).clip(CircleShape).background(Color(android.graphics.Color.parseColor(tag.color))))
             Spacer(Modifier.width(12.dp))
-            Text(tag.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(tag.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
+                Text("${sampleCount}\u6837\u672c", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+            }
             IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "\u7f16\u8f91", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp)) }
             IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp)) }
         }

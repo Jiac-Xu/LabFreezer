@@ -34,6 +34,9 @@ interface SampleTagDao {
     )
     suspend fun getSamplesWithPathByTagId(tagId: Long): List<SampleWithPath>
 
+    @Query("SELECT COUNT(*) FROM sample_tag WHERE tag_id = :tagId")
+    suspend fun countSamplesByTagId(tagId: Long): Int
+
     @Query("SELECT COUNT(*) FROM sample_tag WHERE sample_id = :sampleId AND tag_id = :tagId")
     suspend fun countBySampleAndTag(sampleId: Long, tagId: Long): Int
 

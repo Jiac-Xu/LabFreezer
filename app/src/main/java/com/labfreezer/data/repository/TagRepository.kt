@@ -31,6 +31,9 @@ class TagRepository @Inject constructor(
     suspend fun getSamplesWithPathByTagId(tagId: Long): List<SampleWithPath> =
         sampleTagDao.getSamplesWithPathByTagId(tagId)
 
+    suspend fun countSamplesByTagId(tagId: Long): Int =
+        sampleTagDao.countSamplesByTagId(tagId)
+
     suspend fun addTagToSample(sampleId: Long, tagId: Long) {
         if (sampleTagDao.countBySampleAndTag(sampleId, tagId) == 0) {
             sampleTagDao.insert(SampleTagEntity(sampleId = sampleId, tagId = tagId))

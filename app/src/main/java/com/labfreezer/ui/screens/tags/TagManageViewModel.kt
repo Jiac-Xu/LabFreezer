@@ -7,12 +7,19 @@ import com.labfreezer.data.db.entity.TagEntity
 import com.labfreezer.data.repository.DeviceTypeRepository
 import com.labfreezer.data.repository.TagRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+data class TagWithCount(
+    val tag: TagEntity,
+    val sampleCount: Int
+)
 
 @HiltViewModel
 class TagManageViewModel @Inject constructor(
@@ -22,6 +29,22 @@ class TagManageViewModel @Inject constructor(
 
     val tags: StateFlow<List<TagEntity>> = tagRepository.getAllFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    private val _tagsWithCount = MutableStateFlow<List<TagWithCount>>(emptyList())
+    val tagsWithCount: StateFlow<List<TagWithCount>> = _tagsWithCount
+
+    init {
+        viewModelScope.launch {
+            tagRepository.getAllFlow().collect { tagList ->
+                val withCounts = coroutineScope {
+                    tagList.map { tag ->
+                        async { TagWithCount(tag, tagRepository.countSamplesByTagId(tag.id)) }
+                    }.map { it.await() }
+                }
+                _tagsWithCount.value = withCounts
+            }
+        }
+    }
 
     val deviceTypes: StateFlow<List<DeviceTypeEntity>> = deviceTypeRepository.getAllFlow()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
