@@ -1,0 +1,42 @@
+package com.labfreezer.ui.screens.settings
+
+import android.content.Context
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tag
+import androidx.compose.ui.graphics.vector.ImageVector
+
+enum class BottomTab(
+    val id: String,
+    val label: String,
+    val icon: ImageVector
+) {
+    DEVICE_LIST("device", "库", Icons.Default.Home),
+    TAG_MANAGE("tag", "标签", Icons.Default.Tag),
+    SEARCH("search", "搜索", Icons.Filled.Search),
+    SETTINGS("settings", "设置", Icons.Default.Settings);
+
+    companion object {
+        fun fromId(id: String): BottomTab? = entries.find { it.id == id }
+    }
+}
+
+object BottomTabPreference {
+    private const val PREFS = "bottom_tab_prefs"
+    private const val KEY_ORDER = "tab_order"
+    private const val DEFAULT_ORDER = "device,tag,settings"
+
+    fun get(context: Context): List<BottomTab> {
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val order = prefs.getString(KEY_ORDER, DEFAULT_ORDER) ?: DEFAULT_ORDER
+        return order.split(",").mapNotNull { BottomTab.fromId(it.trim()) }
+    }
+
+    fun set(context: Context, tabs: List<BottomTab>) {
+        context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
+            .putString(KEY_ORDER, tabs.joinToString(",") { it.id })
+            .apply()
+    }
+}

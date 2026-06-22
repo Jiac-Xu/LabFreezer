@@ -25,10 +25,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
@@ -46,7 +42,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
@@ -74,6 +69,9 @@ import com.labfreezer.ui.screens.settings.SettingsScreen
 import com.labfreezer.ui.screens.settings.StartPagePickerScreen
 import com.labfreezer.ui.screens.settings.StartPagePickerViewModel
 import com.labfreezer.ui.screens.settings.AboutScreen
+import com.labfreezer.ui.screens.settings.BottomBarEditScreen
+import com.labfreezer.ui.screens.settings.BottomTab
+import com.labfreezer.ui.screens.settings.BottomTabPreference
 import com.labfreezer.ui.screens.settings.StartPagePreference
 import com.labfreezer.ui.theme.LabFreezerTheme
 import com.labfreezer.ui.theme.LocalThemeMode
@@ -83,8 +81,6 @@ import com.labfreezer.ui.theme.ThemePreferences
 object NavAnimState {
     var isSwipePrevious = false
 }
-
-private data class BottomNavItem(val label: String, val icon: ImageVector)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,6 +93,7 @@ fun MainScreen() {
         LabFreezerTheme {
         val navController = rememberNavController()
         val startPage = remember { StartPagePreference.get(activity) }
+        val tabConfig = remember { BottomTabPreference.get(activity) }
         var currentTabIndex by remember { mutableIntStateOf(0) }
 
         LaunchedEffect(Unit) {
@@ -108,10 +105,10 @@ fun MainScreen() {
             }
         }
 
-        val initialTabIndex = remember(startPage) {
+        val initialTabIndex = remember(startPage, tabConfig) {
             when (startPage.route) {
-                Screen.TagManage.route -> 1
-                Screen.Settings.route -> 2
+                Screen.TagManage.route -> tabConfig.indexOf(BottomTab.TAG_MANAGE).let { if (it < 0) 0 else it }
+                Screen.Settings.route -> tabConfig.indexOf(BottomTab.SETTINGS).let { if (it < 0) 0 else it }
                 else -> 0
             }
         }
@@ -125,12 +122,6 @@ fun MainScreen() {
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
         val showBottomBar = currentRoute == Screen.MainTabs.route
-
-        val bottomTabs = listOf(
-            BottomNavItem("\u5e93", Icons.Default.Home),
-            BottomNavItem("\u6807\u7b7e", Icons.Default.Tag),
-            BottomNavItem("\u8bbe\u7f6e", Icons.Default.Settings),
-        )
 
         Box(modifier = Modifier.fillMaxSize()) {
             NavHost(
@@ -165,6 +156,7 @@ fun MainScreen() {
                 composable(Screen.MainTabs.route) {
                     MainTabPager(
                         currentTabIndex = currentTabIndex,
+                        tabConfig = tabConfig,
                         onTabChange = { currentTabIndex = it },
                         navController = navController,
                         onThemeChanged = { mode ->
@@ -172,6 +164,7 @@ fun MainScreen() {
                             ThemePreferences.setMode(activity, mode)
                         },
                         onNavigateToStartPagePicker = { navController.navigate(Screen.StartPagePicker.route) },
+                        onNavigateToBottomBarEdit = { navController.navigate(Screen.BottomBarEdit.route) },
                         onNavigateToImageCleanup = { navController.navigate(Screen.ImageCleanup.route) },
                         onNavigateToOcrSettings = { navController.navigate(Screen.OcrSettings.route) },
                         onNavigateToAbout = { navController.navigate(Screen.About.route) }
@@ -243,11 +236,14 @@ fun MainScreen() {
                 composable(Screen.About.route) {
                     AboutScreen(onBack = { navController.popBackStack() })
                 }
+                composable(Screen.BottomBarEdit.route) {
+                    BottomBarEditScreen(onBack = { navController.popBackStack() })
+                }
             }
             if (showBottomBar) {
                 FloatingBottomNav(
                     currentIndex = currentTabIndex,
-                    items = bottomTabs,
+                    tabList = tabConfig,
                     onTabSelected = { currentTabIndex = it },
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
@@ -260,7 +256,7 @@ fun MainScreen() {
 @Composable
 private fun FloatingBottomNav(
     currentIndex: Int,
-    items: List<BottomNavItem>,
+    tabList: List<BottomTab>,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -298,7 +294,7 @@ private fun FloatingBottomNav(
                     horizontalArrangement = Arrangement.SpaceAround,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    items.forEachIndexed { index, item ->
+                    tabList.forEachIndexed { index, item ->
                         val selected = index == currentIndex
                         Box(
                             modifier = Modifier
@@ -346,10 +342,12 @@ private fun FloatingBottomNav(
 @Composable
 private fun MainTabPager(
     currentTabIndex: Int,
+    tabConfig: List<BottomTab>,
     onTabChange: (Int) -> Unit,
     navController: NavController,
     onThemeChanged: (ThemeMode) -> Unit,
     onNavigateToStartPagePicker: () -> Unit,
+    onNavigateToBottomBarEdit: () -> Unit,
     onNavigateToImageCleanup: () -> Unit,
     onNavigateToOcrSettings: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
@@ -374,7 +372,7 @@ private fun MainTabPager(
         },
         modifier = Modifier
             .fillMaxSize()
-            .pointerInput(currentTabIndex) {
+            .pointerInput(currentTabIndex, tabConfig.size) {
                 var totalDragX = 0f
                 detectHorizontalDragGestures(
                     onDragStart = { totalDragX = 0f },
@@ -382,7 +380,7 @@ private fun MainTabPager(
                         val threshold = 150f
                         if (totalDragX > threshold && currentTabIndex > 0) {
                             onTabChange(currentTabIndex - 1)
-                        } else if (totalDragX < -threshold && currentTabIndex < 2) {
+                        } else if (totalDragX < -threshold && currentTabIndex < tabConfig.lastIndex) {
                             onTabChange(currentTabIndex + 1)
                         }
                     },
@@ -393,16 +391,19 @@ private fun MainTabPager(
             },
         label = "MainTabTransition"
     ) { targetPage ->
-        when (targetPage) {
-            0 -> DeviceListScreen(navController)
-            1 -> TagManageScreen(navController)
-            2 -> SettingsScreen(
+        when (tabConfig.getOrNull(targetPage)) {
+            BottomTab.DEVICE_LIST -> DeviceListScreen(navController)
+            BottomTab.TAG_MANAGE -> TagManageScreen(navController)
+            BottomTab.SEARCH -> SearchScreen(navController)
+            BottomTab.SETTINGS -> SettingsScreen(
                 onThemeChanged = onThemeChanged,
                 onNavigateToStartPagePicker = onNavigateToStartPagePicker,
+                onNavigateToBottomBarEdit = onNavigateToBottomBarEdit,
                 onNavigateToImageCleanup = onNavigateToImageCleanup,
                 onNavigateToOcrSettings = onNavigateToOcrSettings,
                 onNavigateToAbout = onNavigateToAbout
             )
+            null -> Box(modifier = Modifier.fillMaxSize())
         }
     }
 }

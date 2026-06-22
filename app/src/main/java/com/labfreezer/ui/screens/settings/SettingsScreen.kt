@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Description
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PhotoLibrary
@@ -66,6 +67,7 @@ import com.labfreezer.ui.theme.ThemeMode
 fun SettingsScreen(
     onThemeChanged: (ThemeMode) -> Unit = {},
     onNavigateToStartPagePicker: () -> Unit = {},
+    onNavigateToBottomBarEdit: () -> Unit = {},
     onNavigateToImageCleanup: () -> Unit = {},
     onNavigateToOcrSettings: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
@@ -158,6 +160,13 @@ fun SettingsScreen(
                     }
                 }
             }
+
+            SettingsCard(
+                icon = Icons.Filled.Edit,
+                title = "底栏编辑",
+                subtitle = "自定义底栏标签顺序与可见性",
+                onClick = onNavigateToBottomBarEdit
+            )
 
             val startPageSetting = StartPagePreference.get(activity)
             SettingsCard(
