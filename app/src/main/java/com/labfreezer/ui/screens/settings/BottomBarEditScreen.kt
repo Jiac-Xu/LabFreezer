@@ -54,8 +54,8 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -289,8 +289,8 @@ private fun DraggableTabRow(
     dragOffset: Float,
     visible: Boolean,
     showDragHandle: Boolean,
-    onDragStart: () -> Unit,
-    onDrag: (androidx.compose.ui.input.pointer.PointerInputChange, Float) -> Unit,
+    onDragStart: (androidx.compose.ui.geometry.Offset) -> Unit,
+    onDrag: (androidx.compose.ui.input.pointer.PointerInputChange, androidx.compose.ui.geometry.Offset) -> Unit,
     onDragEnd: () -> Unit,
     onDragCancel: () -> Unit,
     onToggle: (Boolean) -> Unit
@@ -307,10 +307,10 @@ private fun DraggableTabRow(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 3.dp)
+            .zIndex(if (isDragged) 1f else 0f)
             .graphicsLayer {
                 translationY = if (isDragged) dragOffset else 0f
                 shadowElevation = if (isDragged) 12f else 0f
-                zIndex = if (isDragged) 1f else 0f
                 alpha = bgAlpha
             },
         shape = RoundedCornerShape(12.dp),
