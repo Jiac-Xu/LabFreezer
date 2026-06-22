@@ -1,8 +1,6 @@
 package com.labfreezer.ui.screens.settings
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,18 +39,17 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import kotlin.math.roundToInt
@@ -125,16 +121,15 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
             // 可见标签列表（可拖拽排序）
             visibleTabs.forEachIndexed { index, tab ->
                 val isDragged = draggedIndex == index
-                DraggableTabRow(
+                TabCard(
                     tab = tab,
                     isDragged = isDragged,
                     dragOffset = dragOffset,
                     visible = true,
-                    showDragHandle = true,
                     onDragStart = { draggedIndex = index; dragOffset = 0f },
                     onDrag = { change, dragAmount ->
                         change.consume()
-                        val itemHeightPx = with(density) { 52.dp.toPx() }
+                        val itemHeightPx = with(density) { 56.dp.toPx() }
                         dragOffset += dragAmount.y
                         val swaps = (dragOffset / itemHeightPx).roundToInt()
                         if (swaps != 0 && index + swaps in visibleTabs.indices) {
@@ -147,11 +142,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                     },
                     onDragEnd = { draggedIndex = -1; dragOffset = 0f },
                     onDragCancel = { draggedIndex = -1; dragOffset = 0f },
-                    onToggle = { show ->
-                        if (!show) {
-                            visibleTabs.remove(tab)
-                        }
-                    }
+                    onToggle = { visibleTabs.remove(tab) }
                 )
             }
 
@@ -184,21 +175,16 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                 Spacer(Modifier.height(8.dp))
 
                 hiddenTabs.forEach { tab ->
-                    DraggableTabRow(
+                    TabCard(
                         tab = tab,
                         isDragged = false,
                         dragOffset = 0f,
                         visible = false,
-                        showDragHandle = false,
                         onDragStart = {},
                         onDrag = { _, _ -> },
                         onDragEnd = {},
                         onDragCancel = {},
-                        onToggle = { show ->
-                            if (show) {
-                                visibleTabs.add(tab)
-                            }
-                        }
+                        onToggle = { visibleTabs.add(tab) }
                     )
                 }
             }
@@ -283,51 +269,49 @@ private fun BottomBarPreview(visibleTabs: List<BottomTab>) {
 }
 
 @Composable
-private fun DraggableTabRow(
+private fun TabCard(
     tab: BottomTab,
     isDragged: Boolean,
     dragOffset: Float,
     visible: Boolean,
-    showDragHandle: Boolean,
     onDragStart: (androidx.compose.ui.geometry.Offset) -> Unit,
     onDrag: (androidx.compose.ui.input.pointer.PointerInputChange, androidx.compose.ui.geometry.Offset) -> Unit,
     onDragEnd: () -> Unit,
     onDragCancel: () -> Unit,
-    onToggle: (Boolean) -> Unit
+    onToggle: () -> Unit,
 ) {
-    val surfaceColor by animateColorAsState(
-        targetValue = if (isDragged) MaterialTheme.colorScheme.surfaceContainerHigh
-        else MaterialTheme.colorScheme.surface,
-        label = "surfaceColor"
-    )
-
-    val bgAlpha = if (visible) 1f else 0.5f
-
+    // 遵循 design.md SettingsCard 规范:
+    //   shape = RoundedCornerShape(12.dp)
+    //   elevation = 0.dp
+    //   containerColor = surfaceContainerLow
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 3.dp)
+            .padding(horizontal = 16.dp, vertical = 4.dp)
             .zIndex(if (isDragged) 1f else 0f)
             .graphicsLayer {
                 translationY = if (isDragged) dragOffset else 0f
                 shadowElevation = if (isDragged) 12f else 0f
-                alpha = bgAlpha
+                alpha = if (visible) 1f else 0.5f
             },
         shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = surfaceColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = if (isDragged) 8.dp else 0.dp)
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow
+        ),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
     ) {
+        // 内部 padding 遵循 SettingsCard: horizontal=16.dp, vertical=14.dp
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(52.dp),
+                .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 拖拽手柄
-            if (showDragHandle) {
+            // 拖拽手柄（仅可见标签显示）
+            if (visible) {
                 Box(
                     modifier = Modifier
-                        .size(44.dp)
+                        .size(28.dp)
                         .pointerInput(Unit) {
                             detectDragGesturesAfterLongPress(
                                 onDragStart = onDragStart,
@@ -342,11 +326,12 @@ private fun DraggableTabRow(
                         Icons.Filled.Menu,
                         contentDescription = "拖动排序",
                         tint = MaterialTheme.colorScheme.outline,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
+                Spacer(Modifier.width(8.dp))
             } else {
-                Spacer(Modifier.width(16.dp))
+                Spacer(Modifier.width(12.dp))
             }
 
             // 图标
@@ -358,29 +343,27 @@ private fun DraggableTabRow(
                 modifier = Modifier.size(22.dp)
             )
 
-            Spacer(Modifier.width(12.dp))
+            Spacer(Modifier.width(16.dp))
 
-            // 名称
+            // 标签名
             Text(
                 tab.label,
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (visible) MaterialTheme.colorScheme.onSurface
                         else MaterialTheme.colorScheme.outline,
-                fontWeight = if (visible) FontWeight.Medium else FontWeight.Normal,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(1f)
             )
 
-            // 开关
+            // Switch（遵循 OCR Settings 样式: checkedTrackColor = primary）
             Switch(
                 checked = visible,
-                onCheckedChange = onToggle,
+                onCheckedChange = { onToggle() },
                 colors = SwitchDefaults.colors(
-                    checkedTrackColor = MaterialTheme.colorScheme.primaryContainer,
-                    checkedThumbColor = MaterialTheme.colorScheme.primary
+                    checkedTrackColor = MaterialTheme.colorScheme.primary
                 )
             )
-
-            Spacer(Modifier.width(8.dp))
         }
     }
 }
