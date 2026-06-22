@@ -93,7 +93,6 @@ fun MainScreen() {
         LabFreezerTheme {
         val navController = rememberNavController()
         val startPage = remember { StartPagePreference.get(activity) }
-        val tabConfig = remember { BottomTabPreference.get(activity) }
         var currentTabIndex by remember { mutableIntStateOf(0) }
 
         LaunchedEffect(Unit) {
@@ -104,6 +103,11 @@ fun MainScreen() {
                 Screen.BoxGrid.route -> navController.navigate(Screen.BoxGrid.createRoute(startPage.id))
             }
         }
+
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentRoute = navBackStackEntry?.destination?.route
+        // 每次回到 MainTabs 时重新读取底栏配置（确保底栏编辑后立即生效）
+        val tabConfig = remember(currentRoute) { BottomTabPreference.get(activity) }
 
         val initialTabIndex = remember(startPage, tabConfig) {
             when (startPage.route) {
@@ -119,8 +123,6 @@ fun MainScreen() {
             }
         }
 
-        val navBackStackEntry by navController.currentBackStackEntryAsState()
-        val currentRoute = navBackStackEntry?.destination?.route
         val showBottomBar = currentRoute == Screen.MainTabs.route
 
         Box(modifier = Modifier.fillMaxSize()) {
