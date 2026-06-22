@@ -19,8 +19,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.Refresh
 import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -93,7 +93,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                         visibleTabs.clear()
                         visibleTabs.addAll(BottomTabPreference.getDefault())
                     }) {
-                        Icon(Icons.AutoMirrored.Filled.Refresh, contentDescription = "恢复默认")
+                        Icon(Icons.Filled.Refresh, contentDescription = "恢复默认")
                     }
                 }
             )
