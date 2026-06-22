@@ -1,9 +1,15 @@
 package com.labfreezer.ui
 
 import android.app.Activity
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -17,8 +23,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
@@ -37,12 +42,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -349,29 +354,46 @@ private fun MainTabPager(
     onNavigateToOcrSettings: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
 ) {
-    val pagerState = rememberPagerState(
-        pageCount = { 3 },
-        initialPage = currentTabIndex
-    )
-
-    LaunchedEffect(Unit) {
-        snapshotFlow { pagerState.currentPage }
-            .collect { page ->
-                onTabChange(page)
-            }
-    }
-
-    LaunchedEffect(currentTabIndex) {
-        if (pagerState.currentPage != currentTabIndex && !pagerState.isScrollInProgress) {
-            pagerState.scrollToPage(currentTabIndex)
-        }
-    }
-
-    HorizontalPager(
-        state = pagerState,
-        modifier = Modifier.fillMaxSize()
-    ) { page ->
-        when (page) {
+    // 🎯 使用 AnimatedContent 彻底重构，零预加载，完美复刻 MomentLog 动效
+    AnimatedContent(
+        targetState = currentTabIndex,
+        transitionSpec = {
+            val direction = targetState - initialState
+            (slideInHorizontally(
+                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                initialOffsetX = { if (direction > 0) it else -it }
+            ) + fadeIn(
+                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+            )) togetherWith (
+            slideOutHorizontally(
+                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing),
+                targetOffsetX = { if (direction > 0) -it else it }
+            ) + fadeOut(
+                animationSpec = tween(durationMillis = 300, easing = FastOutSlowInEasing)
+            ))
+        },
+        modifier = Modifier
+            .fillMaxSize()
+            .pointerInput(currentTabIndex) {
+                var totalDragX = 0f
+                detectHorizontalDragGestures(
+                    onDragStart = { totalDragX = 0f },
+                    onDragEnd = {
+                        val threshold = 150f
+                        if (totalDragX > threshold && currentTabIndex > 0) {
+                            onTabChange(currentTabIndex - 1)
+                        } else if (totalDragX < -threshold && currentTabIndex < 2) {
+                            onTabChange(currentTabIndex + 1)
+                        }
+                    },
+                    onHorizontalDrag = { _, dragAmount ->
+                        totalDragX += dragAmount
+                    }
+                )
+            },
+        label = "MainTabTransition"
+    ) { targetPage ->
+        when (targetPage) {
             0 -> DeviceListScreen(navController)
             1 -> TagManageScreen(navController)
             2 -> SettingsScreen(
