@@ -28,6 +28,9 @@ object BottomTabPreference {
     private const val KEY_ORDER = "tab_order"
     private const val DEFAULT_ORDER = "device,tag,settings"
 
+    fun getDefault(): List<BottomTab> =
+        DEFAULT_ORDER.split(",").mapNotNull { BottomTab.fromId(it.trim()) }
+
     fun get(context: Context): List<BottomTab> {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val order = prefs.getString(KEY_ORDER, DEFAULT_ORDER) ?: DEFAULT_ORDER
