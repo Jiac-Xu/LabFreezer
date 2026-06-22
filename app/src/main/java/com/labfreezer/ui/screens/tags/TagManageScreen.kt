@@ -22,6 +22,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
@@ -64,7 +65,11 @@ private val TAG_COLORS = listOf("#1565C0","#2E7D32","#E65100","#6A1B9A","#AD1457
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TagManageScreen(navController: NavController, viewModel: TagManageViewModel = hiltViewModel()) {
+fun TagManageScreen(
+    navController: NavController,
+    showBackButton: Boolean = true,
+    viewModel: TagManageViewModel = hiltViewModel()
+) {
     val tagsWithCount by viewModel.tagsWithCount.collectAsStateWithLifecycle()
     val showAddDialog by viewModel.showAddDialog.collectAsStateWithLifecycle()
     val editingTag by viewModel.editingTag.collectAsStateWithLifecycle()
@@ -74,6 +79,13 @@ fun TagManageScreen(navController: NavController, viewModel: TagManageViewModel 
         topBar = {
             TopAppBar(
                 title = { Text("\u6807\u7b7e\u7ba1\u7406", fontWeight = FontWeight.SemiBold) },
+                navigationIcon = {
+                    if (showBackButton && navController.previousBackStackEntry != null) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u8fd4\u56de")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface

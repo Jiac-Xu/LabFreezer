@@ -70,7 +70,11 @@ import com.labfreezer.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-fun SearchScreen(navController: NavController, viewModel: SearchViewModel = hiltViewModel()) {
+fun SearchScreen(
+    navController: NavController,
+    showBackButton: Boolean = true,
+    viewModel: SearchViewModel = hiltViewModel()
+) {
     val query by viewModel.query.collectAsStateWithLifecycle()
     val results by viewModel.results.collectAsStateWithLifecycle()
     val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
@@ -89,7 +93,13 @@ fun SearchScreen(navController: NavController, viewModel: SearchViewModel = hilt
         topBar = {
             TopAppBar(
                 title = { Text("搜索", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = { IconButton(onClick = { navController.popBackStack() }) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回") } },
+                navigationIcon = {
+                    if (showBackButton && navController.previousBackStackEntry != null) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        }
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface

@@ -199,7 +199,7 @@ fun MainScreen() {
                     SampleEditScreen(navController, sampleId)
                 }
                 composable(Screen.Search.route) {
-                    SearchScreen(navController)
+                    SearchScreen(navController, showBackButton = true)
                 }
                 composable(Screen.MoveBrowser.route) {
                     MoveBrowserScreen(onBack = { navController.popBackStack() })
@@ -208,7 +208,7 @@ fun MainScreen() {
                     DeviceTypeManageScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.TagManage.route) {
-                    TagManageScreen(navController)
+                    TagManageScreen(navController, showBackButton = true)
                 }
                 composable(
                     route = Screen.TagDetail.route,
@@ -393,8 +393,8 @@ private fun MainTabPager(
     ) { targetPage ->
         when (tabConfig.getOrNull(targetPage)) {
             BottomTab.DEVICE_LIST -> DeviceListScreen(navController)
-            BottomTab.TAG_MANAGE -> TagManageScreen(navController)
-            BottomTab.SEARCH -> SearchScreen(navController)
+            BottomTab.TAG_MANAGE -> TagManageScreen(navController, showBackButton = false)
+            BottomTab.SEARCH -> SearchScreen(navController, showBackButton = false)
             BottomTab.SETTINGS -> SettingsScreen(
                 onThemeChanged = onThemeChanged,
                 onNavigateToStartPagePicker = onNavigateToStartPagePicker,
