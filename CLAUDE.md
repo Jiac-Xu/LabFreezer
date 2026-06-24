@@ -29,9 +29,3 @@ adb shell "run-as com.labfreezer cat /data/data/com.labfreezer/databases/labfree
 - [ ] 已通知用户并获确认？
 - [ ] 已备份当前数据？
 - [ ] 改完后做了充分测试？
-
-## Windows 分支规则（严格遵守）
-- Windows 版所有改动**只允许提交到 `windows-experiment` 分支**
-- **不允许在 `master` 分支上提交任何 Windows 相关文件**
-- 工作流程：`git checkout windows-experiment` → 改代码 → 提交 → 测试
-- `master` 分支只包含 Android 版代码
