@@ -355,6 +355,7 @@ private fun MainTabPager(
     onNavigateToAbout: () -> Unit = {},
 ) {
     // 🎯 使用 AnimatedContent 彻底重构，零预加载，完美复刻 MomentLog 动效
+    val colorScheme = MaterialTheme.colorScheme
     AnimatedContent(
         targetState = currentTabIndex,
         transitionSpec = {
@@ -374,6 +375,7 @@ private fun MainTabPager(
         },
         modifier = Modifier
             .fillMaxSize()
+            .background(colorScheme.background)
             .pointerInput(currentTabIndex, tabConfig.size) {
                 var totalDragX = 0f
                 detectHorizontalDragGestures(
