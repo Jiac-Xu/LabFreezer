@@ -274,20 +274,24 @@ class BoxGridViewModel @Inject constructor(
                 val bitmap = withContext(Dispatchers.IO) {
                     val file = File(Uri.parse(photoPath).path ?: return@withContext null)
                     if (file.exists()) BitmapFactory.decodeFile(file.absolutePath) else null
-                } ?: return@runOcrAndUpdate
-                val result = ocrEngine.recognize(bitmap) ?: return@runOcrAndUpdate
-                val parsed = ocrEngine.parseResult(result.simpleText)
-                val name = parsed.name.ifBlank { null }
-                val date = parsed.date.ifBlank { null }
-                val ocrNote = if (result.simpleText.isNotBlank()) "\u3010OCR\u3011${result.simpleText}" else null
-                val note = listOfNotNull(sample.note?.takeIf { it.isNotBlank() }, ocrNote).ifEmpty { null }?.joinToString("\n")
-                if (name != null || date != null || ocrNote != null) {
-                    sampleRepository.update(sample.copy(
-                        name = name ?: sample.name,
-                        date = date ?: sample.date,
-                        note = note
-                    ))
-                    shouldRefresh = true
+                }
+                if (bitmap != null) {
+                    val result = ocrEngine.recognize(bitmap)
+                    if (result != null) {
+                        val parsed = ocrEngine.parseResult(result.simpleText)
+                        val name = parsed.name.ifBlank { null }
+                        val date = parsed.date.ifBlank { null }
+                        val ocrNote = if (result.simpleText.isNotBlank()) "\u3010OCR\u3011${result.simpleText}" else null
+                        val note = listOfNotNull(sample.note?.takeIf { it.isNotBlank() }, ocrNote).ifEmpty { null }?.joinToString("\n")
+                        if (name != null || date != null || ocrNote != null) {
+                            sampleRepository.update(sample.copy(
+                                name = name ?: sample.name,
+                                date = date ?: sample.date,
+                                note = note
+                            ))
+                            shouldRefresh = true
+                        }
+                    }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "OCR failed: ${e.message}")
