@@ -47,34 +47,35 @@ class OcrEngine @Inject constructor(
     suspend fun ensureModelAndInit() {
         if (initialized) return
         withContext(Dispatchers.IO) {
-            initOcr()
+            if (initialized) return@withContext
+            val ocrInstance = OCR(context)
+            val config = OcrConfig()
+            config.modelPath = MODEL_PATH
+            config.labelPath = LABEL_PATH
+            config.detModelFilename = DET_MODEL
+            config.recModelFilename = REC_MODEL
+            config.clsModelFilename = CLS_MODEL
+            config.isRunDet = true
+            config.isRunCls = true
+            config.isRunRec = true
+            config.cpuPowerMode = CpuPowerMode.LITE_POWER_FULL
+            config.isDrwwTextPositionBox = false
+
+            suspendCancellableCoroutine<Unit> { cont ->
+                ocrInstance.initModel(config, object : OcrInitCallback {
+                    override fun onSuccess() {
+                        ocr = ocrInstance
+                        initialized = true
+                        Log.i(TAG, "OCR initialized successfully")
+                        cont.resume(Unit)
+                    }
+                    override fun onFail(e: Throwable) {
+                        Log.e(TAG, "OCR init failed: ${e.message}")
+                        cont.resume(Unit)
+                    }
+                })
+            }
         }
-    }
-
-    private fun initOcr() {
-        val ocrInstance = OCR(context)
-        val config = OcrConfig()
-        config.modelPath = MODEL_PATH
-        config.labelPath = LABEL_PATH
-        config.detModelFilename = DET_MODEL
-        config.recModelFilename = REC_MODEL
-        config.clsModelFilename = CLS_MODEL
-        config.isRunDet = true
-        config.isRunCls = true
-        config.isRunRec = true
-        config.cpuPowerMode = CpuPowerMode.LITE_POWER_FULL
-        config.isDrwwTextPositionBox = false
-
-        ocrInstance.initModel(config, object : OcrInitCallback {
-            override fun onSuccess() {
-                ocr = ocrInstance
-                initialized = true
-                Log.i(TAG, "OCR initialized successfully")
-            }
-            override fun onFail(e: Throwable) {
-                Log.e(TAG, "OCR init failed: ${e.message}")
-            }
-        })
     }
 
     suspend fun isAvailable(): Boolean {
