@@ -233,6 +233,11 @@ class SampleEditViewModel @Inject constructor(
                     currentPhotoUri = null
                     _state.update { it.copy(photoPath = compressedPath) }
                     runOcrAndUpdate(sample.copy(photoPath = compressedPath))
+                    // Apply auto-date after taking photo
+                    if (ocrPreferences.isAutoDateEnabled()) {
+                        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+                        _state.update { it.copy(date = today) }
+                    }
                 }
             } else {
                 currentPhotoUri = null

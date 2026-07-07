@@ -190,8 +190,8 @@ fun SettingsScreen(
             )
             SettingsCard(
                 icon = Icons.Filled.DocumentScanner,
-                title = "OCR \u8bc6\u522b",
-                subtitle = "\u67e5\u770b\u6a21\u578b\u72b6\u6001\u3001\u5f00\u5173\u53ca\u6279\u91cf\u6267\u884c",
+                title = "\u81ea\u52a8\u586b\u5145",
+                subtitle = "\u81ea\u52a8\u586b\u5145\u6837\u672c\u4fe1\u606f\u3001\u65e5\u671f\uff0c\u6279\u91cf\u8bc6\u522b",
                 onClick = onNavigateToOcrSettings
             )
 

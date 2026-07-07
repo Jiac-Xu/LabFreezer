@@ -264,28 +264,45 @@ class BoxGridViewModel @Inject constructor(
     }
 
     private suspend fun runOcrAndUpdate(sample: SamplePositionEntity, photoPath: String?) {
-        if (!ocrPreferences.isEnabled() || photoPath == null) return
-        try {
-            val bitmap = withContext(Dispatchers.IO) {
-                val file = File(Uri.parse(photoPath).path ?: return@withContext null)
-                if (file.exists()) BitmapFactory.decodeFile(file.absolutePath) else null
-            } ?: return
-            val result = ocrEngine.recognize(bitmap) ?: return
-            val parsed = ocrEngine.parseResult(result.simpleText)
-            val name = parsed.name.ifBlank { null }
-            val date = parsed.date.ifBlank { null }
-            val ocrNote = if (result.simpleText.isNotBlank()) "\u3010OCR\u3011${result.simpleText}" else null
-            val note = listOfNotNull(sample.note?.takeIf { it.isNotBlank() }, ocrNote).ifEmpty { null }?.joinToString("\n")
-            if (name != null || date != null || ocrNote != null) {
-                sampleRepository.update(sample.copy(
-                    name = name ?: sample.name,
-                    date = date ?: sample.date,
-                    note = note
-                ))
-                _box.value?.let { refreshGrid(it) }
+        if (photoPath == null) return
+
+        var shouldRefresh = false
+
+        // Run OCR if enabled
+        if (ocrPreferences.isEnabled()) {
+            try {
+                val bitmap = withContext(Dispatchers.IO) {
+                    val file = File(Uri.parse(photoPath).path ?: return@withContext null)
+                    if (file.exists()) BitmapFactory.decodeFile(file.absolutePath) else null
+                } ?: return@runOcrAndUpdate
+                val result = ocrEngine.recognize(bitmap) ?: return@runOcrAndUpdate
+                val parsed = ocrEngine.parseResult(result.simpleText)
+                val name = parsed.name.ifBlank { null }
+                val date = parsed.date.ifBlank { null }
+                val ocrNote = if (result.simpleText.isNotBlank()) "\u3010OCR\u3011${result.simpleText}" else null
+                val note = listOfNotNull(sample.note?.takeIf { it.isNotBlank() }, ocrNote).ifEmpty { null }?.joinToString("\n")
+                if (name != null || date != null || ocrNote != null) {
+                    sampleRepository.update(sample.copy(
+                        name = name ?: sample.name,
+                        date = date ?: sample.date,
+                        note = note
+                    ))
+                    shouldRefresh = true
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "OCR failed: ${e.message}")
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "OCR failed: ${e.message}")
+        }
+
+        // If auto-date is enabled, set date to today (overrides OCR date if any)
+        if (ocrPreferences.isAutoDateEnabled()) {
+            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+            sampleRepository.update(sample.copy(date = today))
+            shouldRefresh = true
+        }
+
+        if (shouldRefresh) {
+            _box.value?.let { refreshGrid(it) }
         }
     }
 

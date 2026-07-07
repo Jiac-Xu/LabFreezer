@@ -26,6 +26,7 @@ data class ModelInfo(
 
 data class OcrSettingsState(
     val ocrEnabled: Boolean = true,
+    val autoDateEnabled: Boolean = false,
     val models: List<ModelInfo> = emptyList(),
     val isBatchRunning: Boolean = false,
     val batchProgress: Int = 0,
@@ -42,7 +43,10 @@ class OcrSettingsViewModel @Inject constructor(
     private val ocrPreferences: OcrPreferences
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(OcrSettingsState(ocrEnabled = ocrPreferences.isEnabled()))
+    private val _state = MutableStateFlow(OcrSettingsState(
+        ocrEnabled = ocrPreferences.isEnabled(),
+        autoDateEnabled = ocrPreferences.isAutoDateEnabled()
+    ))
     val state: StateFlow<OcrSettingsState> = _state.asStateFlow()
 
     init {
@@ -68,6 +72,11 @@ class OcrSettingsViewModel @Inject constructor(
         if (!enabled) {
             ocrEngine.release()
         }
+    }
+
+    fun setAutoDateEnabled(enabled: Boolean) {
+        ocrPreferences.setAutoDateEnabled(enabled)
+        _state.value = _state.value.copy(autoDateEnabled = enabled)
     }
 
     fun runBatchOcr() {
