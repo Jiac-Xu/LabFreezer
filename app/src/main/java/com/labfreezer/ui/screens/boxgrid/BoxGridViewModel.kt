@@ -268,8 +268,8 @@ class BoxGridViewModel @Inject constructor(
 
         var shouldRefresh = false
 
-        // Run OCR if enabled
-        if (ocrPreferences.isEnabled()) {
+        // Run OCR if auto-ocr is enabled
+        if (ocrPreferences.isAutoOcrEnabled()) {
             try {
                 val bitmap = withContext(Dispatchers.IO) {
                     val file = File(Uri.parse(photoPath).path ?: return@withContext null)

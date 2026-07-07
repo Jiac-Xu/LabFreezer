@@ -17,6 +17,12 @@ class OcrPreferences @Inject constructor(
         prefs.edit().putBoolean("ocr_enabled", enabled).apply()
     }
 
+    fun isAutoOcrEnabled(): Boolean = prefs.getBoolean("auto_ocr_enabled", true) && isEnabled()
+
+    fun setAutoOcrEnabled(enabled: Boolean) {
+        prefs.edit().putBoolean("auto_ocr_enabled", enabled).apply()
+    }
+
     fun isAutoDateEnabled(): Boolean = prefs.getBoolean("auto_date_enabled", false)
 
     fun setAutoDateEnabled(enabled: Boolean) {

@@ -263,7 +263,7 @@ fun SampleEditScreen(
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            "OCR 识别",
+                            "识别文字",
                             color = if (state.ocrEnabled) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                         )

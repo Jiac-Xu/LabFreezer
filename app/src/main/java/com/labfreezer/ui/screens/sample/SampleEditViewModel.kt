@@ -232,7 +232,10 @@ class SampleEditViewModel @Inject constructor(
                     val compressedPath = photoManager.compressAndSave(currentPhotoUri!!, sample.boxId, sample.row, sample.col)
                     currentPhotoUri = null
                     _state.update { it.copy(photoPath = compressedPath) }
-                    runOcrAndUpdate(sample.copy(photoPath = compressedPath))
+                    // Run auto-OCR if enabled
+                    if (ocrPreferences.isAutoOcrEnabled()) {
+                        runOcrAndUpdate(sample.copy(photoPath = compressedPath))
+                    }
                     // Apply auto-date after taking photo
                     if (ocrPreferences.isAutoDateEnabled()) {
                         val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
