@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.settings
+import com.labfreezer.R
 
 import android.content.Context
 import android.graphics.BitmapFactory
@@ -102,7 +103,7 @@ class OcrSettingsViewModel @Inject constructor(
                 if (samples.isEmpty()) {
                     _state.value = _state.value.copy(
                         isBatchRunning = false,
-                        batchResult = "没有找到需要 OCR 的样品"
+                        batchResult = context.getString(R.string.ocr_batch_no_samples)
                     )
                     return@launch
                 }
@@ -114,7 +115,7 @@ class OcrSettingsViewModel @Inject constructor(
 
                     _state.value = _state.value.copy(
                         batchProgress = index + 1,
-                        batchCurrentName = sample.name ?: "样品 #${sample.id}"
+                        batchCurrentName = context.getString(R.string.ocr_batch_fallback_name, sample.id)
                     )
 
                     val photoPath = sample.photoPath ?: continue
@@ -148,12 +149,12 @@ class OcrSettingsViewModel @Inject constructor(
 
                 _state.value = _state.value.copy(
                     isBatchRunning = false,
-                    batchResult = "完成：$successCount/${samples.size} 个样品已更新"
+                    batchResult = context.getString(R.string.ocr_batch_result, successCount, samples.size)
                 )
             } catch (_: Exception) {
                 _state.value = _state.value.copy(
                     isBatchRunning = false,
-                    batchResult = "执行出错"
+                    batchResult = context.getString(R.string.ocr_batch_error)
                 )
             }
         }

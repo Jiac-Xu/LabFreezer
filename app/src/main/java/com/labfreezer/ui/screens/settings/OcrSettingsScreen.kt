@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.settings
+import com.labfreezer.R
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
@@ -40,6 +41,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -57,10 +59,10 @@ fun OcrSettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("自动填充", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.ocr_settings_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -80,7 +82,7 @@ fun OcrSettingsScreen(
             Spacer(Modifier.height(8.dp))
 
             Text(
-                "  开关",
+                "  " + stringResource(R.string.ocr_settings_section_switch),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
@@ -108,9 +110,9 @@ fun OcrSettingsScreen(
                     )
                     Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("文字识别", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.ocr_settings_master_label), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "识别照片文字",
+                            stringResource(R.string.ocr_settings_master_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline,
                             maxLines = 1,
@@ -147,9 +149,9 @@ fun OcrSettingsScreen(
                     )
                     Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("自动填写拍摄文字", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.ocr_settings_auto_ocr_label), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "拍照时自动识别填写文字",
+                            stringResource(R.string.ocr_settings_auto_ocr_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline,
                             maxLines = 1,
@@ -187,9 +189,9 @@ fun OcrSettingsScreen(
                     )
                     Spacer(Modifier.width(16.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("自动填写拍摄日期", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.ocr_settings_auto_date_label), style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            "拍照时自动记录当天日期",
+                            stringResource(R.string.ocr_settings_auto_date_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.outline,
                             maxLines = 1,
@@ -207,7 +209,7 @@ fun OcrSettingsScreen(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                "  模型文件",
+                "  " + stringResource(R.string.ocr_settings_section_model),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
@@ -230,7 +232,7 @@ fun OcrSettingsScreen(
                             modifier = Modifier.size(22.dp)
                         )
                         Spacer(Modifier.width(16.dp))
-                        Text("PaddleOCR Lite 本地模型", style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.ocr_settings_model_label), style = MaterialTheme.typography.bodyLarge)
                     }
                     Spacer(Modifier.height(8.dp))
                     state.models.forEach { model ->
@@ -254,7 +256,7 @@ fun OcrSettingsScreen(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                "  手动批量识别",
+                "  " + stringResource(R.string.ocr_settings_section_batch),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
@@ -270,7 +272,7 @@ fun OcrSettingsScreen(
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     Text(
-                        "对已有照片但缺少名称的样品执行批量识别，结果自动保存",
+                        stringResource(R.string.ocr_settings_batch_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -284,11 +286,11 @@ fun OcrSettingsScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                     ) {
                         if (state.isBatchRunning) {
-                            Text("执行中...")
+                            Text(stringResource(R.string.ocr_settings_batch_running))
                         } else {
                             Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
-                            Text("开始执行")
+                            Text(stringResource(R.string.ocr_settings_batch_start))
                         }
                     }
 

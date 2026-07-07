@@ -1,6 +1,7 @@
 package com.labfreezer.ui.screens.settings
 
 import android.content.Context
+import com.labfreezer.R
 
 data class StartPageSetting(
     val label: String,
@@ -16,8 +17,9 @@ object StartPagePreference {
 
     fun get(context: Context): StartPageSetting {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        val defaultLabel = context.getString(R.string.start_page_default_label)
         return StartPageSetting(
-            label = prefs.getString(KEY_LABEL, "库") ?: "库",
+            label = prefs.getString(KEY_LABEL, defaultLabel) ?: defaultLabel,
             route = prefs.getString(KEY_ROUTE, "device_list") ?: "device_list",
             id = prefs.getLong(KEY_ID, -1L)
         )

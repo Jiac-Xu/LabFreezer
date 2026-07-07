@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.settings
+import com.labfreezer.R
 
 import android.net.Uri
 import androidx.compose.foundation.background
@@ -60,6 +61,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.labfreezer.data.db.dao.SampleWithPath
@@ -90,12 +92,12 @@ fun ImageCleanupScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("图片清理", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回") } },
+                title = { Text(stringResource(R.string.image_cleanup_title), fontWeight = FontWeight.SemiBold) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back)) } },
                 actions = {
                     if (selectedIds.isNotEmpty()) {
                         IconButton(onClick = { showDeleteConfirm = true }) {
-                            Icon(Icons.Default.Delete, contentDescription = "删除选中", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.image_cleanup_delete_selected), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 },
@@ -108,7 +110,7 @@ fun ImageCleanupScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                     Spacer(Modifier.height(16.dp))
-                    Text("没有待清理的图片", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
+                    Text(stringResource(R.string.image_cleanup_empty), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline)
                 }
             }
         } else {
@@ -123,11 +125,11 @@ fun ImageCleanupScreen(
                 ) {
                     Icon(Icons.Default.DeleteSweep, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(8.dp))
-                    Text("清理所有已标记样本图片", fontWeight = FontWeight.Medium)
+                    Text(stringResource(R.string.image_cleanup_clean_all), fontWeight = FontWeight.Medium)
                 }
 
                 Spacer(Modifier.height(12.dp))
-                Text("${groups.sumOf { it.samples.size }} 个样本包含图片", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text(stringResource(R.string.image_cleanup_count, groups.sumOf { it.samples.size }), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
 
                 groupedByDevice.forEach { (deviceName, deviceGroups) ->
                     val isDeviceExpanded = expandedDevice == deviceName
@@ -182,7 +184,7 @@ fun ImageCleanupScreen(
             onDismissRequest = { showDeleteConfirm = false },
             title = {
                 Text(
-                    "确认删除",
+                    stringResource(R.string.image_cleanup_confirm_delete_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -190,7 +192,7 @@ fun ImageCleanupScreen(
             },
             text = {
                 Text(
-                    "确认删除选中的 ${selectedIds.size} 张图片？此操作不可撤销。",
+                    stringResource(R.string.image_cleanup_confirm_delete_body, selectedIds.size),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -203,12 +205,12 @@ fun ImageCleanupScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("删除", color = MaterialTheme.colorScheme.onError)
+                    Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.onError)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirm = false }) {
-                    Text("取消", color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.btn_cancel), color = MaterialTheme.colorScheme.primary)
                 }
             },
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -221,7 +223,7 @@ fun ImageCleanupScreen(
             onDismissRequest = { showBulkConfirm = false },
             title = {
                 Text(
-                    "清理所有已标记样本图片",
+                    stringResource(R.string.image_cleanup_clean_all),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold,
                     color = MaterialTheme.colorScheme.onSurface
@@ -229,7 +231,7 @@ fun ImageCleanupScreen(
             },
             text = {
                 Text(
-                    "将删除所有已有名称或备注的样本对应的图片。此操作不可撤销。",
+                    stringResource(R.string.image_cleanup_confirm_clean_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -242,12 +244,12 @@ fun ImageCleanupScreen(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("清理", color = MaterialTheme.colorScheme.onError)
+                    Text(stringResource(R.string.image_cleanup_confirm_clean), color = MaterialTheme.colorScheme.onError)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showBulkConfirm = false }) {
-                    Text("取消", color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.btn_cancel), color = MaterialTheme.colorScheme.primary)
                 }
             },
             containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -287,7 +289,7 @@ private fun TreeSection(
         Spacer(Modifier.width(4.dp))
         Icon(
             Icons.AutoMirrored.Filled.ArrowForwardIos,
-            contentDescription = if (isExpanded) "收起" else "展开",
+            contentDescription = if (isExpanded) stringResource(R.string.content_description_collapse) else stringResource(R.string.content_description_expand),
             modifier = Modifier.size(16.dp).rotate(if (isExpanded) 90f else 0f),
             tint = MaterialTheme.colorScheme.outline
         )
@@ -324,7 +326,7 @@ private fun SamplePhotoGrid(
                         )
                     } else {
                         Box(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surfaceVariant), contentAlignment = Alignment.Center) {
-                            Text("无图片", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                            Text(stringResource(R.string.image_cleanup_no_image), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                         }
                     }
                     if (isSelected) {

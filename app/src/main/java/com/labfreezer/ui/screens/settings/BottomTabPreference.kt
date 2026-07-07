@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.settings
+import com.labfreezer.R
 
 import android.content.Context
 import androidx.compose.material.icons.Icons
@@ -10,13 +11,19 @@ import androidx.compose.ui.graphics.vector.ImageVector
 
 enum class BottomTab(
     val id: String,
-    val label: String,
     val icon: ImageVector
 ) {
-    DEVICE_LIST("device", "库", Icons.Default.Home),
-    TAG_MANAGE("tag", "标签", Icons.Default.Tag),
-    SEARCH("search", "搜索", Icons.Filled.Search),
-    SETTINGS("settings", "设置", Icons.Default.Settings);
+    DEVICE_LIST("device", Icons.Default.Home),
+    TAG_MANAGE("tag", Icons.Default.Tag),
+    SEARCH("search", Icons.Filled.Search),
+    SETTINGS("settings", Icons.Default.Settings);
+
+    fun getLabel(context: Context): String = when (this) {
+        DEVICE_LIST -> context.getString(R.string.tab_home)
+        TAG_MANAGE -> context.getString(R.string.tab_tags)
+        SEARCH -> context.getString(R.string.tab_search)
+        SETTINGS -> context.getString(R.string.tab_settings)
+    }
 
     companion object {
         fun fromId(id: String): BottomTab? = entries.find { it.id == id }

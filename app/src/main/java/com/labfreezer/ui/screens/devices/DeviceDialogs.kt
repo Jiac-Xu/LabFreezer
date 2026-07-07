@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.devices
+import com.labfreezer.R
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,6 +40,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -59,8 +61,8 @@ fun DeviceDialog(
     var note by remember { mutableStateOf(existing?.note ?: "") }
     var typeExpanded by remember { mutableStateOf(false) }
 
-    val title = if (existing != null) "编辑设备" else "添加设备"
-    val confirmLabel = if (existing != null) "保存" else "添加"
+    val title = if (existing != null) stringResource(R.string.device_dialog_title_edit) else stringResource(R.string.device_dialog_title_add)
+    val confirmLabel = if (existing != null) stringResource(R.string.btn_save) else stringResource(R.string.btn_add)
 
     val fieldShape = RoundedCornerShape(12.dp)
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -76,7 +78,7 @@ fun DeviceDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("设备名称") },
+                    label = { Text(stringResource(R.string.device_dialog_label_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
@@ -87,7 +89,7 @@ fun DeviceDialog(
                     OutlinedTextField(
                         value = type,
                         onValueChange = {},
-                        label = { Text("设备组") },
+                        label = { Text(stringResource(R.string.device_dialog_label_group)) },
                         readOnly = true,
                         modifier = Modifier.fillMaxWidth(),
                         shape = fieldShape,
@@ -113,7 +115,7 @@ fun DeviceDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("备注（可选）") },
+                    label = { Text(stringResource(R.string.label_note_optional)) },
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
@@ -128,7 +130,7 @@ fun DeviceDialog(
             ) { Text(confirmLabel, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) }
         }
     )
 }
@@ -155,8 +157,8 @@ fun LayerDialog(
         }
     }
 
-    val title = if (existing != null) "编辑层" else "添加层"
-    val confirmLabel = if (existing != null) "保存" else "添加"
+    val title = if (existing != null) stringResource(R.string.layer_dialog_title_edit) else stringResource(R.string.layer_dialog_title_add)
+    val confirmLabel = if (existing != null) stringResource(R.string.btn_save) else stringResource(R.string.btn_add)
 
     val fieldShape = RoundedCornerShape(12.dp)
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -192,8 +194,8 @@ fun LayerDialog(
                             Icon(Icons.Default.DeviceHub, contentDescription = null, modifier = Modifier.size(22.dp), tint = MaterialTheme.colorScheme.primary)
                             Spacer(Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("所在设备", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                                Text(selectedDevice?.name ?: "请选择设备", fontWeight = FontWeight.Medium)
+                                Text(stringResource(R.string.device_dialog_label_parent_device), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(selectedDevice?.name ?: stringResource(R.string.device_dialog_placeholder_select_device), fontWeight = FontWeight.Medium)
                             }
                             Icon(Icons.Default.OpenWith, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
                         }
@@ -203,7 +205,7 @@ fun LayerDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("层名称") },
+                    label = { Text(stringResource(R.string.layer_dialog_label_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
@@ -213,7 +215,7 @@ fun LayerDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("备注（可选）") },
+                    label = { Text(stringResource(R.string.label_note_optional)) },
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
@@ -228,14 +230,14 @@ fun LayerDialog(
             ) { Text(confirmLabel, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) }
         }
     )
 
     if (showDevicePicker) {
         AlertDialog(
             onDismissRequest = { showDevicePicker = false },
-            title = { Text("选择设备", fontWeight = FontWeight.SemiBold) },
+            title = { Text(stringResource(R.string.layer_dialog_title_select_device), fontWeight = FontWeight.SemiBold) },
             text = {
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -263,27 +265,28 @@ fun LayerDialog(
                     }
                 }
             },
-            confirmButton = { TextButton(onClick = { showDevicePicker = false }) { Text("取消") } }
+            confirmButton = { TextButton(onClick = { showDevicePicker = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
 }
 
 @Composable
 fun DeleteConfirmDialog(
-    title: String = "确认删除",
+    title: String = "",
     message: String,
     onDismiss: () -> Unit,
     onConfirm: () -> Unit
 ) {
+    val dialogTitle = title.ifEmpty { stringResource(R.string.btn_confirm_delete) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(title, fontWeight = FontWeight.SemiBold) },
+        title = { Text(dialogTitle, fontWeight = FontWeight.SemiBold) },
         text = { Text(message) },
         confirmButton = {
-            TextButton(onClick = onConfirm) { Text("删除") }
+            TextButton(onClick = onConfirm) { Text(stringResource(R.string.btn_delete)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) }
         }
     )
 }

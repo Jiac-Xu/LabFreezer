@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.devices
+import com.labfreezer.R
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -54,6 +55,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -105,9 +107,9 @@ fun DeviceListScreen(
 
     val inAnySelection = isSelecting || isSelectingRecent
     val selectionLabel = when {
-        isSelecting -> "\u5df2\u9009 ${selectedIds.size} \u9879"
-        isSelectingRecent -> "\u5df2\u9009 ${selectedRecentIds.size} \u9879"
-        else -> "\u51b0\u76d2"
+        isSelecting -> "已选 ${selectedIds.size} 项"
+        isSelectingRecent -> "已选 ${selectedRecentIds.size} 项"
+        else -> stringResource(R.string.app_name)
     }
 
     Scaffold(
@@ -122,7 +124,7 @@ fun DeviceListScreen(
                             if (isSelectingRecent) viewModel.exitRecentSelecting()
                             else viewModel.exitSelection()
                         }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u53d6\u6d88")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.btn_cancel))
                         }
                     }
                 },
@@ -134,7 +136,7 @@ fun DeviceListScreen(
                         }) {
                             Text(
                                 if ((isSelectingRecent && selectedRecentIds.size == recentBoxes.size) ||
-                                    (isSelecting && selectedIds.size == devices.size)) "\u5168\u4e0d\u9009" else "\u5168\u9009",
+                                    (isSelecting && selectedIds.size == devices.size)) "全不选" else "全选",
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -142,11 +144,11 @@ fun DeviceListScreen(
                             if (isSelectingRecent) viewModel.deleteSelectedRecent()
                             else showDeleteBatchConfirm = true
                         }) {
-                            Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error)
                         }
                     } else {
                         IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
-                            Icon(Icons.Default.Search, contentDescription = "\u641c\u7d22")
+                            Icon(Icons.Default.Search, contentDescription = "搜索")
                         }
                     }
                 },
@@ -165,7 +167,7 @@ fun DeviceListScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "\u6dfb\u52a0\u8bbe\u5907")
+                    Icon(Icons.Default.Add, contentDescription = "添加设备")
                 }
             }
         }
@@ -175,9 +177,9 @@ fun DeviceListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Outlined.DevicesOther, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                     Spacer(Modifier.height(16.dp))
-                    Text("\u6682\u65e0\u5b58\u50a8\u8bbe\u5907", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+                    Text("暂无存储设备", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
                     Spacer(Modifier.height(8.dp))
-                    Text("\u70b9\u51fb\u53f3\u4e0b\u89d2 + \u6dfb\u52a0\u7b2c\u4e00\u4e2a\u8bbe\u5907", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                    Text("点击右下角 + 添加第一个设备", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                 }
             }
         } else {
@@ -219,7 +221,7 @@ fun DeviceListScreen(
                 }
                 item {
                     Spacer(Modifier.height(4.dp))
-                    Text("设备", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+                    Text(stringResource(R.string.device_list_title), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
                     Spacer(Modifier.height(12.dp))
                 }
                 if (groupByType) {
@@ -282,7 +284,7 @@ fun DeviceListScreen(
     }
     deletingDevice?.let { device ->
         DeleteConfirmDialog(
-            message = "\u786e\u8ba4\u5220\u9664\u8bbe\u5907\u300c${device.name}\u300d\uff1f\n\u8be5\u8bbe\u5907\u4e0b\u7684\u6240\u6709\u5c42\u548c\u76d2\u5b50\u5c06\u88ab\u540c\u65f6\u5220\u9664\u3002",
+            message = "确认删除设备「${device.name}」？\n该设备下的所有层和盒子将被同时删除。",
             onDismiss = { viewModel.hideDeleteConfirm() },
             onConfirm = { viewModel.deleteDevice(device) }
         )
@@ -290,10 +292,10 @@ fun DeviceListScreen(
     if (showDeleteBatchConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteBatchConfirm = false },
-            title = { Text("\u786e\u8ba4\u5220\u9664") },
-            text = { Text("\u786e\u8ba4\u5220\u9664\u9009\u4e2d\u7684 ${selectedIds.size} \u4e2a\u8bbe\u5907\uff1f\u8be5\u64cd\u4f5c\u4e0d\u53ef\u64a4\u9500\u3002") },
-            confirmButton = { TextButton(onClick = { showDeleteBatchConfirm = false; viewModel.deleteSelected() }) { Text("\u5220\u9664", color = MaterialTheme.colorScheme.error) } },
-            dismissButton = { TextButton(onClick = { showDeleteBatchConfirm = false }) { Text("\u53d6\u6d88") } }
+            title = { Text(stringResource(R.string.btn_confirm_delete)) },
+            text = { Text("确认删除选中的 ${selectedIds.size} 个设备？该操作不可撤销。") },
+            confirmButton = { TextButton(onClick = { showDeleteBatchConfirm = false; viewModel.deleteSelected() }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = { showDeleteBatchConfirm = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
 }
@@ -310,7 +312,7 @@ private fun RecentlyViewedSection(
     Column {
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("\u6700\u8fd1\u6d4f\u89c8", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+            Text("最近浏览", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
         }
         Spacer(Modifier.height(12.dp))
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -440,8 +442,8 @@ private fun DeviceCard(
             }
             if (!isSelecting) {
                 Spacer(Modifier.width(8.dp))
-                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "\u7f16\u8f91", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp)) }
-                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp)) }
+                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "编辑", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp)) }
+                IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp)) }
             }
         }
     }
@@ -456,8 +458,8 @@ private fun DeviceGroupHeader(
     shape: androidx.compose.ui.graphics.Shape = MaterialTheme.shapes.small
 ) {
     val displayName = when (typeName) {
-        "FREEZER_M80" -> "-80°C 冰箱"
-        "LIQUID_NITROGEN" -> "液氮罐"
+        "FREEZER_M80" -> stringResource(R.string.device_list_type_freezer)
+        "LIQUID_NITROGEN" -> stringResource(R.string.device_list_type_nitrogen)
         else -> typeName
     }
     Card(
@@ -473,11 +475,10 @@ private fun DeviceGroupHeader(
             Text(displayName, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
             Icon(
                 if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                contentDescription = if (isExpanded) "收起" else "展开",
+                contentDescription = if (isExpanded) stringResource(R.string.content_description_collapse) else stringResource(R.string.content_description_expand),
                 tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
         }
     }
 }
-

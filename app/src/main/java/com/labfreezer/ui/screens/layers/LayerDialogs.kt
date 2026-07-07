@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.layers
+import com.labfreezer.R
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -35,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -54,8 +56,8 @@ fun LayerDialog(
     var name by remember { mutableStateOf(existing?.name ?: "") }
     var note by remember { mutableStateOf(existing?.note ?: "") }
 
-    val title = if (existing != null) "编辑层" else "添加层"
-    val confirmLabel = if (existing != null) "保存" else "添加"
+    val title = if (existing != null) stringResource(R.string.layer_dialog_title_edit) else stringResource(R.string.layer_dialog_title_add)
+    val confirmLabel = if (existing != null) stringResource(R.string.btn_save) else stringResource(R.string.btn_add)
 
     val fieldShape = RoundedCornerShape(12.dp)
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -71,7 +73,7 @@ fun LayerDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("层名称") },
+                    label = { Text(stringResource(R.string.layer_dialog_label_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
@@ -81,7 +83,7 @@ fun LayerDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("备注（可选）") },
+                    label = { Text(stringResource(R.string.label_note_optional)) },
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
@@ -96,7 +98,7 @@ fun LayerDialog(
             ) { Text(confirmLabel, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) }
         }
     )
 }
@@ -128,8 +130,8 @@ fun BoxDialog(
     val selectedLayer = layersByDevice.values.flatten().find { it.id == selectedLayerId }
     val selectedDevice = availableDevices.find { d -> layersByDevice[d.id]?.any { it.id == selectedLayerId } == true }
 
-    val title = if (existing != null) "编辑冻存盒" else "添加冻存盒"
-    val confirmLabel = if (existing != null) "保存" else "添加"
+    val title = if (existing != null) stringResource(R.string.box_dialog_title_edit) else stringResource(R.string.box_dialog_title_add)
+    val confirmLabel = if (existing != null) stringResource(R.string.btn_save) else stringResource(R.string.btn_add)
 
     val fieldShape = RoundedCornerShape(12.dp)
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -165,10 +167,10 @@ fun BoxDialog(
                             Icon(Icons.Default.Layers, contentDescription = null, modifier = Modifier.size(22.dp), tint = MaterialTheme.colorScheme.primary)
                             Spacer(Modifier.width(12.dp))
                             Column(modifier = Modifier.weight(1f)) {
-                                Text("所在位置", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                                Text(stringResource(R.string.layer_dialog_label_location), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                                 Text(
                                     if (selectedDevice != null && selectedLayer != null) "${selectedDevice.name} > ${selectedLayer.name}"
-                                    else "请选择位置",
+                                    else stringResource(R.string.layer_dialog_placeholder_select_location),
                                     fontWeight = FontWeight.Medium
                                 )
                             }
@@ -180,7 +182,7 @@ fun BoxDialog(
                 OutlinedTextField(
                     value = name,
                     onValueChange = { name = it },
-                    label = { Text("冻存盒名称") },
+                    label = { Text(stringResource(R.string.box_dialog_label_name)) },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
@@ -191,7 +193,7 @@ fun BoxDialog(
                     OutlinedTextField(
                         value = rows,
                         onValueChange = { rows = it.filter { c -> c.isDigit() } },
-                        label = { Text("行数") },
+                        label = { Text(stringResource(R.string.box_dialog_label_rows)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                         shape = fieldShape,
@@ -201,7 +203,7 @@ fun BoxDialog(
                     OutlinedTextField(
                         value = cols,
                         onValueChange = { cols = it.filter { c -> c.isDigit() } },
-                        label = { Text("列数") },
+                        label = { Text(stringResource(R.string.box_dialog_label_cols)) },
                         singleLine = true,
                         modifier = Modifier.weight(1f),
                         shape = fieldShape,
@@ -212,7 +214,7 @@ fun BoxDialog(
                 OutlinedTextField(
                     value = note,
                     onValueChange = { note = it },
-                    label = { Text("备注（可选）") },
+                    label = { Text(stringResource(R.string.label_note_optional)) },
                     maxLines = 3,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
@@ -231,7 +233,7 @@ fun BoxDialog(
             ) { Text(confirmLabel, fontWeight = FontWeight.SemiBold) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("取消") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) }
         }
     )
 
@@ -263,7 +265,7 @@ private fun LocationPickerDialog(
         onDismissRequest = onDismiss,
         title = {
             Text(
-                if (selectedDeviceId != null) "选择层" else "选择设备",
+                if (selectedDeviceId != null) stringResource(R.string.layer_dialog_label_parent_layer) else stringResource(R.string.layer_dialog_title_select_device),
                 fontWeight = FontWeight.SemiBold
             )
         },
@@ -324,7 +326,7 @@ private fun LocationPickerDialog(
             TextButton(onClick = {
                 if (selectedDeviceId != null) selectedDeviceId = null
                 else onDismiss()
-            }) { Text(if (selectedDeviceId != null) "返回" else "取消") }
+            }) { Text(if (selectedDeviceId != null) stringResource(R.string.btn_back) else stringResource(R.string.btn_cancel)) }
         }
     )
 }

@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.tags
+import com.labfreezer.R
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -44,6 +45,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -63,10 +65,10 @@ fun DeviceTypeManageScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("\u8bbe\u5907\u7ec4\u7ba1\u7406", fontWeight = FontWeight.SemiBold) },
+                title = { Text("设备组管理", fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u8fd4\u56de")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -82,7 +84,7 @@ fun DeviceTypeManageScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "\u6dfb\u52a0\u7c7b\u578b")
+                Icon(Icons.Default.Add, contentDescription = "添加类型")
             }
         }
     ) { padding ->
@@ -91,9 +93,9 @@ fun DeviceTypeManageScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.DeviceHub, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                     Spacer(Modifier.height(16.dp))
-                    Text("\u6682\u65e0\u8bbe\u5907\u7c7b\u578b", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+                    Text("暂无设备类型", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
                     Spacer(Modifier.height(8.dp))
-                    Text("\u70b9\u51fb\u53f3\u4e0b\u89d2 + \u6dfb\u52a0", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                    Text("点击右下角 + 添加", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                 }
             }
         } else {
@@ -116,7 +118,7 @@ fun DeviceTypeManageScreen(
                             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text("按设备组分组", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                            Text(stringResource(R.string.device_type_manage_group_toggle), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
                             Switch(
                                 checked = groupByType,
                                 onCheckedChange = {
@@ -139,7 +141,7 @@ fun DeviceTypeManageScreen(
                             Spacer(Modifier.width(16.dp))
                             Text(type.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
                             IconButton(onClick = { viewModel.showDeleteTypeConfirm(type) }) {
-                                Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
+                                Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
                             }
                         }
                     }
@@ -158,29 +160,29 @@ fun DeviceTypeManageScreen(
         var typeName by remember { mutableStateOf("") }
         AlertDialog(
             onDismissRequest = { viewModel.hideAddTypeDialog() },
-            title = { Text("\u6dfb\u52a0\u8bbe\u5907\u7ec4", fontWeight = FontWeight.SemiBold) },
+            title = { Text("添加设备组", fontWeight = FontWeight.SemiBold) },
             text = {
                 OutlinedTextField(
                     value = typeName,
                     onValueChange = { typeName = it },
-                    label = { Text("\u7c7b\u578b\u540d\u79f0") },
+                    label = { Text("类型名称") },
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                     shape = fieldShape,
                     colors = fieldColors
                 )
             },
-            confirmButton = { TextButton(onClick = { viewModel.addDeviceType(typeName.trim()) }, enabled = typeName.isNotBlank()) { Text("\u6dfb\u52a0", fontWeight = FontWeight.SemiBold) } },
-            dismissButton = { TextButton(onClick = { viewModel.hideAddTypeDialog() }) { Text("\u53d6\u6d88") } }
+            confirmButton = { TextButton(onClick = { viewModel.addDeviceType(typeName.trim()) }, enabled = typeName.isNotBlank()) { Text(stringResource(R.string.btn_add), fontWeight = FontWeight.SemiBold) } },
+            dismissButton = { TextButton(onClick = { viewModel.hideAddTypeDialog() }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
     deletingType?.let { type ->
         AlertDialog(
             onDismissRequest = { viewModel.hideDeleteTypeConfirm() },
-            title = { Text("\u786e\u8ba4\u5220\u9664", fontWeight = FontWeight.SemiBold) },
-            text = { Text("\u786e\u8ba4\u5220\u9664\u8bbe\u5907\u7c7b\u578b\u300c${type.name}\u300d\uff1f") },
-            confirmButton = { TextButton(onClick = { viewModel.deleteDeviceType(type) }) { Text("\u5220\u9664", color = MaterialTheme.colorScheme.error) } },
-            dismissButton = { TextButton(onClick = { viewModel.hideDeleteTypeConfirm() }) { Text("\u53d6\u6d88") } }
+            title = { Text(stringResource(R.string.btn_confirm_delete), fontWeight = FontWeight.SemiBold) },
+            text = { Text("确认删除设备类型「${type.name}」？") },
+            confirmButton = { TextButton(onClick = { viewModel.deleteDeviceType(type) }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = { viewModel.hideDeleteTypeConfirm() }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
 }

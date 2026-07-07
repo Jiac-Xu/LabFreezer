@@ -1,4 +1,206 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">冰盒</string>
+
+    <!-- ========== Common ========== -->
+    <string name="btn_save">保存</string>
+    <string name="btn_add">添加</string>
+    <string name="btn_cancel">取消</string>
+    <string name="btn_delete">删除</string>
+    <string name="btn_clear">清除</string>
+    <string name="btn_back">返回</string>
+    <string name="btn_confirm_delete">确认删除</string>
+    <string name="content_description_back">返回</string>
+    <string name="content_description_clear">清除</string>
+    <string name="content_description_collapse">收起</string>
+    <string name="content_description_expand">展开</string>
+    <string name="content_description_save">保存</string>
+    <string name="content_description_zoom_in">放大</string>
+    <string name="content_description_zoom_out">缩小</string>
+    <string name="label_note_optional">备注（可选）</string>
+    <string name="fallback_unnamed">未命名</string>
+    <string name="fallback_unknown">未知</string>
+
+    <!-- ========== Bottom Bar Edit ========== -->
+    <string name="bottom_bar_edit_title">底栏编辑</string>
+    <string name="bottom_bar_edit_reset">恢复默认</string>
+    <string name="bottom_bar_edit_section_preview">预览</string>
+    <string name="bottom_bar_edit_section_visible">显示在底栏</string>
+    <string name="bottom_bar_edit_empty">尚未添加任何标签，请在下方选择</string>
+    <string name="bottom_bar_edit_section_hidden">未显示</string>
+    <string name="bottom_bar_edit_instruction">长按拖拽手柄(≡)可调整顺序，开关控制是否在底栏显示</string>
+    <string name="bottom_bar_edit_drag_description">拖动排序</string>
+
+    <!-- ========== Bottom Tab ========== -->
+    <string name="tab_home">库</string>
+    <string name="tab_tags">标签</string>
+    <string name="tab_search">搜索</string>
+    <string name="tab_settings">设置</string>
+    <string name="start_page_default_label">库</string>
+
+    <!-- ========== Start Page Picker ========== -->
+    <string name="start_page_picker_title">选择启动页</string>
+    <string name="start_page_picker_search_placeholder">搜索设备、层、盒子名称</string>
+    <string name="start_page_picker_section_main">主页面</string>
+    <string name="start_page_picker_section_device">设备详情</string>
+    <string name="start_page_picker_format_layer_box">%1$d 层, %2$d 盒</string>
+    <string name="start_page_picker_format_box_sample">%1$d 盒, %2$d 样本</string>
+    <string name="start_page_picker_format_grid_sample">%1$d×%2$d, %3$d 样本</string>
+
+    <!-- ========== Device Dialogs ========== -->
+    <string name="device_dialog_title_edit">编辑设备</string>
+    <string name="device_dialog_title_add">添加设备</string>
+    <string name="device_dialog_label_name">设备名称</string>
+    <string name="device_dialog_label_group">设备组</string>
+    <string name="device_dialog_label_parent_device">所在设备</string>
+    <string name="device_dialog_placeholder_select_device">请选择设备</string>
+
+    <!-- ========== Layer Dialogs ========== -->
+    <string name="layer_dialog_title_edit">编辑层</string>
+    <string name="layer_dialog_title_add">添加层</string>
+    <string name="layer_dialog_label_name">层名称</string>
+    <string name="layer_dialog_label_parent_layer">选择层</string>
+    <string name="layer_dialog_label_location">所在位置</string>
+    <string name="layer_dialog_placeholder_select_location">请选择位置</string>
+    <string name="layer_dialog_title_select_device">选择设备</string>
+
+    <!-- ========== Box Dialogs ========== -->
+    <string name="box_dialog_title_edit">编辑冻存盒</string>
+    <string name="box_dialog_title_add">添加冻存盒</string>
+    <string name="box_dialog_label_name">冻存盒名称</string>
+    <string name="box_dialog_label_rows">行数</string>
+    <string name="box_dialog_label_cols">列数</string>
+    <string name="box_dialog_title_select_layer">选择层</string>
+
+    <!-- ========== Device List ========== -->
+    <string name="device_list_title">设备</string>
+    <string name="device_list_type_freezer">-80°C 冰箱</string>
+    <string name="device_list_type_nitrogen">液氮罐</string>
+
+    <!-- ========== Device Type Manage ========== -->
+    <string name="device_type_manage_group_toggle">按设备组分组</string>
+
+    <!-- ========== Settings Screen ========== -->
+    <string name="settings_title">设置</string>
+    <string name="settings_section_appearance">外观</string>
+    <string name="settings_theme_mode">主题模式</string>
+    <string name="settings_theme_light">浅色模式</string>
+    <string name="settings_theme_dark">深色模式</string>
+    <string name="settings_theme_system">跟随系统</string>
+    <string name="settings_bottom_bar_edit">底栏编辑</string>
+    <string name="settings_bottom_bar_edit_subtitle">自定义底栏标签顺序与可见性</string>
+    <string name="settings_start_page">启动页</string>
+    <string name="settings_section_management">管理</string>
+    <string name="settings_image_cleanup">图片清理</string>
+    <string name="settings_image_cleanup_subtitle">清理不需要的样本照片</string>
+    <string name="settings_ocr_settings">自动填充</string>
+    <string name="settings_ocr_settings_subtitle">自动填充样本信息、日期，批量识别</string>
+    <string name="settings_section_import_export">布局导入导出</string>
+    <string name="settings_csv_import">CSV 导入</string>
+    <string name="settings_csv_import_subtitle">从 CSV 文件合并导入</string>
+    <string name="settings_csv_export">CSV 导出</string>
+    <string name="settings_csv_export_subtitle">导出为电子表格格式</string>
+    <string name="settings_pdf_export">PDF 导出</string>
+    <string name="settings_pdf_export_subtitle">含照片的网格布局</string>
+    <string name="settings_markdown_export">Markdown 导出</string>
+    <string name="settings_markdown_export_subtitle">含图片的表格，可外部修改</string>
+    <string name="settings_markdown_import">Markdown 导入</string>
+    <string name="settings_markdown_import_subtitle">从 .zip 文件导入样本数据和图片</string>
+    <string name="settings_section_data_backup">数据备份与恢复</string>
+    <string name="settings_export_db">导出数据库</string>
+    <string name="settings_export_db_subtitle">备份为 .zip 数据包</string>
+    <string name="settings_import_db">导入数据库</string>
+    <string name="settings_import_db_subtitle">从 .zip 数据包恢复</string>
+    <string name="settings_section_about">关于</string>
+    <string name="settings_about">关于</string>
+    <string name="settings_about_subtitle">版本 %1$s</string>
+
+    <!-- ========== OCR / Auto-fill Settings ========== -->
+    <string name="ocr_settings_title">自动填充</string>
+    <string name="ocr_settings_section_switch">开关</string>
+    <string name="ocr_settings_master_label">文字识别</string>
+    <string name="ocr_settings_master_subtitle">识别照片文字</string>
+    <string name="ocr_settings_auto_ocr_label">自动填写拍摄文字</string>
+    <string name="ocr_settings_auto_ocr_subtitle">拍照时自动识别填写文字</string>
+    <string name="ocr_settings_auto_date_label">自动填写拍摄日期</string>
+    <string name="ocr_settings_auto_date_subtitle">拍照时自动记录当天日期</string>
+    <string name="ocr_settings_section_model">模型文件</string>
+    <string name="ocr_settings_model_label">PaddleOCR Lite 本地模型</string>
+    <string name="ocr_settings_section_batch">手动批量识别</string>
+    <string name="ocr_settings_batch_description">对已有照片但缺少名称的样品执行批量识别，结果自动保存</string>
+    <string name="ocr_settings_batch_running">执行中…</string>
+    <string name="ocr_settings_batch_start">开始执行</string>
+
+    <!-- ========== OCR ViewModel ========== -->
+    <string name="ocr_batch_no_samples">没有找到需要 OCR 的样品</string>
+    <string name="ocr_batch_fallback_name">样品 #%1$d</string>
+    <string name="ocr_batch_result">完成：%1$d/%2$d 个样品已更新</string>
+    <string name="ocr_batch_error">执行出错</string>
+
+    <!-- ========== Image Cleanup ========== -->
+    <string name="image_cleanup_title">图片清理</string>
+    <string name="image_cleanup_delete_selected">删除选中</string>
+    <string name="image_cleanup_empty">没有待清理的图片</string>
+    <string name="image_cleanup_clean_all">清理所有已标记样本图片</string>
+    <string name="image_cleanup_count">%1$d 个样本包含图片</string>
+    <string name="image_cleanup_confirm_delete_title">确认删除</string>
+    <string name="image_cleanup_confirm_delete_body">确认删除选中的 %1$d 张图片？此操作不可撤销。</string>
+    <string name="image_cleanup_confirm_clean_body">将删除所有已有名称或备注的样本对应的图片。此操作不可撤销。</string>
+    <string name="image_cleanup_confirm_clean">清理</string>
+    <string name="image_cleanup_no_image">无图片</string>
+
+    <!-- ========== About ========== -->
+    <string name="about_title">关于</string>
+    <string name="about_version">版本 %1$s</string>
+    <string name="about_new_version_found">发现新版本</string>
+    <string name="about_up_to_date">已是最新版本（%1$s）</string>
+    <string name="about_check_update_failed">检查更新失败</string>
+    <string name="about_download">去下载</string>
+
+    <!-- ========== Move Browser ========== -->
+    <string name="move_title_select_device">选择设备</string>
+    <string name="move_title_select_layer">选择层</string>
+    <string name="move_title_select_box">选择盒子</string>
+    <string name="move_action_layer">移动层</string>
+    <string name="move_action_box">移动盒子</string>
+    <string name="move_action_sample">移动样本</string>
+    <string name="move_confirm_target">选择此目标</string>
+    <string name="move_confirm_move">确定移动</string>
+    <string name="move_confirm_move_count">确定移动（%1$d 个样本）</string>
+    <string name="move_filter_all">全部设备</string>
+    <string name="move_search_placeholder">搜索冰箱 / 层 / 盒子…</string>
+    <string name="move_instruction">点击空白位置选择目标，已选 %1$d/%2$d</string>
+
+    <!-- ========== Search ========== -->
+    <string name="search_title">搜索</string>
+    <string name="search_placeholder">输入名称或备注进行搜索</string>
+    <string name="search_empty">输入名称或备注进行搜索</string>
+    <string name="search_loading">搜索中…</string>
+    <string name="search_no_results">未找到匹配项</string>
+    <string name="search_tag_manage">标签管理</string>
+    <string name="search_device">设备</string>
+    <string name="search_note">备注: %1$s</string>
+
+    <!-- ========== Sample Edit ========== -->
+    <string name="sample_edit_ocr_button">识别文字</string>
+    <string name="sample_edit_take_photo">拍照</string>
+    <string name="sample_edit_retake_photo">重新拍照</string>
+
+    <!-- ========== Sample Edit ViewModel ========== -->
+    <string name="sample_edit_last_sample">已经是当前冻存盒的最后一个样本</string>
+    <string name="sample_edit_first_sample">已经是当前冻存盒的第一个样本</string>
+    <string name="sample_edit_saved">已保存</string>
+
+    <!-- ========== Tag Detail ========== -->
+    <string name="tag_detail_title">标签详情</string>
+    <string name="tag_detail_empty">该标签下暂无样本</string>
+
+    <!-- ========== Box Grid ========== -->
+    <string name="box_grid_camera_permission">需要相机权限才能拍照</string>
+
+    <!-- ========== Search Screen ========== -->
+    <string name="search_options">搜索选项</string>
+    <string name="search_filter_name">名称</string>
+    <string name="search_filter_note">备注</string>
+    <string name="search_hint">搜索</string>
 </resources>

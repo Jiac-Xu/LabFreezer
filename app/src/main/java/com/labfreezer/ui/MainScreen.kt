@@ -263,6 +263,7 @@ private fun FloatingBottomNav(
     modifier: Modifier = Modifier
 ) {
     val colorScheme = MaterialTheme.colorScheme
+    val context = LocalContext.current
 
     Box(
         modifier = modifier
@@ -319,14 +320,14 @@ private fun FloatingBottomNav(
                                 Spacer(Modifier.weight(1f))
                                 Icon(
                                     item.icon,
-                                    contentDescription = item.label,
+                                    contentDescription = item.getLabel(context),
                                     modifier = Modifier.size(24.dp),
                                     tint = if (selected) colorScheme.primary
                                            else colorScheme.outline
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
-                                    item.label,
+                                    item.getLabel(context),
                                     style = MaterialTheme.typography.labelSmall,
                                     fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                                     color = if (selected) colorScheme.primary else colorScheme.outline

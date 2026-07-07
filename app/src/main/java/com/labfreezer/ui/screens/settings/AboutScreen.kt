@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.settings
+import com.labfreezer.R
 
 import android.content.Context
 import android.content.Intent
@@ -36,10 +37,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.labfreezer.R
 import com.labfreezer.util.UpdateChecker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.suspendCancellableCoroutine
@@ -64,10 +65,14 @@ fun AboutScreen(onBack: () -> Unit) {
         "LabFreezer"
     }
 
+    val checkFailedStr = context.getString(R.string.about_check_update_failed)
+    val newVersionPrefix = context.getString(R.string.about_new_version_found)
+
     LaunchedEffect(Unit) {
+        val unknownStr = context.getString(R.string.fallback_unknown)
         versionName = try {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: "未知"
-        } catch (e: Exception) { "未知" }
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: unknownStr
+        } catch (e: Exception) { unknownStr }
 
         // 从 SharedPreferences 读取上次保存的蒲公英自增 build 号
         val prefs = context.getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
@@ -91,14 +96,14 @@ fun AboutScreen(onBack: () -> Unit) {
                                 if (updateInfo.buildHaveNewVersion) {
                                     val desc = if (updateInfo.buildUpdateDescription.isNullOrBlank()) ""
                                         else ": ${updateInfo.buildUpdateDescription}"
-                                    cont.resume("发现新版本 ${updateInfo.buildVersion}$desc")
+                                    cont.resume("$newVersionPrefix ${updateInfo.buildVersion}$desc")
                                 } else {
-                                    cont.resume("已是最新版本 ($versionName)")
+                                    cont.resume(context.getString(R.string.about_up_to_date, versionName))
                                 }
                             }
 
                             override fun error(message: String) {
-                                cont.resume("检查更新失败")
+                                cont.resume(checkFailedStr)
                             }
                         }
                     )
@@ -106,15 +111,15 @@ fun AboutScreen(onBack: () -> Unit) {
             }
             result as String
         } catch (e: Exception) {
-            "检查更新失败"
+            checkFailedStr
         }
     }
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("关于", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回") } },
+                title = { Text(stringResource(R.string.about_title), fontWeight = FontWeight.SemiBold) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back)) } },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -146,7 +151,7 @@ fun AboutScreen(onBack: () -> Unit) {
             Spacer(Modifier.height(8.dp))
 
             Text(
-                "版本 $versionName",
+                stringResource(R.string.about_version, versionName),
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -156,12 +161,12 @@ fun AboutScreen(onBack: () -> Unit) {
             Text(
                 updateInfo,
                 style = MaterialTheme.typography.bodyMedium,
-                color = if (updateInfo.startsWith("发现")) MaterialTheme.colorScheme.primary
+                color = if (updateInfo.startsWith(newVersionPrefix)) MaterialTheme.colorScheme.primary
                        else MaterialTheme.colorScheme.outline,
                 textAlign = TextAlign.Center
             )
 
-            if (updateInfo.startsWith("发现")) {
+            if (updateInfo.startsWith(newVersionPrefix)) {
                 Spacer(Modifier.height(20.dp))
                 Button(
                     onClick = {
@@ -173,7 +178,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     ),
                     shape = MaterialTheme.shapes.small
                 ) {
-                    Text("去下载", modifier = Modifier.padding(horizontal = 16.dp))
+                    Text(stringResource(R.string.about_download), modifier = Modifier.padding(horizontal = 16.dp))
                 }
             }
         }

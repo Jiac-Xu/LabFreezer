@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.settings
+import com.labfreezer.R
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -46,6 +47,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Shape
@@ -168,9 +170,9 @@ fun StartPagePickerScreen(
                     it.name.lowercase().contains(q)
                 }.map { it.layerId }.toSet()
                 val matchingBoxDeviceIds = allLayers.filter { it.id in matchingBoxLayerIds }.map { it.deviceId }.toSet()
-                
+
                 val hasAnyMatch = deviceMatches || matchingLayers.isNotEmpty() || matchingBoxDeviceIds.contains(device.id)
-                
+
                 if (hasAnyMatch && !firstDeviceSet) {
                     // Load layers for this device
                     if (!layers.containsKey(device.id)) {
@@ -181,7 +183,7 @@ fun StartPagePickerScreen(
                     }
                     expandedDeviceIds = expandedDeviceIds + device.id
                     firstDeviceSet = true
-                    
+
                     // Expand first matching layer
                     val firstMatchingLayer = matchingLayers.firstOrNull()
                     if (firstMatchingLayer != null && !boxes.containsKey(firstMatchingLayer.id)) {
@@ -260,8 +262,8 @@ fun StartPagePickerScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("选择启动页", fontWeight = FontWeight.SemiBold) },
-                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回") } },
+                title = { Text(stringResource(R.string.start_page_picker_title), fontWeight = FontWeight.SemiBold) },
+                navigationIcon = { IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back)) } },
                 colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.surface, titleContentColor = MaterialTheme.colorScheme.onSurface)
             )
         }
@@ -276,14 +278,14 @@ fun StartPagePickerScreen(
                     value = searchQuery,
                     onValueChange = { searchQuery = it },
                     modifier = Modifier.fillMaxWidth(),
-                    placeholder = { Text("搜索设备、层、盒子名称") },
+                    placeholder = { Text(stringResource(R.string.start_page_picker_search_placeholder)) },
                     singleLine = true,
                     shape = RoundedCornerShape(12.dp),
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
                             IconButton(onClick = { searchQuery = "" }) {
-                                Icon(Icons.Default.Close, contentDescription = "清空")
+                                Icon(Icons.Default.Close, contentDescription = stringResource(R.string.content_description_clear))
                             }
                         }
                     },
@@ -296,39 +298,42 @@ fun StartPagePickerScreen(
 
             item {
                 Spacer(Modifier.height(12.dp))
-                Text("主页面", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.start_page_picker_section_main), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
             }
 
             item {
+                val defaultLabel = stringResource(R.string.start_page_default_label)
                 PickerItem(
                     icon = Icons.Default.Home,
-                    label = "库",
-                    selected = isSelected(StartPageSetting("库", Screen.DeviceList.route)),
-                    onClick = { select(StartPageSetting("库", Screen.DeviceList.route)) }
+                    label = defaultLabel,
+                    selected = isSelected(StartPageSetting(defaultLabel, Screen.DeviceList.route)),
+                    onClick = { select(StartPageSetting(defaultLabel, Screen.DeviceList.route)) }
                 )
             }
 
             item {
+                val tagsLabel = stringResource(R.string.tab_tags)
                 PickerItem(
                     icon = Icons.AutoMirrored.Filled.Label,
-                    label = "标签",
-                    selected = isSelected(StartPageSetting("标签", Screen.TagManage.route)),
-                    onClick = { select(StartPageSetting("标签", Screen.TagManage.route)) }
+                    label = tagsLabel,
+                    selected = isSelected(StartPageSetting(tagsLabel, Screen.TagManage.route)),
+                    onClick = { select(StartPageSetting(tagsLabel, Screen.TagManage.route)) }
                 )
             }
 
             item {
+                val searchLabel = stringResource(R.string.tab_search)
                 PickerItem(
                     icon = Icons.Default.Search,
-                    label = "搜索",
-                    selected = isSelected(StartPageSetting("搜索", Screen.Search.route)),
-                    onClick = { select(StartPageSetting("搜索", Screen.Search.route)) }
+                    label = searchLabel,
+                    selected = isSelected(StartPageSetting(searchLabel, Screen.Search.route)),
+                    onClick = { select(StartPageSetting(searchLabel, Screen.Search.route)) }
                 )
             }
 
             item {
                 Spacer(Modifier.height(8.dp))
-                Text("设备详情", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+                Text(stringResource(R.string.start_page_picker_section_device), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
             }
 
             items(filteredDevices, key = { "device_${it.id}" }) { device ->
@@ -362,7 +367,7 @@ fun StartPagePickerScreen(
                 PickerItem(
                     icon = Icons.Default.DeviceHub,
                     label = device.name,
-                    subtitle = "${dc.layerCount} 层, ${dc.boxCount} 盒",
+                    subtitle = stringResource(R.string.start_page_picker_format_layer_box, dc.layerCount, dc.boxCount),
                     selected = isSelected(StartPageSetting(device.name, Screen.DeviceDetail.route, device.id)),
                     onClick = { select(StartPageSetting(device.name, Screen.DeviceDetail.route, device.id)) },
                     indent = 0,
@@ -394,7 +399,7 @@ fun StartPagePickerScreen(
                         PickerItem(
                             icon = Icons.Default.Layers,
                             label = layer.name,
-                            subtitle = "${lc.boxCount} 盒, ${lc.sampleCount} 样本",
+                            subtitle = stringResource(R.string.start_page_picker_format_box_sample, lc.boxCount, lc.sampleCount),
                             selected = isSelected(StartPageSetting("${device.name} > ${layer.name}", Screen.LayerDetail.route, layer.id)),
                             onClick = { select(StartPageSetting("${device.name} > ${layer.name}", Screen.LayerDetail.route, layer.id)) },
                             indent = 1,
@@ -416,7 +421,7 @@ fun StartPagePickerScreen(
                                 PickerItem(
                                     icon = Icons.Default.Inventory2,
                                     label = box.name,
-                                    subtitle = "${box.rows}×${box.cols}, ${sc} 样本",
+                                    subtitle = stringResource(R.string.start_page_picker_format_grid_sample, box.rows, box.cols, sc),
                                     selected = isSelected(StartPageSetting("${device.name} > ${layer.name} > ${box.name}", Screen.BoxGrid.route, box.id)),
                                     onClick = { select(StartPageSetting("${device.name} > ${layer.name} > ${box.name}", Screen.BoxGrid.route, box.id)) },
                                     indent = 2,
@@ -473,7 +478,7 @@ private fun PickerItem(
                 IconButton(onClick = onToggle) {
                     Icon(
                         Icons.AutoMirrored.Filled.ArrowForwardIos,
-                        contentDescription = if (isExpanded) "收起" else "展开",
+                        contentDescription = if (isExpanded) stringResource(R.string.content_description_collapse) else stringResource(R.string.content_description_expand),
                         modifier = Modifier.size(16.dp).rotate(if (isExpanded) 90f else 0f),
                         tint = MaterialTheme.colorScheme.outline
                     )

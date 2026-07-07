@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.settings
+import com.labfreezer.R
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -53,6 +54,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.compose.ui.res.stringResource
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -78,10 +80,10 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("底栏编辑", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.bottom_bar_edit_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -93,7 +95,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                         visibleTabs.clear()
                         visibleTabs.addAll(BottomTabPreference.getDefault())
                     }) {
-                        Icon(Icons.Filled.Refresh, contentDescription = "恢复默认")
+                        Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.bottom_bar_edit_reset))
                     }
                 }
             )
@@ -109,7 +111,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
 
             // ── 底栏预览 ──
             Text(
-                "  预览",
+                "  " + stringResource(R.string.bottom_bar_edit_section_preview),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
@@ -120,7 +122,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
 
             // ── 显示项 ──
             Text(
-                "  显示在底栏",
+                "  " + stringResource(R.string.bottom_bar_edit_section_visible),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
@@ -163,7 +165,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                     contentAlignment = Alignment.Center
                 ) {
                     Text(
-                        "尚未添加任何标签，请在下方选择",
+                        stringResource(R.string.bottom_bar_edit_empty),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.outline
                     )
@@ -176,7 +178,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
             val hiddenTabs = allTabs.filter { it !in visibleTabs }
             if (hiddenTabs.isNotEmpty()) {
                 Text(
-                    "  未显示",
+                    "  " + stringResource(R.string.bottom_bar_edit_section_hidden),
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.outline
@@ -205,7 +207,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp),
-                text = "长按拖拽手柄(≡)可调整顺序，开关控制是否在底栏显示",
+                text = stringResource(R.string.bottom_bar_edit_instruction),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline
             )
@@ -258,13 +260,13 @@ private fun BottomBarPreview(visibleTabs: List<BottomTab>) {
                         ) {
                             Icon(
                                 tab.icon,
-                                contentDescription = tab.label,
+                                contentDescription = tab.getLabel(LocalContext.current),
                                 modifier = Modifier.size(20.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                             Spacer(Modifier.height(2.dp))
                             Text(
-                                tab.label,
+                                tab.getLabel(LocalContext.current),
                                 style = MaterialTheme.typography.labelSmall,
                                 fontWeight = FontWeight.SemiBold,
                                 color = MaterialTheme.colorScheme.primary
@@ -333,7 +335,7 @@ private fun TabCard(
                 ) {
                     Icon(
                         Icons.Filled.Menu,
-                        contentDescription = "拖动排序",
+                        contentDescription = stringResource(R.string.bottom_bar_edit_drag_description),
                         tint = MaterialTheme.colorScheme.outline,
                         modifier = Modifier.size(18.dp)
                     )
@@ -346,7 +348,7 @@ private fun TabCard(
             // 图标
             Icon(
                 tab.icon,
-                contentDescription = tab.label,
+                contentDescription = tab.getLabel(LocalContext.current),
                 tint = if (visible) MaterialTheme.colorScheme.primary
                        else MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(22.dp)
@@ -356,7 +358,7 @@ private fun TabCard(
 
             // 标签名
             Text(
-                tab.label,
+                tab.getLabel(LocalContext.current),
                 style = MaterialTheme.typography.bodyLarge,
                 color = if (visible) MaterialTheme.colorScheme.onSurface
                         else MaterialTheme.colorScheme.outline,

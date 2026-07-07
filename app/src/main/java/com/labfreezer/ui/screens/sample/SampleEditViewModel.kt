@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.sample
+import com.labfreezer.R
 
 import android.content.Context
 import android.net.Uri
@@ -134,7 +135,7 @@ class SampleEditViewModel @Inject constructor(
                 if (targetIndex in allSamples.indices) {
                     _navigationEvent.emit(allSamples[targetIndex].id)
                 } else {
-                    val msg = if (isNext) "已经是当前冻存盒的最后一个样本" else "已经是当前冻存盒的第一个样本"
+                    val msg = if (isNext) context.getString(R.string.sample_edit_last_sample) else context.getString(R.string.sample_edit_first_sample)
                     _toastEvent.emit(msg)
                 }
             }
@@ -211,7 +212,7 @@ class SampleEditViewModel @Inject constructor(
             )
             sampleRepository.update(updatedSample)
             tagRepository.setSampleTags(sampleId, _state.value.assignedTagIds.toList())
-            _toastEvent.emit("已保存")
+            _toastEvent.emit(context.getString(R.string.sample_edit_saved))
         }
     }
 

@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.boxgrid
+import com.labfreezer.R
 
 import android.Manifest
 import android.content.pm.PackageManager
@@ -73,6 +74,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -125,7 +127,7 @@ fun BoxGridScreen(
             val uri = viewModel.createPhotoUri()
             cameraLauncher.launch(uri)
         } else {
-            Toast.makeText(context, "\u9700\u8981\u76f8\u673a\u6743\u9650\u624d\u80fd\u62cd\u7167", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.box_grid_camera_permission), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -145,7 +147,7 @@ fun BoxGridScreen(
             TopAppBar(
                 title = {
                     if (isSelecting) {
-                        Text("\u5df2\u9009 ${selectedIds.size} \u9879", fontWeight = FontWeight.SemiBold)
+                        Text("已选 ${selectedIds.size} 项", fontWeight = FontWeight.SemiBold)
                     } else {
                         Text(box?.name ?: "", fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
@@ -153,11 +155,11 @@ fun BoxGridScreen(
                 navigationIcon = {
                     if (isSelecting) {
                         IconButton(onClick = { viewModel.exitSelection() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u53d6\u6d88")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.btn_cancel))
                         }
                     } else {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u8fd4\u56de")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     }
                 },
@@ -165,7 +167,7 @@ fun BoxGridScreen(
                     if (isSelecting) {
                         val sampleCount = cells.count { it.sampleId != null }
                         TextButton(onClick = { viewModel.selectAll() }) {
-                            Text(if (selectedIds.size == sampleCount) "\u5168\u4e0d\u9009" else "\u5168\u9009", fontWeight = FontWeight.Medium)
+                            Text(if (selectedIds.size == sampleCount) "全不选" else "全选", fontWeight = FontWeight.Medium)
                         }
                         IconButton(onClick = {
                             MoveState.selectedItemIds = selectedIds
@@ -173,10 +175,10 @@ fun BoxGridScreen(
                             MoveState.sourceBoxId = boxId
                             navController.navigate(Screen.MoveBrowser.route)
                         }) {
-                            Icon(Icons.Default.OpenWith, contentDescription = "\u79fb\u52a8", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.OpenWith, contentDescription = "移动", tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = { showDeleteBatchConfirm = true }) {
-                            Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error)
+                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error)
                         }
                     }
                 },
@@ -189,7 +191,7 @@ fun BoxGridScreen(
     ) { padding ->
         if (box == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("\u52a0\u8f7d\u4e2d...", style = MaterialTheme.typography.bodyLarge)
+                Text("加载中...", style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             val cols = box!!.cols
@@ -289,7 +291,7 @@ fun BoxGridScreen(
                                     .padding(horizontal = 20.dp, vertical = 12.dp),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Icon(Icons.Default.ZoomOut, contentDescription = "缩小", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                Icon(Icons.Default.ZoomOut, contentDescription = stringResource(R.string.content_description_zoom_out), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
                                 Spacer(modifier = Modifier.width(12.dp))
                                 Slider(
                                     value = visibleCols,
@@ -311,7 +313,7 @@ fun BoxGridScreen(
                                     }
                                 )
                                 Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.ZoomIn, contentDescription = "放大", modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                Icon(Icons.Default.ZoomIn, contentDescription = stringResource(R.string.content_description_zoom_in), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }
@@ -323,10 +325,10 @@ fun BoxGridScreen(
     if (showDeleteBatchConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteBatchConfirm = false },
-            title = { Text("\u786e\u8ba4\u5220\u9664") },
-            text = { Text("\u786e\u8ba4\u5220\u9664\u9009\u4e2d\u7684 ${selectedIds.size} \u4e2a\u6837\u672c\uff1f\u8be5\u64cd\u4f5c\u4e0d\u53ef\u64a4\u9500\u3002") },
-            confirmButton = { TextButton(onClick = { showDeleteBatchConfirm = false; viewModel.deleteSelected() }) { Text("\u5220\u9664", color = MaterialTheme.colorScheme.error) } },
-            dismissButton = { TextButton(onClick = { showDeleteBatchConfirm = false }) { Text("\u53d6\u6d88") } }
+            title = { Text(stringResource(R.string.btn_confirm_delete)) },
+            text = { Text("确认删除选中的 ${selectedIds.size} 个样本？该操作不可撤销。") },
+            confirmButton = { TextButton(onClick = { showDeleteBatchConfirm = false; viewModel.deleteSelected() }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = { showDeleteBatchConfirm = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
 }

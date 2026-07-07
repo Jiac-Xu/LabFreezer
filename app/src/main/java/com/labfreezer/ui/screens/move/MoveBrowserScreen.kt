@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.move
+import com.labfreezer.R
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,6 +47,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -80,21 +82,21 @@ fun MoveBrowserScreen(
                         Text(
                             when {
                                 MoveState.selectMode -> when (MoveState.moveTarget) {
-                                    MoveTarget.DEVICE -> "选择设备"
-                                    MoveTarget.LAYER -> "选择层"
-                                    MoveTarget.BOX -> "选择盒子"
+                                    MoveTarget.DEVICE -> stringResource(R.string.move_title_select_device)
+                                    MoveTarget.LAYER -> stringResource(R.string.move_title_select_layer)
+                                    MoveTarget.BOX -> stringResource(R.string.move_title_select_box)
                                 }
                                 else -> when (MoveState.moveTarget) {
-                                    MoveTarget.DEVICE -> "移动层"
-                                    MoveTarget.LAYER -> "移动盒子"
-                                    MoveTarget.BOX -> "移动样本"
+                                    MoveTarget.DEVICE -> stringResource(R.string.move_action_layer)
+                                    MoveTarget.LAYER -> stringResource(R.string.move_action_box)
+                                    MoveTarget.BOX -> stringResource(R.string.move_action_sample)
                                 }
                             }
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "返回")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     }
                 )
@@ -163,10 +165,10 @@ fun MoveBrowserScreen(
             ConfirmButton(
                 enabled = viewModel.canConfirm(),
                 label = when {
-                    MoveState.selectMode -> "选择此目标"
+                    MoveState.selectMode -> stringResource(R.string.move_confirm_target)
                     MoveState.moveTarget == MoveTarget.BOX && currentLevel == MoveLevel.GRID ->
-                        "确定移动 ($selectedCount 个样本)"
-                    else -> "确定移动"
+                        stringResource(R.string.move_confirm_move_count, selectedCount)
+                    else -> stringResource(R.string.move_confirm_move)
                 },
                 onClick = { viewModel.confirmMove(onBack) }
             )
@@ -187,7 +189,7 @@ private fun BreadcrumbBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (items.isEmpty()) {
-            Text("全部设备", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+            Text(stringResource(R.string.move_filter_all), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
         }
         items.forEachIndexed { index, item ->
             Text(
@@ -223,12 +225,12 @@ private fun SearchBar(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp),
-        placeholder = { Text("搜索冰箱 / 层 / 盒子...", style = MaterialTheme.typography.bodySmall) },
+        placeholder = { Text(stringResource(R.string.move_search_placeholder), style = MaterialTheme.typography.bodySmall) },
         leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, modifier = Modifier.size(18.dp)) },
         trailingIcon = {
             if (query.isNotEmpty()) {
                 IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Default.Clear, contentDescription = "清除", modifier = Modifier.size(18.dp))
+                    Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.content_description_clear), modifier = Modifier.size(18.dp))
                 }
             }
         },
@@ -403,7 +405,7 @@ private fun GridView(
 
     Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text(
-            text = "点击空白位置选择目标，已选 ${selectedPositions.size}/$selectedCount",
+            text = stringResource(R.string.move_instruction, selectedPositions.size, selectedCount),
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.outline
         )
@@ -449,7 +451,7 @@ private fun GridView(
                         )
                         if (cell.occupied) {
                             Text(
-                                text = "\u2715",
+                                text = "✕",
                                 fontSize = 8.sp,
                                 color = MaterialTheme.colorScheme.outline,
                                 modifier = Modifier.align(Alignment.TopEnd).padding(1.dp)

@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.sample
+import com.labfreezer.R
 
 import android.Manifest
 import android.app.DatePickerDialog
@@ -62,6 +63,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
@@ -113,7 +115,7 @@ fun SampleEditScreen(
         if (granted) {
             cameraLauncher.launch(viewModel.createPhotoUri())
         } else {
-            Toast.makeText(context, "\u9700\u8981\u76f8\u673a\u6743\u9650\u624d\u80fd\u62cd\u7167", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, context.getString(R.string.box_grid_camera_permission), Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -169,18 +171,18 @@ fun SampleEditScreen(
                 title = {
                     val s = state.sample
                     Text(
-                        if (s != null) SampleEditViewModel.positionToLabel(s.row, s.col) else "\u6837\u672c\u7f16\u8f91",
+                        if (s != null) SampleEditViewModel.positionToLabel(s.row, s.col) else "样本编辑",
                         fontWeight = FontWeight.SemiBold
                     )
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u8fd4\u56de")
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                     }
                 },
                 actions = {
                     IconButton(onClick = { showDeleteDialog = true }) {
-                        Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error)
+                        Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -196,7 +198,7 @@ fun SampleEditScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Save, contentDescription = "保存")
+                Icon(Icons.Default.Save, contentDescription = stringResource(R.string.content_description_save))
             }
         }
         ) { padding ->
@@ -225,7 +227,7 @@ fun SampleEditScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.outline)
                                 Spacer(Modifier.height(8.dp))
-                                Text("\u6682\u65e0\u7167\u7247", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                Text("暂无照片", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }
@@ -246,7 +248,7 @@ fun SampleEditScreen(
                 ) {
                     Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text(if (state.photoPath != null) "\u91cd\u65b0\u62cd\u7167" else "\u62cd\u7167")
+                    Text(if (state.photoPath != null) stringResource(R.string.sample_edit_retake_photo) else stringResource(R.string.sample_edit_take_photo))
                 }
                 if (state.photoPath != null) {
                     TextButton(
@@ -263,7 +265,7 @@ fun SampleEditScreen(
                         )
                         Spacer(Modifier.width(4.dp))
                         Text(
-                            "识别文字",
+                            stringResource(R.string.sample_edit_ocr_button),
                             color = if (state.ocrEnabled) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                         )
@@ -293,23 +295,23 @@ fun SampleEditScreen(
                     Icon(Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("\u4f4d\u7f6e", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                        Text("位置", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                         val pos = state.sample?.let { SampleEditViewModel.positionToLabel(it.row, it.col) } ?: ""
                         Text("${state.deviceName} > ${state.layerName} > ${state.boxName} > $pos", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
-                    Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "\u66f4\u6362\u4f4d\u7f6e", modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.outline)
+                    Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "更换位置", modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.outline)
                 }
             }
             Spacer(Modifier.height(12.dp))
 
-            OutlinedTextField(value = state.name, onValueChange = { viewModel.updateName(it) }, label = { Text("\u6837\u672c\u540d\u79f0") }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
+            OutlinedTextField(value = state.name, onValueChange = { viewModel.updateName(it) }, label = { Text("样本名称") }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
 
             Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = state.date,
                 onValueChange = { viewModel.updateDate(it) },
-                label = { Text("\u65e5\u671f (\u4f8b\u5982 2024-03-15)") },
+                label = { Text("日期 (例如 2024-03-15)") },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = fieldShape,
@@ -318,29 +320,29 @@ fun SampleEditScreen(
                     IconButton(onClick = {
                         val cal = Calendar.getInstance()
                         DatePickerDialog(context, { _, y, m, d -> viewModel.updateDate("%04d-%02d-%02d".format(y, m + 1, d)) }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
-                    }) { Icon(Icons.Default.CalendarToday, contentDescription = "\u9009\u62e9\u65e5\u671f") }
+                    }) { Icon(Icons.Default.CalendarToday, contentDescription = "选择日期") }
                 }
             )
 
             Spacer(Modifier.height(12.dp))
 
-            OutlinedTextField(value = state.note, onValueChange = { viewModel.updateNote(it) }, label = { Text("\u5907\u6ce8") }, minLines = 3, maxLines = 6, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
+            OutlinedTextField(value = state.note, onValueChange = { viewModel.updateNote(it) }, label = { Text("备注") }, minLines = 3, maxLines = 6, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
 
             Spacer(Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("\u6807\u7b7e", style = MaterialTheme.typography.titleSmall)
+                Text("标签", style = MaterialTheme.typography.titleSmall)
                 TextButton(onClick = { navController.navigate(Screen.TagManage.route) }) {
                     Icon(Icons.Default.Tag, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("\u7ba1\u7406\u6807\u7b7e")
+                    Text("管理标签")
                 }
             }
 
             Spacer(Modifier.height(4.dp))
 
             if (allTags.isEmpty()) {
-                Text("\u6682\u65e0\u6807\u7b7e\uff0c\u70b9\u51fb\u53f3\u4e0a\u89d2\u201c\u7ba1\u7406\u6807\u7b7e\u201d\u521b\u5efa", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text("暂无标签，点击右上角“管理标签”创建", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             } else {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     allTags.forEach { tag ->
@@ -392,13 +394,9 @@ fun SampleEditScreen(
     }
 
     if (showDeleteDialog) {
-        AlertDialog(onDismissRequest = { showDeleteDialog = false }, title = { Text("\u786e\u8ba4\u5220\u9664", fontWeight = FontWeight.SemiBold) }, text = { Text("\u786e\u8ba4\u5220\u9664\u6b64\u6837\u672c\uff1f\u6b64\u64cd\u4f5c\u4e0d\u53ef\u64a4\u9500\u3002") },
-            confirmButton = { TextButton(onClick = { viewModel.delete(); showDeleteDialog = false }) { Text("\u5220\u9664", color = MaterialTheme.colorScheme.error) } },
-            dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text("\u53d6\u6d88") } })
+        AlertDialog(onDismissRequest = { showDeleteDialog = false }, title = { Text(stringResource(R.string.btn_confirm_delete), fontWeight = FontWeight.SemiBold) }, text = { Text("确认删除此样本？此操作不可撤销。") },
+            confirmButton = { TextButton(onClick = { viewModel.delete(); showDeleteDialog = false }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) } },
+            dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.btn_cancel)) } })
     }
 
 }
-
-
-
-

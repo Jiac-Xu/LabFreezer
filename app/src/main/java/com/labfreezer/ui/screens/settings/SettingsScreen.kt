@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.settings
+import com.labfreezer.R
 
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -51,6 +52,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.DpOffset
@@ -99,7 +101,7 @@ fun SettingsScreen(
                 putExtra(Intent.EXTRA_STREAM, r.uri)
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
-            activity.startActivity(Intent.createChooser(intent, "\u5bfc\u51fa\u6570\u636e"))
+            activity.startActivity(Intent.createChooser(intent, activity.getString(R.string.settings_export_db)))
             viewModel.clearResult()
         }
     }
@@ -107,7 +109,7 @@ fun SettingsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("\u8bbe\u7f6e", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.settings_title), fontWeight = FontWeight.SemiBold) },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface,
                     titleContentColor = MaterialTheme.colorScheme.onSurface
@@ -118,21 +120,21 @@ fun SettingsScreen(
         Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(8.dp))
 
-            Text("  \u5916\u89c2", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+            Text("  " + stringResource(R.string.settings_section_appearance), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
 
             Spacer(Modifier.height(8.dp))
 
             val themeLabel = when (currentThemeMode) {
-                ThemeMode.LIGHT -> "\u6d45\u8272\u6a21\u5f0f"
-                ThemeMode.DARK -> "\u6df1\u8272\u6a21\u5f0f"
-                ThemeMode.SYSTEM -> "\u8ddf\u968f\u7cfb\u7edf"
+                ThemeMode.LIGHT -> stringResource(R.string.settings_theme_light)
+                ThemeMode.DARK -> stringResource(R.string.settings_theme_dark)
+                ThemeMode.SYSTEM -> stringResource(R.string.settings_theme_system)
             }
-            val themeLabels = listOf("\u6d45\u8272\u6a21\u5f0f", "\u6df1\u8272\u6a21\u5f0f", "\u8ddf\u968f\u7cfb\u7edf")
+            val themeLabels = listOf(stringResource(R.string.settings_theme_light), stringResource(R.string.settings_theme_dark), stringResource(R.string.settings_theme_system))
 
             Box {
                 SettingsCard(
                     icon = Icons.Filled.SettingsBrightness,
-                    title = "\u4e3b\u9898\u6a21\u5f0f",
+                    title = stringResource(R.string.settings_theme_mode),
                     subtitle = themeLabel,
                     onClick = { showThemeDialog = true }
                 )
@@ -163,104 +165,104 @@ fun SettingsScreen(
 
             SettingsCard(
                 icon = Icons.Filled.Edit,
-                title = "底栏编辑",
-                subtitle = "自定义底栏标签顺序与可见性",
+                title = stringResource(R.string.settings_bottom_bar_edit),
+                subtitle = stringResource(R.string.settings_bottom_bar_edit_subtitle),
                 onClick = onNavigateToBottomBarEdit
             )
 
             val startPageSetting = StartPagePreference.get(activity)
             SettingsCard(
                 icon = Icons.Filled.Home,
-                title = "\u542f\u52a8\u9875",
+                title = stringResource(R.string.settings_start_page),
                 subtitle = startPageSetting.label,
                 onClick = onNavigateToStartPagePicker
             )
 
             Spacer(Modifier.height(16.dp))
 
-            Text("  \u7ba1\u7406", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+            Text("  " + stringResource(R.string.settings_section_management), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
 
             Spacer(Modifier.height(8.dp))
 
             SettingsCard(
                 icon = Icons.Filled.PhotoLibrary,
-                title = "\u56fe\u7247\u6e05\u7406",
-                subtitle = "\u6e05\u7406\u4e0d\u9700\u8981\u7684\u6837\u672c\u7167\u7247",
+                title = stringResource(R.string.settings_image_cleanup),
+                subtitle = stringResource(R.string.settings_image_cleanup_subtitle),
                 onClick = onNavigateToImageCleanup
             )
             SettingsCard(
                 icon = Icons.Filled.DocumentScanner,
-                title = "\u81ea\u52a8\u586b\u5145",
-                subtitle = "\u81ea\u52a8\u586b\u5145\u6837\u672c\u4fe1\u606f\u3001\u65e5\u671f\uff0c\u6279\u91cf\u8bc6\u522b",
+                title = stringResource(R.string.settings_ocr_settings),
+                subtitle = stringResource(R.string.settings_ocr_settings_subtitle),
                 onClick = onNavigateToOcrSettings
             )
 
             Spacer(Modifier.height(16.dp))
 
-            Text("  \u5e03\u5c40\u5bfc\u5165\u5bfc\u51fa", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+            Text("  " + stringResource(R.string.settings_section_import_export), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
 
             Spacer(Modifier.height(8.dp))
 
             SettingsCard(
                 icon = Icons.Default.TableChart,
-                title = "CSV \u5bfc\u5165",
-                subtitle = "\u4ece CSV \u6587\u4ef6\u5408\u5e76\u5bfc\u5165",
+                title = stringResource(R.string.settings_csv_import),
+                subtitle = stringResource(R.string.settings_csv_import_subtitle),
                 onClick = { csvImportLauncher.launch(arrayOf("text/csv", "text/comma-separated-values")) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
             SettingsCard(
                 icon = Icons.Default.TableChart,
-                title = "CSV \u5bfc\u51fa",
-                subtitle = "\u5bfc\u51fa\u4e3a\u7535\u5b50\u8868\u683c\u683c\u5f0f",
+                title = stringResource(R.string.settings_csv_export),
+                subtitle = stringResource(R.string.settings_csv_export_subtitle),
                 onClick = { viewModel.exportSample(ExportFormat.CSV) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
             SettingsCard(
                 icon = Icons.Default.PictureAsPdf,
-                title = "PDF \u5bfc\u51fa",
-                subtitle = "\u542b\u7167\u7247\u7684\u7f51\u683c\u5e03\u5c40",
+                title = stringResource(R.string.settings_pdf_export),
+                subtitle = stringResource(R.string.settings_pdf_export_subtitle),
                 onClick = { viewModel.exportSample(ExportFormat.PDF) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
             SettingsCard(
                 icon = Icons.Default.Description,
-                title = "Markdown \u5bfc\u51fa",
-                subtitle = "\u542b\u56fe\u7247\u7684\u8868\u683c\uff0c\u53ef\u5916\u90e8\u4fee\u6539",
+                title = stringResource(R.string.settings_markdown_export),
+                subtitle = stringResource(R.string.settings_markdown_export_subtitle),
                 onClick = { viewModel.exportSample(ExportFormat.MARKDOWN) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
             SettingsCard(
                 icon = Icons.Default.Description,
-                title = "Markdown \u5bfc\u5165",
-                subtitle = "\u4ece .zip \u6587\u4ef6\u5bfc\u5165\u6837\u672c\u6570\u636e\u548c\u56fe\u7247",
+                title = stringResource(R.string.settings_markdown_import),
+                subtitle = stringResource(R.string.settings_markdown_import_subtitle),
                 onClick = { markdownImportLauncher.launch(arrayOf("application/zip")) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
 
             Spacer(Modifier.height(16.dp))
 
-            Text("  \u6570\u636e\u5907\u4efd\u4e0e\u6062\u590d", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+            Text("  " + stringResource(R.string.settings_section_data_backup), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
 
             Spacer(Modifier.height(8.dp))
 
             SettingsCard(
                 icon = Icons.Default.CloudUpload,
-                title = "\u5bfc\u51fa\u6570\u636e\u5e93",
-                subtitle = "\u5907\u4efd\u4e3a .zip \u6570\u636e\u5305",
+                title = stringResource(R.string.settings_export_db),
+                subtitle = stringResource(R.string.settings_export_db_subtitle),
                 onClick = { viewModel.exportDatabaseZip() },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
             SettingsCard(
                 icon = Icons.Default.CloudDownload,
-                title = "\u5bfc\u5165\u6570\u636e\u5e93",
-                subtitle = "\u4ece .zip \u6570\u636e\u5305\u6062\u590d",
+                title = stringResource(R.string.settings_import_db),
+                subtitle = stringResource(R.string.settings_import_db_subtitle),
                 onClick = { importLauncher.launch(arrayOf("application/zip")) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
 
             Spacer(Modifier.height(16.dp))
 
-            Text("  关于", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+            Text("  " + stringResource(R.string.settings_section_about), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
 
             Spacer(Modifier.height(8.dp))
 
@@ -269,8 +271,8 @@ fun SettingsScreen(
             } catch (e: Exception) { "" }
             SettingsCard(
                 icon = Icons.Default.Info,
-                title = "关于",
-                subtitle = "版本 $versionName",
+                title = stringResource(R.string.settings_about),
+                subtitle = stringResource(R.string.settings_about_subtitle, versionName),
                 onClick = onNavigateToAbout
             )
 
