@@ -225,6 +225,18 @@
     <string name="tag_detail_title">Tag Details</string>
     <string name="tag_detail_empty">No samples under this tag</string>
 
+    <!-- ========== Tag Manage ========== -->
+    <string name="tag_manage_title">Tag Management</string>
+    <string name="tag_manage_add_tag">Add Tag</string>
+    <string name="tag_manage_empty">No tags yet</string>
+    <string name="tag_manage_empty_hint">Tap + at bottom right to add your first tag</string>
+    <string name="tag_manage_edit_tag">Edit Tag</string>
+    <string name="tag_manage_new_tag">New Tag</string>
+    <string name="tag_manage_label_name">Tag Name</string>
+    <string name="tag_manage_select_color">Select Color</string>
+    <string name="tag_manage_delete_confirm">Delete tag \"%1$s\"?</string>
+    <string name="tag_manage_sample_count">%1$d samples</string>
+
     <!-- ========== Box Grid ========== -->
     <string name="box_grid_camera_permission">Camera permission is required to take photos</string>
     <string name="box_grid_selected_count">%1$d selected</string>

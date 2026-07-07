@@ -53,11 +53,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.labfreezer.R
 import com.labfreezer.data.db.entity.TagEntity
 import com.labfreezer.ui.navigation.Screen
 
@@ -78,11 +80,11 @@ fun TagManageScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("\u6807\u7b7e\u7ba1\u7406", fontWeight = FontWeight.SemiBold) },
+                title = { Text(stringResource(R.string.tag_manage_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
                     if (showBackButton && navController.previousBackStackEntry != null) {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "\u8fd4\u56de")
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
                     }
                 },
@@ -100,7 +102,7 @@ fun TagManageScreen(
                 containerColor = MaterialTheme.colorScheme.primary,
                 contentColor = MaterialTheme.colorScheme.onPrimary
             ) {
-                Icon(Icons.Default.Add, contentDescription = "\u6dfb\u52a0\u6807\u7b7e")
+                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.tag_manage_add_tag))
             }
         }
     ) { padding ->
@@ -138,7 +140,7 @@ fun TagManageScreen(
                     Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Default.DeviceHub, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(24.dp))
                         Spacer(Modifier.width(16.dp))
-                        Text("\u8bbe\u5907\u7ec4\u7ba1\u7406", style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                        Text(stringResource(R.string.device_type_manage_title), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
                         Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline)
                     }
                 }
@@ -149,7 +151,7 @@ fun TagManageScreen(
 
     if (showAddDialog) TagDialog(onDismiss = { viewModel.hideAddDialog() }, onConfirm = { name, color -> viewModel.addTag(name, color) })
     editingTag?.let { tag -> TagDialog(existing = tag, onDismiss = { viewModel.hideEditDialog() }, onConfirm = { name, color -> viewModel.updateTag(tag.id, name, color) }) }
-    deletingTag?.let { tag -> AlertDialog(onDismissRequest = { viewModel.hideDeleteConfirm() }, title = { Text("\u786e\u8ba4\u5220\u9664", fontWeight = FontWeight.SemiBold) }, text = { Text("\u786e\u8ba4\u5220\u9664\u6807\u7b7e\u300c${tag.name}\u300d\uff1f") }, confirmButton = { TextButton(onClick = { viewModel.deleteTag(tag) }) { Text("\u5220\u9664", color = MaterialTheme.colorScheme.error) } }, dismissButton = { TextButton(onClick = { viewModel.hideDeleteConfirm() }) { Text("\u53d6\u6d88") } }) }
+    deletingTag?.let { tag -> AlertDialog(onDismissRequest = { viewModel.hideDeleteConfirm() }, title = { Text(stringResource(R.string.btn_confirm_delete), fontWeight = FontWeight.SemiBold) }, text = { Text(stringResource(R.string.tag_manage_delete_confirm, tag.name)) }, confirmButton = { TextButton(onClick = { viewModel.deleteTag(tag) }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) } }, dismissButton = { TextButton(onClick = { viewModel.hideDeleteConfirm() }) { Text(stringResource(R.string.btn_cancel)) } }) }
 }
 
 @Composable
@@ -166,10 +168,10 @@ private fun TagItem(tag: TagEntity, sampleCount: Int = 0, onClick: () -> Unit, o
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(tag.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
-                Text("${sampleCount}\u6837\u672c", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text(stringResource(R.string.tag_manage_sample_count, sampleCount), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             }
-            IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "\u7f16\u8f91", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp)) }
-            IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp)) }
+            IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.device_list_edit), tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp)) }
+            IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp)) }
         }
     }
 }
@@ -187,12 +189,12 @@ fun TagDialog(existing: TagEntity? = null, onDismiss: () -> Unit, onConfirm: (na
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (existing != null) "\u7f16\u8f91\u6807\u7b7e" else "\u65b0\u5efa\u6807\u7b7e", fontWeight = FontWeight.SemiBold) },
+        title = { Text(if (existing != null) stringResource(R.string.tag_manage_edit_tag) else stringResource(R.string.tag_manage_new_tag), fontWeight = FontWeight.SemiBold) },
         text = {
             Column {
-                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text("\u6807\u7b7e\u540d\u79f0") }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
+                OutlinedTextField(value = name, onValueChange = { name = it }, label = { Text(stringResource(R.string.tag_manage_label_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
                 Spacer(Modifier.height(12.dp))
-                Text("\u9009\u62e9\u989c\u8272", style = MaterialTheme.typography.bodyMedium)
+                Text(stringResource(R.string.tag_manage_select_color), style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     TAG_COLORS.forEach { c ->
@@ -207,8 +209,8 @@ fun TagDialog(existing: TagEntity? = null, onDismiss: () -> Unit, onConfirm: (na
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { onConfirm(name.trim(), color) }, enabled = name.isNotBlank()) { Text(if (existing != null) "\u4fdd\u5b58" else "\u6dfb\u52a0", fontWeight = FontWeight.SemiBold) } },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("\u53d6\u6d88") } }
+        confirmButton = { TextButton(onClick = { onConfirm(name.trim(), color) }, enabled = name.isNotBlank()) { Text(if (existing != null) stringResource(R.string.btn_save) else stringResource(R.string.btn_add), fontWeight = FontWeight.SemiBold) } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) } }
     )
 }
 

@@ -214,6 +214,18 @@
     <string name="tag_detail_title">標籤詳情</string>
     <string name="tag_detail_empty">該標籤下暫無樣本</string>
 
+    <!-- ========== Tag Manage ========== -->
+    <string name="tag_manage_title">標籤管理</string>
+    <string name="tag_manage_add_tag">新增標籤</string>
+    <string name="tag_manage_empty">暫無標籤</string>
+    <string name="tag_manage_empty_hint">點擊右下角 + 新增第一個標籤</string>
+    <string name="tag_manage_edit_tag">編輯標籤</string>
+    <string name="tag_manage_new_tag">新建標籤</string>
+    <string name="tag_manage_label_name">標籤名稱</string>
+    <string name="tag_manage_select_color">選擇顏色</string>
+    <string name="tag_manage_delete_confirm">確認刪除標籤「%1$s」？</string>
+    <string name="tag_manage_sample_count">%1$d 個樣本</string>
+
     <!-- ========== Box Grid ========== -->
     <string name="box_grid_camera_permission">需要相機權限才能拍照</string>
     <string name="box_grid_selected_count">已選 %1$d 項</string>
