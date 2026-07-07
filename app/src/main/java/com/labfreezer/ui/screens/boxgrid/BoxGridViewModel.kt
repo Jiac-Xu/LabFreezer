@@ -298,10 +298,11 @@ class BoxGridViewModel @Inject constructor(
             }
         }
 
-        // If auto-date is enabled, set date to today (overrides OCR date if any)
+        // If auto-date is enabled, set date to today (preserve any OCR results)
         if (ocrPreferences.isAutoDateEnabled()) {
             val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
-            sampleRepository.update(sample.copy(date = today))
+            val currentSample = withContext(Dispatchers.IO) { sampleRepository.getById(sample.id) } ?: sample
+            sampleRepository.update(currentSample.copy(date = today))
             shouldRefresh = true
         }
 
