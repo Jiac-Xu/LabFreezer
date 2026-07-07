@@ -107,8 +107,8 @@ fun DeviceListScreen(
 
     val inAnySelection = isSelecting || isSelectingRecent
     val selectionLabel = when {
-        isSelecting -> "已选 ${selectedIds.size} 项"
-        isSelectingRecent -> "已选 ${selectedRecentIds.size} 项"
+        isSelecting -> stringResource(R.string.device_list_selected_count, selectedIds.size)
+        isSelectingRecent -> stringResource(R.string.device_list_selected_count, selectedRecentIds.size)
         else -> stringResource(R.string.app_name)
     }
 
@@ -136,7 +136,7 @@ fun DeviceListScreen(
                         }) {
                             Text(
                                 if ((isSelectingRecent && selectedRecentIds.size == recentBoxes.size) ||
-                                    (isSelecting && selectedIds.size == devices.size)) "全不选" else "全选",
+                                    (isSelecting && selectedIds.size == devices.size)) stringResource(R.string.device_list_deselect_all) else stringResource(R.string.device_list_select_all),
                                 fontWeight = FontWeight.Medium
                             )
                         }
@@ -148,7 +148,7 @@ fun DeviceListScreen(
                         }
                     } else {
                         IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
-                            Icon(Icons.Default.Search, contentDescription = "搜索")
+                            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.device_list_search))
                         }
                     }
                 },
@@ -167,7 +167,7 @@ fun DeviceListScreen(
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary
                 ) {
-                    Icon(Icons.Default.Add, contentDescription = "添加设备")
+                    Icon(Icons.Default.Add, contentDescription = stringResource(R.string.device_list_add_device))
                 }
             }
         }
@@ -177,9 +177,9 @@ fun DeviceListScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Outlined.DevicesOther, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                     Spacer(Modifier.height(16.dp))
-                    Text("暂无存储设备", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+                    Text(stringResource(R.string.device_list_empty), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
                     Spacer(Modifier.height(8.dp))
-                    Text("点击右下角 + 添加第一个设备", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+                    Text(stringResource(R.string.device_list_empty_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
                 }
             }
         } else {
@@ -284,7 +284,7 @@ fun DeviceListScreen(
     }
     deletingDevice?.let { device ->
         DeleteConfirmDialog(
-            message = "确认删除设备「${device.name}」？\n该设备下的所有层和盒子将被同时删除。",
+            message = stringResource(R.string.device_list_delete_confirm, device.name),
             onDismiss = { viewModel.hideDeleteConfirm() },
             onConfirm = { viewModel.deleteDevice(device) }
         )
@@ -293,7 +293,7 @@ fun DeviceListScreen(
         AlertDialog(
             onDismissRequest = { showDeleteBatchConfirm = false },
             title = { Text(stringResource(R.string.btn_confirm_delete)) },
-            text = { Text("确认删除选中的 ${selectedIds.size} 个设备？该操作不可撤销。") },
+            text = { Text(stringResource(R.string.device_list_delete_batch_confirm, selectedIds.size)) },
             confirmButton = { TextButton(onClick = { showDeleteBatchConfirm = false; viewModel.deleteSelected() }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) } },
             dismissButton = { TextButton(onClick = { showDeleteBatchConfirm = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
@@ -312,7 +312,7 @@ private fun RecentlyViewedSection(
     Column {
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("最近浏览", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+            Text(stringResource(R.string.device_list_recent), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
         }
         Spacer(Modifier.height(12.dp))
         LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -442,7 +442,7 @@ private fun DeviceCard(
             }
             if (!isSelecting) {
                 Spacer(Modifier.width(8.dp))
-                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = "编辑", tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp)) }
+                IconButton(onClick = onEdit) { Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.device_list_edit), tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp)) }
                 IconButton(onClick = onDelete) { Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp)) }
             }
         }

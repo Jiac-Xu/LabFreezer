@@ -171,7 +171,7 @@ fun SampleEditScreen(
                 title = {
                     val s = state.sample
                     Text(
-                        if (s != null) SampleEditViewModel.positionToLabel(s.row, s.col) else "样本编辑",
+                        if (s != null) SampleEditViewModel.positionToLabel(s.row, s.col) else stringResource(R.string.sample_edit_title_fallback),
                         fontWeight = FontWeight.SemiBold
                     )
                 },
@@ -227,7 +227,7 @@ fun SampleEditScreen(
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(48.dp), tint = MaterialTheme.colorScheme.outline)
                                 Spacer(Modifier.height(8.dp))
-                                Text("暂无照片", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
+                                Text(stringResource(R.string.sample_edit_no_photo), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline)
                             }
                         }
                     }
@@ -295,23 +295,23 @@ fun SampleEditScreen(
                     Icon(Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(20.dp))
                     Spacer(Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
-                        Text("位置", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                        Text(stringResource(R.string.sample_edit_label_location), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                         val pos = state.sample?.let { SampleEditViewModel.positionToLabel(it.row, it.col) } ?: ""
                         Text("${state.deviceName} > ${state.layerName} > ${state.boxName} > $pos", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
-                    Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = "更换位置", modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.outline)
+                    Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = stringResource(R.string.sample_edit_change_location), modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.outline)
                 }
             }
             Spacer(Modifier.height(12.dp))
 
-            OutlinedTextField(value = state.name, onValueChange = { viewModel.updateName(it) }, label = { Text("样本名称") }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
+            OutlinedTextField(value = state.name, onValueChange = { viewModel.updateName(it) }, label = { Text(stringResource(R.string.sample_edit_label_name)) }, singleLine = true, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
 
             Spacer(Modifier.height(12.dp))
 
             OutlinedTextField(
                 value = state.date,
                 onValueChange = { viewModel.updateDate(it) },
-                label = { Text("日期 (例如 2024-03-15)") },
+                label = { Text(stringResource(R.string.sample_edit_label_date)) },
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
                 shape = fieldShape,
@@ -320,29 +320,29 @@ fun SampleEditScreen(
                     IconButton(onClick = {
                         val cal = Calendar.getInstance()
                         DatePickerDialog(context, { _, y, m, d -> viewModel.updateDate("%04d-%02d-%02d".format(y, m + 1, d)) }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
-                    }) { Icon(Icons.Default.CalendarToday, contentDescription = "选择日期") }
+                    }) { Icon(Icons.Default.CalendarToday, contentDescription = stringResource(R.string.sample_edit_pick_date)) }
                 }
             )
 
             Spacer(Modifier.height(12.dp))
 
-            OutlinedTextField(value = state.note, onValueChange = { viewModel.updateNote(it) }, label = { Text("备注") }, minLines = 3, maxLines = 6, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
+            OutlinedTextField(value = state.note, onValueChange = { viewModel.updateNote(it) }, label = { Text(stringResource(R.string.sample_edit_label_note)) }, minLines = 3, maxLines = 6, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
 
             Spacer(Modifier.height(16.dp))
 
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                Text("标签", style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.sample_edit_section_tags), style = MaterialTheme.typography.titleSmall)
                 TextButton(onClick = { navController.navigate(Screen.TagManage.route) }) {
                     Icon(Icons.Default.Tag, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
-                    Text("管理标签")
+                    Text(stringResource(R.string.sample_edit_manage_tags))
                 }
             }
 
             Spacer(Modifier.height(4.dp))
 
             if (allTags.isEmpty()) {
-                Text("暂无标签，点击右上角“管理标签”创建", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text(stringResource(R.string.sample_edit_no_tags), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             } else {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     allTags.forEach { tag ->
@@ -394,7 +394,7 @@ fun SampleEditScreen(
     }
 
     if (showDeleteDialog) {
-        AlertDialog(onDismissRequest = { showDeleteDialog = false }, title = { Text(stringResource(R.string.btn_confirm_delete), fontWeight = FontWeight.SemiBold) }, text = { Text("确认删除此样本？此操作不可撤销。") },
+        AlertDialog(onDismissRequest = { showDeleteDialog = false }, title = { Text(stringResource(R.string.btn_confirm_delete), fontWeight = FontWeight.SemiBold) }, text = { Text(stringResource(R.string.sample_edit_confirm_delete)) },
             confirmButton = { TextButton(onClick = { viewModel.delete(); showDeleteDialog = false }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) } },
             dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.btn_cancel)) } })
     }

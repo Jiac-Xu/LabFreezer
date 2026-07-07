@@ -147,7 +147,7 @@ fun BoxGridScreen(
             TopAppBar(
                 title = {
                     if (isSelecting) {
-                        Text("已选 ${selectedIds.size} 项", fontWeight = FontWeight.SemiBold)
+                        Text(stringResource(R.string.box_grid_selected_count, selectedIds.size), fontWeight = FontWeight.SemiBold)
                     } else {
                         Text(box?.name ?: "", fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
@@ -167,7 +167,7 @@ fun BoxGridScreen(
                     if (isSelecting) {
                         val sampleCount = cells.count { it.sampleId != null }
                         TextButton(onClick = { viewModel.selectAll() }) {
-                            Text(if (selectedIds.size == sampleCount) "全不选" else "全选", fontWeight = FontWeight.Medium)
+                            Text(if (selectedIds.size == sampleCount) stringResource(R.string.box_grid_deselect_all) else stringResource(R.string.box_grid_select_all), fontWeight = FontWeight.Medium)
                         }
                         IconButton(onClick = {
                             MoveState.selectedItemIds = selectedIds
@@ -175,7 +175,7 @@ fun BoxGridScreen(
                             MoveState.sourceBoxId = boxId
                             navController.navigate(Screen.MoveBrowser.route)
                         }) {
-                            Icon(Icons.Default.OpenWith, contentDescription = "移动", tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Default.OpenWith, contentDescription = stringResource(R.string.box_grid_move), tint = MaterialTheme.colorScheme.primary)
                         }
                         IconButton(onClick = { showDeleteBatchConfirm = true }) {
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error)
@@ -191,7 +191,7 @@ fun BoxGridScreen(
     ) { padding ->
         if (box == null) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-                Text("加载中...", style = MaterialTheme.typography.bodyLarge)
+                Text(stringResource(R.string.box_grid_loading), style = MaterialTheme.typography.bodyLarge)
             }
         } else {
             val cols = box!!.cols
@@ -326,7 +326,7 @@ fun BoxGridScreen(
         AlertDialog(
             onDismissRequest = { showDeleteBatchConfirm = false },
             title = { Text(stringResource(R.string.btn_confirm_delete)) },
-            text = { Text("确认删除选中的 ${selectedIds.size} 个样本？该操作不可撤销。") },
+            text = { Text(stringResource(R.string.box_grid_confirm_delete, selectedIds.size)) },
             confirmButton = { TextButton(onClick = { showDeleteBatchConfirm = false; viewModel.deleteSelected() }) { Text(stringResource(R.string.btn_delete), color = MaterialTheme.colorScheme.error) } },
             dismissButton = { TextButton(onClick = { showDeleteBatchConfirm = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )

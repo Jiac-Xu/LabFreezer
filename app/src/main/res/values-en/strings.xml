@@ -76,9 +76,27 @@
     <string name="device_list_title">Devices</string>
     <string name="device_list_type_freezer">-80°C Freezer</string>
     <string name="device_list_type_nitrogen">Liquid Nitrogen Tank</string>
+    <string name="device_list_selected_count">%1$d selected</string>
+    <string name="device_list_select_all">Select All</string>
+    <string name="device_list_deselect_all">Deselect All</string>
+    <string name="device_list_search">Search</string>
+    <string name="device_list_add_device">Add Device</string>
+    <string name="device_list_empty">No devices yet</string>
+    <string name="device_list_empty_hint">Tap + at bottom right to add your first device</string>
+    <string name="device_list_delete_confirm">Delete device \"%1$s\"?\nAll layers and boxes under this device will also be deleted.</string>
+    <string name="device_list_delete_batch_confirm">Delete %1$d selected devices? This cannot be undone.</string>
+    <string name="device_list_recent">Recently Viewed</string>
+    <string name="device_list_edit">Edit</string>
 
     <!-- ========== Device Type Manage ========== -->
     <string name="device_type_manage_group_toggle">Group by Device Group</string>
+    <string name="device_type_manage_title">Device Group Management</string>
+    <string name="device_type_manage_add_type">Add Type</string>
+    <string name="device_type_manage_empty">No Device Types</string>
+    <string name="device_type_manage_empty_hint">Tap + at bottom right to add</string>
+    <string name="device_type_manage_dialog_title">Add Device Group</string>
+    <string name="device_type_manage_dialog_label">Type Name</string>
+    <string name="device_type_manage_delete_confirm">Delete device type \"%1$s\"?</string>
 
     <!-- ========== Settings Screen ========== -->
     <string name="settings_title">Settings</string>
@@ -185,6 +203,18 @@
     <string name="sample_edit_ocr_button">Recognize Text</string>
     <string name="sample_edit_take_photo">Take Photo</string>
     <string name="sample_edit_retake_photo">Retake Photo</string>
+    <string name="sample_edit_title_fallback">Edit Sample</string>
+    <string name="sample_edit_no_photo">No Photo</string>
+    <string name="sample_edit_label_location">Location</string>
+    <string name="sample_edit_change_location">Change Location</string>
+    <string name="sample_edit_label_name">Sample Name</string>
+    <string name="sample_edit_label_date">Date (e.g. 2024-03-15)</string>
+    <string name="sample_edit_pick_date">Pick Date</string>
+    <string name="sample_edit_label_note">Note</string>
+    <string name="sample_edit_section_tags">Tags</string>
+    <string name="sample_edit_manage_tags">Manage Tags</string>
+    <string name="sample_edit_no_tags">No tags yet. Tap \"Manage Tags\" to create one.</string>
+    <string name="sample_edit_confirm_delete">Delete this sample? This action cannot be undone.</string>
 
     <!-- ========== Sample Edit ViewModel ========== -->
     <string name="sample_edit_last_sample">Already at the last sample in this box</string>
@@ -197,6 +227,12 @@
 
     <!-- ========== Box Grid ========== -->
     <string name="box_grid_camera_permission">Camera permission is required to take photos</string>
+    <string name="box_grid_selected_count">%1$d selected</string>
+    <string name="box_grid_select_all">Select All</string>
+    <string name="box_grid_deselect_all">Deselect All</string>
+    <string name="box_grid_move">Move</string>
+    <string name="box_grid_loading">Loading…</string>
+    <string name="box_grid_confirm_delete">Delete %1$d selected samples? This cannot be undone.</string>
 
     <!-- ========== Search Screen ========== -->
     <string name="search_options">Search Options</string>

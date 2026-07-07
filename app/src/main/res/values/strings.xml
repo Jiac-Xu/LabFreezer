@@ -76,9 +76,27 @@
     <string name="device_list_title">设备</string>
     <string name="device_list_type_freezer">-80°C 冰箱</string>
     <string name="device_list_type_nitrogen">液氮罐</string>
+    <string name="device_list_selected_count">已选 %1$d 项</string>
+    <string name="device_list_select_all">全选</string>
+    <string name="device_list_deselect_all">全不选</string>
+    <string name="device_list_search">搜索</string>
+    <string name="device_list_add_device">添加设备</string>
+    <string name="device_list_empty">暂无存储设备</string>
+    <string name="device_list_empty_hint">点击右下角 + 添加第一个设备</string>
+    <string name="device_list_delete_confirm">确认删除设备「%1$s」？\n该设备下的所有层和盒子将被同时删除。</string>
+    <string name="device_list_delete_batch_confirm">确认删除选中的 %1$d 个设备？该操作不可撤销。</string>
+    <string name="device_list_recent">最近浏览</string>
+    <string name="device_list_edit">编辑</string>
 
     <!-- ========== Device Type Manage ========== -->
     <string name="device_type_manage_group_toggle">按设备组分组</string>
+    <string name="device_type_manage_title">设备组管理</string>
+    <string name="device_type_manage_add_type">添加类型</string>
+    <string name="device_type_manage_empty">暂无设备类型</string>
+    <string name="device_type_manage_empty_hint">点击右下角 + 添加</string>
+    <string name="device_type_manage_dialog_title">添加设备组</string>
+    <string name="device_type_manage_dialog_label">类型名称</string>
+    <string name="device_type_manage_delete_confirm">确认删除设备类型「%1$s」？</string>
 
     <!-- ========== Settings Screen ========== -->
     <string name="settings_title">设置</string>
@@ -185,6 +203,18 @@
     <string name="sample_edit_ocr_button">识别文字</string>
     <string name="sample_edit_take_photo">拍照</string>
     <string name="sample_edit_retake_photo">重新拍照</string>
+    <string name="sample_edit_title_fallback">样本编辑</string>
+    <string name="sample_edit_no_photo">暂无照片</string>
+    <string name="sample_edit_label_location">位置</string>
+    <string name="sample_edit_change_location">更换位置</string>
+    <string name="sample_edit_label_name">样本名称</string>
+    <string name="sample_edit_label_date">日期 (例如 2024-03-15)</string>
+    <string name="sample_edit_pick_date">选择日期</string>
+    <string name="sample_edit_label_note">备注</string>
+    <string name="sample_edit_section_tags">标签</string>
+    <string name="sample_edit_manage_tags">管理标签</string>
+    <string name="sample_edit_no_tags">暂无标签，点击右上角"管理标签"创建</string>
+    <string name="sample_edit_confirm_delete">确认删除此样本？此操作不可撤销。</string>
 
     <!-- ========== Sample Edit ViewModel ========== -->
     <string name="sample_edit_last_sample">已经是当前冻存盒的最后一个样本</string>
@@ -197,6 +227,12 @@
 
     <!-- ========== Box Grid ========== -->
     <string name="box_grid_camera_permission">需要相机权限才能拍照</string>
+    <string name="box_grid_selected_count">已选 %1$d 项</string>
+    <string name="box_grid_select_all">全选</string>
+    <string name="box_grid_deselect_all">全不选</string>
+    <string name="box_grid_move">移动</string>
+    <string name="box_grid_loading">加载中…</string>
+    <string name="box_grid_confirm_delete">确认删除选中的 %1$d 个样本？该操作不可撤销。</string>
 
     <!-- ========== Search Screen ========== -->
     <string name="search_options">搜索选项</string>
