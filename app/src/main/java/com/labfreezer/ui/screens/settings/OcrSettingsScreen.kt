@@ -254,7 +254,7 @@ fun OcrSettingsScreen(
             Spacer(Modifier.height(16.dp))
 
             Text(
-                "  全数据库 OCR",
+                "  手动批量识别",
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = MaterialTheme.colorScheme.primary
@@ -270,7 +270,7 @@ fun OcrSettingsScreen(
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
                     Text(
-                        "对已有照片但缺少名称或日期的样品执行 OCR 识别，结果自动保存",
+                        "对已有照片但缺少名称的样品执行批量识别，结果自动保存",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
