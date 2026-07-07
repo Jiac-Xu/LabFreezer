@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">LabFreezer</string>
+
+    <!-- ========== Common ========== -->
+    <string name="btn_save">Save</string>
+    <string name="btn_add">Add</string>
+    <string name="btn_cancel">Cancel</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_clear">Clear</string>
+    <string name="btn_back">Back</string>
+    <string name="btn_confirm_delete">Confirm Delete</string>
+    <string name="content_description_back">Back</string>
+    <string name="content_description_clear">Clear</string>
+    <string name="content_description_collapse">Collapse</string>
+    <string name="content_description_expand">Expand</string>
+    <string name="content_description_save">Save</string>
+    <string name="content_description_zoom_in">Zoom in</string>
+    <string name="content_description_zoom_out">Zoom out</string>
+    <string name="label_note_optional">Note (optional)</string>
+    <string name="fallback_unnamed">Unnamed</string>
+    <string name="fallback_unknown">Unknown</string>
+
+    <!-- ========== Bottom Bar Edit ========== -->
+    <string name="bottom_bar_edit_title">Bottom Bar Edit</string>
+    <string name="bottom_bar_edit_reset">Restore Default</string>
+    <string name="bottom_bar_edit_section_preview">Preview</string>
+    <string name="bottom_bar_edit_section_visible">Visible in Bottom Bar</string>
+    <string name="bottom_bar_edit_empty">No tabs added yet. Select below.</string>
+    <string name="bottom_bar_edit_section_hidden">Hidden</string>
+    <string name="bottom_bar_edit_instruction">Long press and drag handle (≡) to reorder. Toggle to show in the bottom bar.</string>
+    <string name="bottom_bar_edit_drag_description">Drag to reorder</string>
+
+    <!-- ========== Bottom Tab ========== -->
+    <string name="tab_home">Library</string>
+    <string name="tab_tags">Tags</string>
+    <string name="tab_search">Search</string>
+    <string name="tab_settings">Settings</string>
+    <string name="start_page_default_label">Library</string>
+
+    <!-- ========== Start Page Picker ========== -->
+    <string name="start_page_picker_title">Select Start Page</string>
+    <string name="start_page_picker_search_placeholder">Search device, layer, or box name</string>
+    <string name="start_page_picker_section_main">Main Page</string>
+    <string name="start_page_picker_section_device">Device Details</string>
+    <string name="start_page_picker_format_layer_box">%1$d layers, %2$d boxes</string>
+    <string name="start_page_picker_format_box_sample">%1$d boxes, %2$d samples</string>
+    <string name="start_page_picker_format_grid_sample">%1$d×%2$d, %3$d samples</string>
+
+    <!-- ========== Device Dialogs ========== -->
+    <string name="device_dialog_title_edit">Edit Device</string>
+    <string name="device_dialog_title_add">Add Device</string>
+    <string name="device_dialog_label_name">Device Name</string>
+    <string name="device_dialog_label_group">Device Group</string>
+    <string name="device_dialog_label_parent_device">Parent Device</string>
+    <string name="device_dialog_placeholder_select_device">Select a device</string>
+
+    <!-- ========== Layer Dialogs ========== -->
+    <string name="layer_dialog_title_edit">Edit Layer</string>
+    <string name="layer_dialog_title_add">Add Layer</string>
+    <string name="layer_dialog_label_name">Layer Name</string>
+    <string name="layer_dialog_label_parent_layer">Select Layer</string>
+    <string name="layer_dialog_label_location">Location</string>
+    <string name="layer_dialog_placeholder_select_location">Select a location</string>
+    <string name="layer_dialog_title_select_device">Select Device</string>
+
+    <!-- ========== Box Dialogs ========== -->
+    <string name="box_dialog_title_edit">Edit Box</string>
+    <string name="box_dialog_title_add">Add Box</string>
+    <string name="box_dialog_label_name">Box Name</string>
+    <string name="box_dialog_label_rows">Rows</string>
+    <string name="box_dialog_label_cols">Columns</string>
+    <string name="box_dialog_title_select_layer">Select Layer</string>
+
+    <!-- ========== Device List ========== -->
+    <string name="device_list_title">Devices</string>
+    <string name="device_list_type_freezer">-80°C Freezer</string>
+    <string name="device_list_type_nitrogen">Liquid Nitrogen Tank</string>
+
+    <!-- ========== Device Type Manage ========== -->
+    <string name="device_type_manage_group_toggle">Group by Device Group</string>
+
+    <!-- ========== Settings Screen ========== -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_theme_mode">Theme Mode</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_system">System</string>
+    <string name="settings_bottom_bar_edit">Bottom Bar Edit</string>
+    <string name="settings_bottom_bar_edit_subtitle">Customize bottom bar tab order and visibility</string>
+    <string name="settings_start_page">Start Page</string>
+    <string name="settings_section_management">Management</string>
+    <string name="settings_image_cleanup">Image Cleanup</string>
+    <string name="settings_image_cleanup_subtitle">Remove unnecessary sample photos</string>
+    <string name="settings_ocr_settings">Auto-fill</string>
+    <string name="settings_ocr_settings_subtitle">Auto-fill sample info, dates, batch recognition</string>
+    <string name="settings_section_import_export">Layout Import/Export</string>
+    <string name="settings_csv_import">CSV Import</string>
+    <string name="settings_csv_import_subtitle">Import by merging CSV files</string>
+    <string name="settings_csv_export">CSV Export</string>
+    <string name="settings_csv_export_subtitle">Export as spreadsheet format</string>
+    <string name="settings_pdf_export">PDF Export</string>
+    <string name="settings_pdf_export_subtitle">Grid layout with photos</string>
+    <string name="settings_markdown_export">Markdown Export</string>
+    <string name="settings_markdown_export_subtitle">Table with images, editable externally</string>
+    <string name="settings_markdown_import">Markdown Import</string>
+    <string name="settings_markdown_import_subtitle">Import sample data and images from .zip</string>
+    <string name="settings_section_data_backup">Data Backup &amp; Restore</string>
+    <string name="settings_export_db">Export Database</string>
+    <string name="settings_export_db_subtitle">Back up as .zip data package</string>
+    <string name="settings_import_db">Import Database</string>
+    <string name="settings_import_db_subtitle">Restore from .zip data package</string>
+    <string name="settings_section_about">About</string>
+    <string name="settings_about">About</string>
+    <string name="settings_about_subtitle">Version %1$s</string>
+
+    <!-- ========== OCR / Auto-fill Settings ========== -->
+    <string name="ocr_settings_title">Auto-fill</string>
+    <string name="ocr_settings_section_switch">Toggle</string>
+    <string name="ocr_settings_master_label">Text Recognition</string>
+    <string name="ocr_settings_master_subtitle">Recognize text in photos</string>
+    <string name="ocr_settings_auto_ocr_label">Auto-fill photo text</string>
+    <string name="ocr_settings_auto_ocr_subtitle">Automatically recognize text when taking photos</string>
+    <string name="ocr_settings_auto_date_label">Auto-fill photo date</string>
+    <string name="ocr_settings_auto_date_subtitle">Automatically record today\'s date when taking photos</string>
+    <string name="ocr_settings_section_model">Model File</string>
+    <string name="ocr_settings_model_label">PaddleOCR Lite Local Model</string>
+    <string name="ocr_settings_section_batch">Manual Batch Recognition</string>
+    <string name="ocr_settings_batch_description">Run batch recognition on existing unnamed samples. Results are saved automatically.</string>
+    <string name="ocr_settings_batch_running">Running...</string>
+    <string name="ocr_settings_batch_start">Start</string>
+
+    <!-- ========== OCR ViewModel ========== -->
+    <string name="ocr_batch_no_samples">No samples found requiring OCR</string>
+    <string name="ocr_batch_fallback_name">Sample #%1$d</string>
+    <string name="ocr_batch_result">Completed: %1$d/%2$d samples updated</string>
+    <string name="ocr_batch_error">Execution error</string>
+
+    <!-- ========== Image Cleanup ========== -->
+    <string name="image_cleanup_title">Image Cleanup</string>
+    <string name="image_cleanup_delete_selected">Delete Selected</string>
+    <string name="image_cleanup_empty">No images to clean up</string>
+    <string name="image_cleanup_clean_all">Clean up all marked sample images</string>
+    <string name="image_cleanup_count">%1$d samples contain images</string>
+    <string name="image_cleanup_confirm_delete_title">Confirm Deletion</string>
+    <string name="image_cleanup_confirm_delete_body">Delete the selected %1$d images? This action cannot be undone.</string>
+    <string name="image_cleanup_confirm_clean_body">Images from all samples that already have a name or note will be deleted. This action cannot be undone.</string>
+    <string name="image_cleanup_confirm_clean">Clean Up</string>
+    <string name="image_cleanup_no_image">No image</string>
+
+    <!-- ========== About ========== -->
+    <string name="about_title">About</string>
+    <string name="about_version">Version %1$s</string>
+    <string name="about_new_version_found">New version available</string>
+    <string name="about_up_to_date">Up to date (%1$s)</string>
+    <string name="about_check_update_failed">Check for updates failed</string>
+    <string name="about_download">Download</string>
+
+    <!-- ========== Move Browser ========== -->
+    <string name="move_title_select_device">Select Device</string>
+    <string name="move_title_select_layer">Select Layer</string>
+    <string name="move_title_select_box">Select Box</string>
+    <string name="move_action_layer">Move Layer</string>
+    <string name="move_action_box">Move Box</string>
+    <string name="move_action_sample">Move Sample</string>
+    <string name="move_confirm_target">Select This Target</string>
+    <string name="move_confirm_move">Confirm Move</string>
+    <string name="move_confirm_move_count">Confirm Move (%1$d samples)</string>
+    <string name="move_filter_all">All Devices</string>
+    <string name="move_search_placeholder">Search freezer / layer / box...</string>
+    <string name="move_instruction">Tap an empty slot to select target. Selected: %1$d/%2$d</string>
+
+    <!-- ========== Search ========== -->
+    <string name="search_title">Search</string>
+    <string name="search_placeholder">Enter name or note to search</string>
+    <string name="search_empty">Enter name or note to search</string>
+    <string name="search_loading">Searching...</string>
+    <string name="search_no_results">No results found</string>
+    <string name="search_tag_manage">Tag Management</string>
+    <string name="search_device">Device</string>
+    <string name="search_note">Note: %1$s</string>
+
+    <!-- ========== Sample Edit ========== -->
+    <string name="sample_edit_ocr_button">Recognize Text</string>
+    <string name="sample_edit_take_photo">Take Photo</string>
+    <string name="sample_edit_retake_photo">Retake Photo</string>
+
+    <!-- ========== Sample Edit ViewModel ========== -->
+    <string name="sample_edit_last_sample">Already at the last sample in this box</string>
+    <string name="sample_edit_first_sample">Already at the first sample in this box</string>
+    <string name="sample_edit_saved">Saved</string>
+
+    <!-- ========== Tag Detail ========== -->
+    <string name="tag_detail_title">Tag Details</string>
+    <string name="tag_detail_empty">No samples under this tag</string>
+
+    <!-- ========== Box Grid ========== -->
+    <string name="box_grid_camera_permission">Camera permission is required to take photos</string>
+
+    <!-- ========== Search Screen ========== -->
+    <string name="search_options">Search Options</string>
+    <string name="search_filter_name">Name</string>
+    <string name="search_filter_note">Note</string>
+    <string name="search_hint">Search</string>
+</resources>
