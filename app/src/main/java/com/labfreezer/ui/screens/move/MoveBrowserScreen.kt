@@ -91,7 +91,8 @@ fun MoveBrowserScreen(
                                     MoveTarget.LAYER -> stringResource(R.string.move_action_box)
                                     MoveTarget.BOX -> stringResource(R.string.move_action_sample)
                                 }
-                            }
+                            },
+                            fontWeight = FontWeight.SemiBold
                         )
                     },
                     navigationIcon = {
