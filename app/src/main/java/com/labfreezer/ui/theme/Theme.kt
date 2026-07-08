@@ -48,7 +48,7 @@ private val HyperLightColorScheme = lightColorScheme(
 )
 
 private val HyperDarkColorScheme = darkColorScheme(
-    primary = Color(0xFFA1CAFF),
+    primary = Color(0xFF007AFF),
     onPrimary = Color(0xFF00315C),
     primaryContainer = Color(0xFF004982),
     onPrimaryContainer = Color(0xFFD6EAFF),
