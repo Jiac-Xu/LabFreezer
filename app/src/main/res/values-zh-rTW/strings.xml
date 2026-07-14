@@ -122,6 +122,14 @@
     <string name="settings_about">關於</string>
     <string name="settings_about_subtitle">版本 %1$s</string>
 
+    <!-- ========== Import / Share ========== -->
+    <string name="import_preview_title">匯入資料</string>
+    <string name="import_current_samples">當前資料庫樣本數：</string>
+    <string name="import_import_samples">匯入資料樣本數：</string>
+    <string name="import_confirm">確認匯入</string>
+    <string name="import_cancel">取消</string>
+    <string name="import_unknown_hint">該檔案不是本程式的資料包，無法匯入。\n\n支援的格式：\n• 資料庫備份包（.zip，含 labfreezer.db）\n• Markdown 匯出包（含 .md 檔案）</string>
+
     <!-- ========== OCR / Auto-fill Settings ========== -->
     <string name="ocr_settings_title">自動辨識填入</string>
     <string name="ocr_settings_section_switch">開關</string>

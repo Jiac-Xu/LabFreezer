@@ -16,6 +16,8 @@ import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.TagRepository
 import com.labfreezer.export.ExportEngine
+import com.labfreezer.export.ExportEngine.ZipAnalysis
+import com.labfreezer.export.ExportEngine.ZipType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -128,6 +130,16 @@ class ExportViewModel @Inject constructor(
                 Toast.makeText(context, "\u5bfc\u5165\u5931\u8d25: ${e.message}", Toast.LENGTH_LONG).show()
             } finally {
                 _isLoading.value = false
+            }
+        }
+    }
+
+    fun analyzeZipFile(uri: Uri, onResult: (ZipAnalysis, Int) -> Unit) {
+        viewModelScope.launch(Dispatchers.IO) {
+            val analysis = exportEngine.analyzeZipFile(uri)
+            val currentCount = sampleRepository.countAll()
+            withContext(Dispatchers.Main) {
+                onResult(analysis, currentCount)
             }
         }
     }

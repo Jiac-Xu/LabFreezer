@@ -120,6 +120,9 @@ interface SamplePositionDao {
     @Query("SELECT COUNT(*) FROM sample_position WHERE box_id IN (SELECT id FROM storage_box WHERE layer_id = :layerId)")
     suspend fun countByLayerId(layerId: Long): Int
 
+    @Query("SELECT COUNT(*) FROM sample_position")
+    suspend fun countAll(): Int
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(position: SamplePositionEntity): Long
 

@@ -1,6 +1,8 @@
 package com.labfreezer.ui
 
 import android.app.Activity
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -25,18 +27,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,6 +54,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
@@ -52,10 +62,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.labfreezer.export.ExportEngine.ZipAnalysis
+import com.labfreezer.export.ExportEngine.ZipType
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.boxgrid.BoxGridScreen
 import com.labfreezer.ui.screens.devices.DeviceDetailScreen
 import com.labfreezer.ui.screens.devices.DeviceListScreen
+import com.labfreezer.ui.screens.export.ExportViewModel
 import com.labfreezer.ui.screens.layers.LayerDetailScreen
 import com.labfreezer.ui.screens.sample.SampleEditScreen
 import com.labfreezer.ui.screens.search.SearchScreen
@@ -77,6 +90,8 @@ import com.labfreezer.ui.theme.LabFreezerTheme
 import com.labfreezer.ui.theme.LocalThemeMode
 import com.labfreezer.ui.theme.ThemeMode
 import com.labfreezer.ui.theme.ThemePreferences
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 object NavAnimState {
     var isSwipePrevious = false
@@ -84,7 +99,9 @@ object NavAnimState {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    pendingImportUri: androidx.compose.runtime.MutableState<android.net.Uri?>? = null
+) {
     val activity = LocalContext.current as Activity
     var themeModeOrdinal by remember { mutableIntStateOf(ThemePreferences.getMode(activity).ordinal) }
     val themeMode = ThemeMode.entries[themeModeOrdinal]
@@ -250,6 +267,12 @@ fun MainScreen() {
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
+            pendingImportUri?.value?.let { uri ->
+                ImportPreviewDialog(
+                    uri = uri,
+                    onDismiss = { pendingImportUri.value = null }
+                )
+            }
         }
         }
     }
@@ -411,4 +434,153 @@ private fun MainTabPager(
             null -> Box(modifier = Modifier.fillMaxSize())
         }
     }
+}
+
+@Composable
+private fun ImportPreviewDialog(
+    uri: android.net.Uri,
+    onDismiss: () -> Unit,
+    exportViewModel: ExportViewModel = hiltViewModel()
+) {
+    var analysis by remember { mutableStateOf<ZipAnalysis?>(null) }
+    var currentCount by remember { mutableStateOf(0) }
+    var isLoading by remember { mutableStateOf(true) }
+    var isImporting by remember { mutableStateOf(false) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(uri) {
+        exportViewModel.analyzeZipFile(uri) { result, count ->
+            analysis = result
+            currentCount = count
+            isLoading = false
+        }
+    }
+
+    if (isImporting) {
+        AlertDialog(
+            onDismissRequest = {},
+            title = { Text("导入中...", fontWeight = FontWeight.SemiBold) },
+            text = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            },
+            confirmButton = {},
+            dismissButton = {}
+        )
+        return
+    }
+
+    val context = LocalContext.current
+
+    if (isLoading) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("正在分析...", fontWeight = FontWeight.SemiBold) },
+            text = {
+                Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator()
+                }
+            },
+            confirmButton = {},
+            dismissButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("取消", color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        )
+        return
+    }
+
+    val result = analysis
+    if (result == null || result.type == ZipType.UNKNOWN) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = {
+                Text("无法导入", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error)
+            },
+            text = {
+                Text("该文件不是本程序的数据包，无法导入。\n\n支持的格式：\n• 数据库备份包（.zip，含 labfreezer.db）\n• Markdown 导出包（含 .md 文件）")
+            },
+            confirmButton = {
+                TextButton(onClick = onDismiss) {
+                    Text("确定", color = MaterialTheme.colorScheme.primary)
+                }
+            }
+        )
+        return
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = {
+            Text("导入数据", fontWeight = FontWeight.SemiBold)
+        },
+        text = {
+            Column {
+                Text(
+                    text = "检测到：${result.label}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    fontWeight = FontWeight.Medium,
+                    color = MaterialTheme.colorScheme.primary
+                )
+                Spacer(Modifier.height(12.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("当前数据库样本数：", style = MaterialTheme.typography.bodyMedium)
+                    Text("$currentCount", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                }
+                Spacer(Modifier.height(4.dp))
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("导入数据样本数：", style = MaterialTheme.typography.bodyMedium)
+                    Text("${result.importSampleCount}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+                }
+                if (result.type == ZipType.MARKDOWN_EXPORT) {
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "Markdown 导入会合并数据，同名位置样本将被覆盖。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.outline
+                    )
+                }
+                if (result.type == ZipType.DATABASE_BACKUP) {
+                    Spacer(Modifier.height(12.dp))
+                    Text(
+                        "数据库导入将替换当前所有数据，请谨慎操作。",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
+                errorMessage?.let { msg ->
+                    Spacer(Modifier.height(8.dp))
+                    Text(msg, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                onClick = {
+                    isImporting = true
+                    errorMessage = null
+                    when (result.type) {
+                        ZipType.DATABASE_BACKUP -> exportViewModel.importDatabase(uri)
+                        ZipType.MARKDOWN_EXPORT -> exportViewModel.importMarkdown(uri)
+                        else -> {}
+                    }
+                    scope.launch {
+                        delay(1500)
+                        onDismiss()
+                    }
+                },
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+            ) {
+                Text("确认导入", color = MaterialTheme.colorScheme.onPrimary)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("取消", color = MaterialTheme.colorScheme.primary)
+            }
+        }
+    )
 }

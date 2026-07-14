@@ -1,6 +1,7 @@
 package com.labfreezer.export
 
 import android.content.Context
+import android.database.sqlite.SQLiteDatabase
 import android.net.Uri
 import com.labfreezer.data.db.dao.SamplePositionDao
 import com.labfreezer.data.db.dao.SampleWithPath
@@ -14,9 +15,11 @@ import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.TagRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 import java.util.zip.ZipEntry
 import java.util.zip.ZipInputStream
@@ -43,6 +46,75 @@ class ExportEngine @Inject constructor(
             dir.listFiles()?.forEach { file ->
                 if (file.isDirectory) file.deleteRecursively() else file.delete()
             }
+        }
+    }
+
+    enum class ZipType { DATABASE_BACKUP, MARKDOWN_EXPORT, UNKNOWN }
+
+    data class ZipAnalysis(val type: ZipType, val importSampleCount: Int, val label: String)
+
+    fun analyzeZipFile(uri: Uri): ZipAnalysis {
+        return try {
+            var type = ZipType.UNKNOWN
+            var sampleCount = 0
+            var mdContent: String? = null
+            var tempDbFile: File? = null
+
+            context.contentResolver.openInputStream(uri)?.use { input ->
+                ZipInputStream(input).use { zis ->
+                    var entry: ZipEntry? = zis.nextEntry
+                    while (entry != null) {
+                        val name = entry.name
+                        when {
+                            name == "labfreezer.db" -> {
+                                type = ZipType.DATABASE_BACKUP
+                                val tempDir = File(context.cacheDir, "zip_analysis")
+                                tempDir.mkdirs()
+                                val tmpFile = File(tempDir, "analysis.db")
+                                FileOutputStream(tmpFile).use { zis.copyTo(it) }
+                                tempDbFile = tmpFile
+                            }
+                            name.endsWith(".md") && type != ZipType.DATABASE_BACKUP -> {
+                                type = ZipType.MARKDOWN_EXPORT
+                                mdContent = zis.readBytes().toString(Charsets.UTF_8)
+                            }
+                        }
+                        zis.closeEntry()
+                        entry = zis.nextEntry
+                    }
+                }
+            }
+
+            when (type) {
+                ZipType.DATABASE_BACKUP -> {
+                    tempDbFile?.let { dbFile ->
+                        try {
+                            val db = SQLiteDatabase.openDatabase(dbFile.absolutePath, null, SQLiteDatabase.OPEN_READONLY)
+                            sampleCount = try {
+                                val cursor = db.rawQuery("SELECT COUNT(*) FROM sample_position", null)
+                                cursor.moveToFirst()
+                                cursor.getInt(0).also { cursor.close() }
+                            } catch (_: Exception) { 0 }
+                            db.close()
+                        } catch (_: Exception) {}
+                        dbFile.delete()
+                        dbFile.parentFile?.delete()
+                    }
+                    ZipAnalysis(type, sampleCount, "数据库备份包")
+                }
+                ZipType.MARKDOWN_EXPORT -> {
+                    mdContent?.let { content ->
+                        val rows = content.lines().filter {
+                            it.startsWith("|") && !it.startsWith("| ---") && !it.startsWith("| 样本")
+                        }
+                        sampleCount = rows.size
+                    }
+                    ZipAnalysis(type, sampleCount, "Markdown 导出包")
+                }
+                ZipType.UNKNOWN -> ZipAnalysis(type, 0, "")
+            }
+        } catch (_: Exception) {
+            ZipAnalysis(ZipType.UNKNOWN, 0, "")
         }
     }
 

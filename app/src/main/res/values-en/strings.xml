@@ -133,6 +133,14 @@
     <string name="settings_about">About</string>
     <string name="settings_about_subtitle">Version %1$s</string>
 
+    <!-- ========== Import / Share ========== -->
+    <string name="import_preview_title">Import Data</string>
+    <string name="import_current_samples">Current samples: </string>
+    <string name="import_import_samples">Import samples: </string>
+    <string name="import_confirm">Import</string>
+    <string name="import_cancel">Cancel</string>
+    <string name="import_unknown_hint">This file is not recognized as a LabFreezer data package.\n\nSupported formats:\n• Database backup (.zip with labfreezer.db)\n• Markdown export (.zip with .md archive)</string>
+
     <!-- ========== OCR / Auto-fill Settings ========== -->
     <string name="ocr_settings_title">Auto-fill</string>
     <string name="ocr_settings_section_switch">Toggle</string>

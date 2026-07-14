@@ -47,6 +47,8 @@ class SamplePositionRepository @Inject constructor(
 
     suspend fun countByLayerId(layerId: Long): Int = sampleDao.countByLayerId(layerId)
 
+    suspend fun countAll(): Int = sampleDao.countAll()
+
     suspend fun insert(position: SamplePositionEntity): Long = sampleDao.insert(position)
 
     suspend fun update(position: SamplePositionEntity) = sampleDao.update(position)
