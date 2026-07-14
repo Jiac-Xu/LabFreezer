@@ -16,8 +16,10 @@ import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.TagRepository
 import com.labfreezer.export.ExportEngine
-import com.labfreezer.export.ExportEngine.ZipAnalysis
-import com.labfreezer.export.ExportEngine.ZipType
+import com.labfreezer.export.ImportEngine
+import com.labfreezer.export.ZipAnalysis
+import com.labfreezer.export.ZipInspector
+import com.labfreezer.export.ZipType
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -44,7 +46,9 @@ class ExportViewModel @Inject constructor(
     private val layerRepository: StorageLayerRepository,
     private val boxRepository: StorageBoxRepository,
     private val tagRepository: TagRepository,
-    private val exportEngine: ExportEngine
+    private val exportEngine: ExportEngine,
+    private val importEngine: ImportEngine,
+    private val zipInspector: ZipInspector
 ) : ViewModel() {
 
     private val _isLoading = MutableStateFlow(false)
@@ -86,7 +90,7 @@ class ExportViewModel @Inject constructor(
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val file = exportEngine.exportDatabase()
+                val file = withContext(Dispatchers.IO) { exportEngine.exportDatabase() }
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                 _result.value = ExportResult(uri, "application/zip")
             } catch (e: Exception) {
@@ -101,7 +105,7 @@ class ExportViewModel @Inject constructor(
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val file = exportEngine.exportDatabase()
+                val file = withContext(Dispatchers.IO) { exportEngine.exportDatabase() }
                 context.contentResolver.openOutputStream(targetUri)?.use { output ->
                     file.inputStream().use { input ->
                         input.copyTo(output)
@@ -120,7 +124,7 @@ class ExportViewModel @Inject constructor(
         _isLoading.value = true
         viewModelScope.launch {
             try {
-                val success = exportEngine.importDatabase(uri)
+                val success = importEngine.importDatabase(uri)
                 if (success) {
                     Toast.makeText(context, "\u5bfc\u5165\u6210\u529f\uff0c\u8bf7\u91cd\u542f\u5e94\u7528", Toast.LENGTH_LONG).show()
                 } else {
@@ -134,9 +138,9 @@ class ExportViewModel @Inject constructor(
         }
     }
 
-    fun analyzeZipFile(uri: Uri, onResult: (ZipAnalysis, Int) -> Unit) {
+    fun inspectImportPackage(uri: Uri, onResult: (ZipAnalysis, Int) -> Unit) {
         viewModelScope.launch(Dispatchers.IO) {
-            val analysis = exportEngine.analyzeZipFile(uri)
+            val analysis = zipInspector.inspectImportPackage(uri)
             val currentCount = sampleRepository.countAll()
             withContext(Dispatchers.Main) {
                 onResult(analysis, currentCount)
@@ -149,7 +153,7 @@ class ExportViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 withContext(Dispatchers.IO) {
-                    exportEngine.importMarkdown(uri)
+                    importEngine.importMarkdown(uri)
                 }
                 Toast.makeText(context, "\u5bfc\u5165\u6210\u529f", Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
