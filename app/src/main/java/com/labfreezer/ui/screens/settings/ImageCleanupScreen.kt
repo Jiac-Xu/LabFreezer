@@ -80,14 +80,8 @@ fun ImageCleanupScreen(
     var expandedDevice by remember { mutableStateOf<String?>(null) }
     var expandedLayer by remember { mutableStateOf<String?>(null) }
     var expandedBox by remember { mutableStateOf<String?>(null) }
-    var deleteDone by remember { mutableStateOf(false) }
 
     val groupedByDevice = groups.groupBy { it.deviceName }
-
-    if (deleteDone) {
-        deleteDone = false
-        onBack()
-    }
 
     Scaffold(
         topBar = {
@@ -201,7 +195,7 @@ fun ImageCleanupScreen(
                 Button(
                     onClick = {
                         showDeleteConfirm = false
-                        viewModel.deleteSelected { deleteDone = true }
+                        viewModel.deleteSelected { }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
@@ -240,7 +234,7 @@ fun ImageCleanupScreen(
                 Button(
                     onClick = {
                         showBulkConfirm = false
-                        viewModel.deleteAllNamedOrNoted { deleteDone = true }
+                        viewModel.deleteAllNamedOrNoted { }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
