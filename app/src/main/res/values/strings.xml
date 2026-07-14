@@ -125,6 +125,8 @@
     <string name="settings_section_data_backup">数据备份与恢复</string>
     <string name="settings_export_db">导出数据库</string>
     <string name="settings_export_db_subtitle">备份为 .zip 数据包</string>
+    <string name="settings_export_db_save_as">导出数据库（选择位置）</string>
+    <string name="settings_export_db_save_as_subtitle">选择保存位置导出 .zip 数据包</string>
     <string name="settings_import_db">导入数据库</string>
     <string name="settings_import_db_subtitle">从 .zip 数据包恢复</string>
     <string name="settings_section_about">关于</string>

@@ -114,6 +114,8 @@
     <string name="settings_section_data_backup">資料備份與還原</string>
     <string name="settings_export_db">匯出資料庫</string>
     <string name="settings_export_db_subtitle">備份為 .zip 資料包</string>
+    <string name="settings_export_db_save_as">匯出資料庫（選擇位置）</string>
+    <string name="settings_export_db_save_as_subtitle">選擇儲存位置匯出 .zip 資料包</string>
     <string name="settings_import_db">匯入資料庫</string>
     <string name="settings_import_db_subtitle">從 .zip 資料包還原</string>
     <string name="settings_section_about">關於</string>

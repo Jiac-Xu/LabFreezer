@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PhotoLibrary
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.TableChart
@@ -92,6 +93,10 @@ fun SettingsScreen(
     val markdownImportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { viewModel.importMarkdown(it) } }
+
+    val dbExportSaveAsLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri -> uri?.let { viewModel.exportDatabaseToUri(it) } }
 
     LaunchedEffect(exportResult) {
         exportResult?.let { r ->
@@ -242,6 +247,16 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_export_db),
                 subtitle = stringResource(R.string.settings_export_db_subtitle),
                 onClick = { viewModel.exportDatabaseZip() },
+                trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
+            )
+            SettingsCard(
+                icon = Icons.Default.Save,
+                title = stringResource(R.string.settings_export_db_save_as),
+                subtitle = stringResource(R.string.settings_export_db_save_as_subtitle),
+                onClick = {
+                    val ts = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
+                    dbExportSaveAsLauncher.launch("labfreezer_$ts.zip")
+                },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
             SettingsCard(

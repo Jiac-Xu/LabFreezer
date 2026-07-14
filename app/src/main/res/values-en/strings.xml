@@ -125,6 +125,8 @@
     <string name="settings_section_data_backup">Data Backup &amp; Restore</string>
     <string name="settings_export_db">Export Database</string>
     <string name="settings_export_db_subtitle">Back up as .zip data package</string>
+    <string name="settings_export_db_save_as">Export Database (Save As)</string>
+    <string name="settings_export_db_save_as_subtitle">Choose location to export .zip</string>
     <string name="settings_import_db">Import Database</string>
     <string name="settings_import_db_subtitle">Restore from .zip data package</string>
     <string name="settings_section_about">About</string>

@@ -95,6 +95,25 @@ class ExportViewModel @Inject constructor(
         }
     }
 
+    fun exportDatabaseToUri(targetUri: Uri) {
+        _isLoading.value = true
+        viewModelScope.launch {
+            try {
+                val file = exportEngine.exportDatabase()
+                context.contentResolver.openOutputStream(targetUri)?.use { output ->
+                    file.inputStream().use { input ->
+                        input.copyTo(output)
+                    }
+                }
+                Toast.makeText(context, "\u5bfc\u51fa\u6210\u529f", Toast.LENGTH_LONG).show()
+            } catch (e: Exception) {
+                Toast.makeText(context, "\u5bfc\u51fa\u5931\u8d25: ${e.message}", Toast.LENGTH_LONG).show()
+            } finally {
+                _isLoading.value = false
+            }
+        }
+    }
+
     fun importDatabase(uri: Uri) {
         _isLoading.value = true
         viewModelScope.launch {
