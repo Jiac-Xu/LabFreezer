@@ -210,7 +210,7 @@ fun MainScreen() {
                     DeviceTypeManageScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.TagManage.route) {
-                    TagManageScreen(navController, showBackButton = true)
+                    TagManageScreen(navController, showBackButton = true, showFabPadding = false)
                 }
                 composable(
                     route = Screen.TagDetail.route,
@@ -397,8 +397,8 @@ private fun MainTabPager(
         label = "MainTabTransition"
     ) { targetPage ->
         when (tabConfig.getOrNull(targetPage)) {
-            BottomTab.DEVICE_LIST -> DeviceListScreen(navController)
-            BottomTab.TAG_MANAGE -> TagManageScreen(navController, showBackButton = false)
+            BottomTab.DEVICE_LIST -> DeviceListScreen(navController, showFabPadding = true)
+            BottomTab.TAG_MANAGE -> TagManageScreen(navController, showBackButton = false, showFabPadding = true)
             BottomTab.SEARCH -> SearchScreen(navController, showBackButton = false)
             BottomTab.SETTINGS -> SettingsScreen(
                 onThemeChanged = onThemeChanged,

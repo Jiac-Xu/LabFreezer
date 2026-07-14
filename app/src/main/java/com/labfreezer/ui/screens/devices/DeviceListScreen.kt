@@ -78,6 +78,7 @@ import com.labfreezer.ui.navigation.Screen
 @Composable
 fun DeviceListScreen(
     navController: NavController,
+    showFabPadding: Boolean = true,
     viewModel: DeviceListViewModel = hiltViewModel()
 ) {
     val devices by viewModel.devices.collectAsStateWithLifecycle()
@@ -162,7 +163,7 @@ fun DeviceListScreen(
             if (!inAnySelection) {
                 FloatingActionButton(
                     onClick = { viewModel.showAddDialog() },
-                    modifier = Modifier.padding(bottom = 88.dp),
+                    modifier = if (showFabPadding) Modifier.padding(bottom = 88.dp) else Modifier,
                     shape = CircleShape,
                     containerColor = MaterialTheme.colorScheme.primary,
                     contentColor = MaterialTheme.colorScheme.onPrimary

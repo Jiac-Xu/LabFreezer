@@ -24,7 +24,7 @@ fun NavGraph(navController: NavHostController) {
         startDestination = Screen.DeviceList.route
     ) {
         composable(Screen.DeviceList.route) {
-            DeviceListScreen(navController)
+            DeviceListScreen(navController, showFabPadding = false)
         }
         composable(
             route = Screen.DeviceDetail.route,
@@ -72,7 +72,7 @@ fun NavGraph(navController: NavHostController) {
             DeviceTypeManageScreen(onBack = { navController.popBackStack() })
         }
         composable(Screen.TagManage.route) {
-            TagManageScreen(navController)
+            TagManageScreen(navController, showFabPadding = false)
         }
         composable(
             route = Screen.TagDetail.route,
