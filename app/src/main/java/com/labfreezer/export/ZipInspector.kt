@@ -39,15 +39,7 @@ data class ZipAnalysis(
     val sampleCount: Int,
     val version: Int? = null,
     val exportTime: Long? = null
-) {
-    val label: String
-        get() = when (type) {
-            ZipType.DATABASE_BACKUP -> "数据库备份包"
-            ZipType.MARKDOWN_EXPORT -> "Markdown 导出包"
-            ZipType.INVALID -> "无法读取"
-            ZipType.UNSUPPORTED -> "不支持的格式"
-        }
-}
+)
 
 @Singleton
 class ZipInspector @Inject constructor(

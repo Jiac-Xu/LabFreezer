@@ -452,7 +452,6 @@ private fun ImportPreviewDialog(
     var errorMessage by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
-    // 第一阶段：分析
     LaunchedEffect(uri) {
         exportViewModel.inspectImportPackage(uri) { result, count ->
             analysis = result
@@ -463,11 +462,11 @@ private fun ImportPreviewDialog(
 
     val context = LocalContext.current
 
-    // 导入中 -> loading 覆盖层
+    // 导入中
     if (isImporting) {
         AlertDialog(
             onDismissRequest = {},
-            title = { Text("导入中…", fontWeight = FontWeight.SemiBold) },
+            title = { Text(stringResource(R.string.import_loading), fontWeight = FontWeight.SemiBold) },
             text = {
                 Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                     CircularProgressIndicator()
@@ -479,17 +478,17 @@ private fun ImportPreviewDialog(
         return
     }
 
-    // 分析中 -> loading
+    // 分析中
     if (isLoading) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("正在分析…", fontWeight = FontWeight.SemiBold) },
+            title = { Text(stringResource(R.string.import_analyzing), fontWeight = FontWeight.SemiBold) },
             text = {
                 Box(modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         CircularProgressIndicator()
                         Spacer(Modifier.height(12.dp))
-                        Text("正在读取压缩包…", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                        Text(stringResource(R.string.import_reading), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                     }
                 }
             },
@@ -503,14 +502,14 @@ private fun ImportPreviewDialog(
 
     val result = analysis
 
-    // INVALID / 空结果
+    // INVALID
     if (result == null || result.type == ZipType.INVALID) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("无法导入", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error) },
-            text = { Text("无法读取压缩包，文件可能已损坏。") },
+            title = { Text(stringResource(R.string.import_failed_title), fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error) },
+            text = { Text(stringResource(R.string.import_invalid_hint)) },
             confirmButton = {
-                TextButton(onClick = onDismiss) { Text("确定") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.import_ok)) }
             }
         )
         return
@@ -520,35 +519,35 @@ private fun ImportPreviewDialog(
     if (result.type == ZipType.UNSUPPORTED) {
         AlertDialog(
             onDismissRequest = onDismiss,
-            title = { Text("无法导入", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error) },
+            title = { Text(stringResource(R.string.import_failed_title), fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error) },
             text = { Text(stringResource(R.string.import_unknown_hint)) },
             confirmButton = {
-                TextButton(onClick = onDismiss) { Text("确定") }
+                TextButton(onClick = onDismiss) { Text(stringResource(R.string.import_ok)) }
             }
         )
         return
     }
 
-    // 第二阶段：数据库导入的二次确认
+    // 二次确认：数据库覆盖
     if (showSecondConfirm && result.type == ZipType.DATABASE_BACKUP) {
         AlertDialog(
             onDismissRequest = { showSecondConfirm = false },
-            title = { Text("⚠ 确认覆盖", fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error) },
+            title = { Text(stringResource(R.string.import_overwrite_title), fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.error) },
             text = {
                 Column {
                     Text(
-                        "数据库导入将替换当前所有数据，此操作不可撤销。",
+                        stringResource(R.string.import_overwrite_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
                     Spacer(Modifier.height(16.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("当前样本数：", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.import_current_count_label), style = MaterialTheme.typography.bodyMedium)
                         Text("$currentCount", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                     }
                     Spacer(Modifier.height(4.dp))
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text("导入样本数：", style = MaterialTheme.typography.bodyMedium)
+                        Text(stringResource(R.string.import_import_count_label), style = MaterialTheme.typography.bodyMedium)
                         Text("${result.sampleCount}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                     }
                 }
@@ -567,7 +566,7 @@ private fun ImportPreviewDialog(
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("确认覆盖", color = MaterialTheme.colorScheme.onError)
+                    Text(stringResource(R.string.import_overwrite_confirm), color = MaterialTheme.colorScheme.onError)
                 }
             },
             dismissButton = {
@@ -577,14 +576,20 @@ private fun ImportPreviewDialog(
         return
     }
 
-    // 第一阶段预览
+    // 预览
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.import_preview_title), fontWeight = FontWeight.SemiBold) },
         text = {
             Column {
+                // 类型标识
+                val typeLabel = when (result.type) {
+                    ZipType.DATABASE_BACKUP -> stringResource(R.string.import_type_database)
+                    ZipType.MARKDOWN_EXPORT -> stringResource(R.string.import_type_markdown)
+                    else -> ""
+                }
                 Text(
-                    text = "检测到：${result.label}",
+                    text = typeLabel,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Medium,
                     color = MaterialTheme.colorScheme.primary
@@ -593,11 +598,15 @@ private fun ImportPreviewDialog(
                     Spacer(Modifier.height(4.dp))
                     Text(
                         buildString {
-                            if (result.version != null) append("格式版本 v${result.version}")
+                            if (result.version != null) {
+                                append(stringResource(R.string.import_version_prefix))
+                                append(result.version)
+                            }
                             if (result.version != null && result.exportTime != null) append(" · ")
                             if (result.exportTime != null) {
                                 val sdf = java.text.SimpleDateFormat("yyyy-MM-dd HH:mm", java.util.Locale.getDefault())
-                                append("导出时间 ${sdf.format(java.util.Date(result.exportTime))}")
+                                append(stringResource(R.string.import_export_time_prefix))
+                                append(sdf.format(java.util.Date(result.exportTime)))
                             }
                         },
                         style = MaterialTheme.typography.bodySmall,
@@ -614,11 +623,10 @@ private fun ImportPreviewDialog(
                     Text(stringResource(R.string.import_import_samples), style = MaterialTheme.typography.bodyMedium)
                     Text("${result.sampleCount}", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
                 }
-                Spacer(Modifier.height(4.dp))
                 if (result.type == ZipType.MARKDOWN_EXPORT) {
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        "Markdown 导入会合并数据，同名位置样本将被覆盖。",
+                        stringResource(R.string.import_markdown_hint),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.outline
                     )
@@ -626,7 +634,7 @@ private fun ImportPreviewDialog(
                 if (result.type == ZipType.DATABASE_BACKUP) {
                     Spacer(Modifier.height(12.dp))
                     Text(
-                        "数据库导入将替换当前所有数据，请谨慎操作。",
+                        stringResource(R.string.import_database_warning),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.error
                     )
@@ -650,10 +658,7 @@ private fun ImportPreviewDialog(
                                 onDismiss()
                             }
                         }
-                        ZipType.DATABASE_BACKUP -> {
-                            // 弹出二次确认
-                            showSecondConfirm = true
-                        }
+                        ZipType.DATABASE_BACKUP -> showSecondConfirm = true
                         else -> {}
                     }
                 },

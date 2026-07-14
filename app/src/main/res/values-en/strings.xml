@@ -140,6 +140,23 @@
     <string name="import_confirm">Import</string>
     <string name="import_cancel">Cancel</string>
     <string name="import_unknown_hint">This file is not recognized as a LabFreezer data package.\n\nSupported formats:\n• Database backup (.zip with labfreezer.db)\n• Markdown export (.zip with .md archive)</string>
+    <string name="import_analyzing">Analyzing…</string>
+    <string name="import_reading">Reading archive…</string>
+    <string name="import_loading">Importing…</string>
+    <string name="import_failed_title">Import Failed</string>
+    <string name="import_invalid_hint">Cannot read archive. The file may be corrupted.</string>
+    <string name="import_ok">OK</string>
+    <string name="import_type_database">Database Backup</string>
+    <string name="import_type_markdown">Markdown Export</string>
+    <string name="import_version_prefix">Format version v</string>
+    <string name="import_export_time_prefix">Exported </string>
+    <string name="import_markdown_hint">Markdown import merges data; samples at the same position will be overwritten.</string>
+    <string name="import_database_warning">Database import will replace all current data. Proceed with caution.</string>
+    <string name="import_overwrite_title">⚠ Confirm Overwrite</string>
+    <string name="import_overwrite_hint">Database import will replace ALL current data. This action cannot be undone.</string>
+    <string name="import_overwrite_confirm">Overwrite</string>
+    <string name="import_current_count_label">Current samples: </string>
+    <string name="import_import_count_label">Import samples: </string>
 
     <!-- ========== OCR / Auto-fill Settings ========== -->
     <string name="ocr_settings_title">Auto-fill</string>

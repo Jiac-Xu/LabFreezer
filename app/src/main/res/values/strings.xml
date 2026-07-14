@@ -140,6 +140,23 @@
     <string name="import_confirm">确认导入</string>
     <string name="import_cancel">取消</string>
     <string name="import_unknown_hint">该文件不是本程序的数据包，无法导入。\n\n支持的格式：\n• 数据库备份包（.zip，含 labfreezer.db）\n• Markdown 导出包（含 .md 文件）</string>
+    <string name="import_analyzing">正在分析…</string>
+    <string name="import_reading">正在读取压缩包…</string>
+    <string name="import_loading">导入中…</string>
+    <string name="import_failed_title">无法导入</string>
+    <string name="import_invalid_hint">无法读取压缩包，文件可能已损坏。</string>
+    <string name="import_ok">确定</string>
+    <string name="import_type_database">数据库备份包</string>
+    <string name="import_type_markdown">Markdown 导出包</string>
+    <string name="import_version_prefix">格式版本 v</string>
+    <string name="import_export_time_prefix">导出时间 </string>
+    <string name="import_markdown_hint">Markdown 导入会合并数据，同名位置样本将被覆盖。</string>
+    <string name="import_database_warning">数据库导入将替换当前所有数据，请谨慎操作。</string>
+    <string name="import_overwrite_title">⚠ 确认覆盖</string>
+    <string name="import_overwrite_hint">数据库导入将替换当前所有数据，此操作不可撤销。</string>
+    <string name="import_overwrite_confirm">确认覆盖</string>
+    <string name="import_current_count_label">当前样本数：</string>
+    <string name="import_import_count_label">导入样本数：</string>
 
     <!-- ========== OCR / Auto-fill Settings ========== -->
     <string name="ocr_settings_title">自动填充</string>

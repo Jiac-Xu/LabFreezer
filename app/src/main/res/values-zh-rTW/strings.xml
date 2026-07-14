@@ -129,6 +129,23 @@
     <string name="import_confirm">確認匯入</string>
     <string name="import_cancel">取消</string>
     <string name="import_unknown_hint">該檔案不是本程式的資料包，無法匯入。\n\n支援的格式：\n• 資料庫備份包（.zip，含 labfreezer.db）\n• Markdown 匯出包（含 .md 檔案）</string>
+    <string name="import_analyzing">正在分析…</string>
+    <string name="import_reading">正在讀取壓縮包…</string>
+    <string name="import_loading">匯入中…</string>
+    <string name="import_failed_title">無法匯入</string>
+    <string name="import_invalid_hint">無法讀取壓縮包，檔案可能已損壞。</string>
+    <string name="import_ok">確定</string>
+    <string name="import_type_database">資料庫備份包</string>
+    <string name="import_type_markdown">Markdown 匯出包</string>
+    <string name="import_version_prefix">格式版本 v</string>
+    <string name="import_export_time_prefix">匯出時間 </string>
+    <string name="import_markdown_hint">Markdown 匯入會合併資料，同名位置樣本將被覆蓋。</string>
+    <string name="import_database_warning">資料庫匯入將取代目前所有資料，請謹慎操作。</string>
+    <string name="import_overwrite_title">⚠ 確認覆蓋</string>
+    <string name="import_overwrite_hint">資料庫匯入將取代目前所有資料，此操作不可復原。</string>
+    <string name="import_overwrite_confirm">確認覆蓋</string>
+    <string name="import_current_count_label">目前樣本數：</string>
+    <string name="import_import_count_label">匯入樣本數：</string>
 
     <!-- ========== OCR / Auto-fill Settings ========== -->
     <string name="ocr_settings_title">自動辨識填入</string>
