@@ -30,7 +30,7 @@ import java.util.Date
 import java.util.Locale
 import javax.inject.Inject
 
-enum class ExportFormat { CSV, MARKDOWN, PDF }
+enum class ExportFormat { CSV, MARKDOWN }
 
 data class ExportResult(val uri: Uri, val mimeType: String)
 
@@ -65,13 +65,11 @@ class ExportViewModel @Inject constructor(
                 val file = when (format) {
                     ExportFormat.CSV -> exportEngine.exportCsv(allSamples, fileName, tagsMap)
                     ExportFormat.MARKDOWN -> exportEngine.exportMarkdown(allSamples, fileName, tagsMap)
-                    ExportFormat.PDF -> exportEngine.exportPdf(allSamples, fileName)
                 }
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                 val mime = when(format) {
                     ExportFormat.CSV -> "text/csv"
                     ExportFormat.MARKDOWN -> "application/zip"
-                    ExportFormat.PDF -> "application/pdf"
                 }
                 _result.value = ExportResult(uri, mime)
             } catch (e: Exception) {

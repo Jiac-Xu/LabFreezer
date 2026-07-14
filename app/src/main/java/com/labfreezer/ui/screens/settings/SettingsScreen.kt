@@ -26,7 +26,6 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PhotoLibrary
-import androidx.compose.material.icons.filled.PictureAsPdf
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.TableChart
@@ -215,13 +214,6 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_csv_export),
                 subtitle = stringResource(R.string.settings_csv_export_subtitle),
                 onClick = { viewModel.exportSample(ExportFormat.CSV) },
-                trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
-            )
-            SettingsCard(
-                icon = Icons.Default.PictureAsPdf,
-                title = stringResource(R.string.settings_pdf_export),
-                subtitle = stringResource(R.string.settings_pdf_export_subtitle),
-                onClick = { viewModel.exportSample(ExportFormat.PDF) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
             SettingsCard(

@@ -107,8 +107,6 @@
     <string name="settings_csv_import_subtitle">從 CSV 檔案合併匯入</string>
     <string name="settings_csv_export">CSV 匯出</string>
     <string name="settings_csv_export_subtitle">匯出為試算表格式</string>
-    <string name="settings_pdf_export">PDF 匯出</string>
-    <string name="settings_pdf_export_subtitle">含照片的網格版面</string>
     <string name="settings_markdown_export">Markdown 匯出</string>
     <string name="settings_markdown_export_subtitle">含圖片的表格，可外部修改</string>
     <string name="settings_markdown_import">Markdown 匯入</string>

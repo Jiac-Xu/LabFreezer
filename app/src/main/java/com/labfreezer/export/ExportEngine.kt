@@ -1,13 +1,6 @@
 package com.labfreezer.export
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Canvas
-import android.graphics.Color
-import android.graphics.Paint
-import android.graphics.Rect
-import android.graphics.pdf.PdfDocument
 import android.net.Uri
 import com.labfreezer.data.db.dao.SamplePositionDao
 import com.labfreezer.data.db.dao.SampleWithPath
@@ -153,114 +146,6 @@ class ExportEngine @Inject constructor(
 
         tempDir.deleteRecursively()
         return zipFile
-    }
-
-    fun exportPdf(samples: List<SampleWithPath>, fileName: String): File {
-        cleanupOldExports()
-        val dir = File(context.filesDir, "exports")
-        dir.mkdirs()
-        val file = File(dir, "$fileName.pdf")
-
-        val document = PdfDocument()
-        val pageWidth = 595
-        val pageHeight = 842
-        val margin = 30f
-        val cellWidth = (pageWidth - margin * 2) / 3f
-        val cellHeight = 180f
-        val headerHeight = 22f
-        val groupGap = 6f
-
-        val titlePaint = Paint().apply { textSize = 16f; color = Color.BLACK; isFakeBoldText = true }
-        val groupPaint = Paint().apply { textSize = 12f; color = Color.rgb(21, 101, 192); isFakeBoldText = true }
-        val textPaint = Paint().apply { textSize = 10f; color = Color.DKGRAY }
-        val borderPaint = Paint().apply { style = Paint.Style.STROKE; color = Color.GRAY; strokeWidth = 1f }
-        val linePaint = Paint().apply { color = Color.rgb(21, 101, 192); strokeWidth = 1.5f }
-
-        val sorted = samples.sortedBy { "${it.deviceName}_${it.layerName}_${it.boxName}_${it.row * 1000 + it.col}" }
-
-        var pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, 0).create()
-        var page = document.startPage(pageInfo)
-        var canvas = page.canvas
-        var y = margin
-        var col = 0
-        var currentBoxId = -1L
-
-        fun ensureSpace(needed: Float) {
-            if (y + needed > pageHeight - margin) {
-                document.finishPage(page)
-                pageInfo = PdfDocument.PageInfo.Builder(pageWidth, pageHeight, pageInfo.pageNumber + 1).create()
-                page = document.startPage(pageInfo)
-                canvas = page.canvas
-                y = margin
-            }
-        }
-
-        canvas.drawText("\u6837\u672c\u6570\u636e\u5bfc\u51fa", margin, y + 16f, titlePaint)
-        y += 30f
-
-        for (s in sorted) {
-            if (s.boxId != currentBoxId) {
-                col = 0
-                currentBoxId = s.boxId
-
-                ensureSpace(headerHeight + groupGap + cellHeight)
-                y += groupGap
-                canvas.drawLine(margin, y, pageWidth - margin, y, linePaint)
-                y += 4f
-                val path = "${s.deviceName} > ${s.layerName} > ${s.boxName}"
-                canvas.drawText(path, margin, y + 12f, groupPaint)
-                y += headerHeight
-            }
-
-            ensureSpace(cellHeight)
-
-            val x = margin + col * cellWidth
-            canvas.drawRect(x, y, x + cellWidth, y + cellHeight, borderPaint)
-
-            val label = "${'A' + s.row}${s.col + 1}"
-            canvas.drawText(label, x + 5, y + 15f, textPaint)
-
-            s.photoPath?.let { path ->
-                try {
-                    val bitmap = try {
-                        val uri = Uri.parse(path)
-                        when {
-                            uri.scheme == "file" -> BitmapFactory.decodeFile(uri.path!!)
-                            uri.scheme == "content" -> context.contentResolver.openInputStream(uri)?.use { BitmapFactory.decodeStream(it) }
-                            path.startsWith("/") -> BitmapFactory.decodeFile(path)
-                            else -> null
-                        }
-                    } catch (_: Exception) { null }
-                    if (bitmap != null) {
-                        val maxImgW = cellWidth - 10
-                        val maxImgH = cellHeight - 70
-                        val scale = minOf(maxImgW / bitmap.width, maxImgH / bitmap.height, 1f)
-                        val w = (bitmap.width * scale).toInt()
-                        val h = (bitmap.height * scale).toInt()
-                        val rect = Rect(x.toInt() + 5, y.toInt() + 20, x.toInt() + 5 + w, y.toInt() + 20 + h)
-                        canvas.drawBitmap(bitmap, null, rect, null)
-                    }
-                } catch (_: Exception) {}
-            }
-
-            val nameY = y + cellHeight - 45f
-            canvas.drawText(s.name ?: "\u672a\u547d\u540d", x + 5, nameY, textPaint)
-            if (!s.note.isNullOrBlank()) {
-                val noteText = if (s.note!!.length > 20) s.note!!.take(20) + "..." else s.note!!
-                canvas.drawText(noteText, x + 5, nameY + 14f, textPaint)
-            }
-
-            col++
-            if (col >= 3) {
-                col = 0
-                y += cellHeight + 10
-            }
-        }
-
-        document.finishPage(page)
-        FileOutputStream(file).use { document.writeTo(it) }
-        document.close()
-        return file
     }
 
     fun exportDatabase(): File {
