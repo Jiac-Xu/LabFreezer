@@ -188,6 +188,7 @@
     <string name="about_up_to_date">已是最新版本（%1$s）</string>
     <string name="about_check_update_failed">檢查更新失敗</string>
     <string name="about_download">前往下載</string>
+    <string name="about_open_website">打開官網</string>
 
     <!-- ========== Move Browser ========== -->
     <string name="move_title_select_device">選擇設備</string>

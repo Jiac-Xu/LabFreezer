@@ -95,7 +95,7 @@ fun AboutScreen(onBack: () -> Unit) {
 
                                 if (updateInfo.buildHaveNewVersion) {
                                     val desc = if (updateInfo.buildUpdateDescription.isNullOrBlank()) ""
-                                        else ": ${updateInfo.buildUpdateDescription}"
+                                        else ": ${updateInfo.buildUpdateDescription.replace("\\n", "\n")}"
                                     cont.resume("$newVersionPrefix ${updateInfo.buildVersion}$desc")
                                 } else {
                                     cont.resume(context.getString(R.string.about_up_to_date, versionName))
@@ -166,7 +166,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 textAlign = TextAlign.Center
             )
 
-            if (updateInfo.startsWith(newVersionPrefix)) {
+            if (updateInfo.isNotEmpty() && updateInfo != checkFailedStr) {
                 Spacer(Modifier.height(20.dp))
                 Button(
                     onClick = {
@@ -178,7 +178,13 @@ fun AboutScreen(onBack: () -> Unit) {
                     ),
                     shape = MaterialTheme.shapes.small
                 ) {
-                    Text(stringResource(R.string.about_download), modifier = Modifier.padding(horizontal = 16.dp))
+                    Text(
+                        if (updateInfo.startsWith(newVersionPrefix))
+                            stringResource(R.string.about_download)
+                        else
+                            stringResource(R.string.about_open_website),
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    )
                 }
             }
         }

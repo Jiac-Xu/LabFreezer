@@ -199,6 +199,7 @@
     <string name="about_up_to_date">Up to date (%1$s)</string>
     <string name="about_check_update_failed">Check for updates failed</string>
     <string name="about_download">Download</string>
+    <string name="about_open_website">Open Website</string>
 
     <!-- ========== Move Browser ========== -->
     <string name="move_title_select_device">Select Device</string>
