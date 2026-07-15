@@ -188,7 +188,8 @@ fun MainScreen(
                         onNavigateToBottomBarEdit = { navController.navigate(Screen.BottomBarEdit.route) },
                         onNavigateToImageCleanup = { navController.navigate(Screen.ImageCleanup.route) },
                         onNavigateToOcrSettings = { navController.navigate(Screen.OcrSettings.route) },
-                        onNavigateToAbout = { navController.navigate(Screen.About.route) }
+                        onNavigateToAbout = { navController.navigate(Screen.About.route) },
+                        onImportFileSelected = { uri -> pendingImportUri?.value = uri }
                     )
                 }
                 composable(
@@ -379,6 +380,7 @@ private fun MainTabPager(
     onNavigateToImageCleanup: () -> Unit,
     onNavigateToOcrSettings: () -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
+    onImportFileSelected: (Uri) -> Unit = {},
 ) {
     // 🎯 使用 AnimatedContent 彻底重构，零预加载，完美复刻 MomentLog 动效
     val colorScheme = MaterialTheme.colorScheme
@@ -431,7 +433,8 @@ private fun MainTabPager(
                 onNavigateToBottomBarEdit = onNavigateToBottomBarEdit,
                 onNavigateToImageCleanup = onNavigateToImageCleanup,
                 onNavigateToOcrSettings = onNavigateToOcrSettings,
-                onNavigateToAbout = onNavigateToAbout
+                onNavigateToAbout = onNavigateToAbout,
+                onImportFileSelected = onImportFileSelected
             )
             null -> Box(modifier = Modifier.fillMaxSize())
         }

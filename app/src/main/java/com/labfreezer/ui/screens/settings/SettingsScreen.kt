@@ -2,6 +2,7 @@ package com.labfreezer.ui.screens.settings
 import com.labfreezer.R
 
 import android.content.Intent
+import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -72,6 +73,7 @@ fun SettingsScreen(
     onNavigateToBottomBarEdit: () -> Unit = {},
     onNavigateToImageCleanup: () -> Unit = {},
     onNavigateToOcrSettings: () -> Unit = {},
+    onImportFileSelected: (Uri) -> Unit = {},
     onNavigateToAbout: () -> Unit = {},
     viewModel: ExportViewModel = hiltViewModel()
 ) {
@@ -84,15 +86,15 @@ fun SettingsScreen(
 
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
-    ) { uri -> uri?.let { viewModel.importDatabase(it) } }
+    ) { uri -> uri?.let { onImportFileSelected(it) } }
+
+    val markdownImportLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri -> uri?.let { onImportFileSelected(it) } }
 
     val csvImportLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
     ) { uri -> uri?.let { viewModel.importCsv(it) } }
-
-    val markdownImportLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.OpenDocument()
-    ) { uri -> uri?.let { viewModel.importMarkdown(it) } }
 
     val dbExportSaveAsLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.CreateDocument("application/zip")
@@ -266,7 +268,6 @@ fun SettingsScreen(
                 onClick = { importLauncher.launch(arrayOf("application/zip")) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
-
             Spacer(Modifier.height(16.dp))
 
             Text("  " + stringResource(R.string.settings_section_about), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
