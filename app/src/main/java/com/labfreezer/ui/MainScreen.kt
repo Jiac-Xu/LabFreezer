@@ -88,6 +88,7 @@ import com.labfreezer.ui.screens.settings.BottomBarEditScreen
 import com.labfreezer.ui.screens.settings.BottomTab
 import com.labfreezer.ui.screens.settings.BottomTabPreference
 import com.labfreezer.ui.screens.settings.StartPagePreference
+import com.labfreezer.FairMemoryReceiver
 import com.labfreezer.ui.theme.LabFreezerTheme
 import com.labfreezer.ui.theme.LocalThemeMode
 import com.labfreezer.ui.theme.ThemeMode
@@ -125,6 +126,31 @@ fun MainScreen(
 
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentRoute = navBackStackEntry?.destination?.route
+
+        // ── 公平运行内存：跟踪当前导航路由 ──
+        LaunchedEffect(navBackStackEntry) {
+            val entry = navBackStackEntry
+            if (entry != null) {
+                FairMemoryReceiver.currentRoute = entry.destination.route
+                val args = entry.arguments
+                if (args != null && !args.isEmpty) {
+                    val json = org.json.JSONObject()
+                    for (key in args.keySet()) {
+                        when (val v = args.get(key)) {
+                            is Long -> json.put(key, v)
+                            is Int -> json.put(key, v)
+                            is String -> json.put(key, v)
+                            is Boolean -> json.put(key, v)
+                        }
+                    }
+                    FairMemoryReceiver.currentRouteArgsJson = json.toString()
+                } else {
+                    FairMemoryReceiver.currentRouteArgsJson = null
+                }
+            }
+        }
+        // ────────────────────────────────
+
         // 每次回到 MainTabs 时重新读取底栏配置（确保底栏编辑后立即生效）
         val tabConfig = remember(currentRoute) { BottomTabPreference.get(activity) }
 
@@ -143,6 +169,52 @@ fun MainScreen(
         }
 
         val showBottomBar = currentRoute == Screen.MainTabs.route
+
+        // ── 公平运行内存：冷启动时恢复被查杀前的导航现场 ──
+        LaunchedEffect(Unit) {
+            val saved = com.labfreezer.FairMemoryReceiver.run {
+                val appCtx = activity.applicationContext
+                val prefs = appCtx.getSharedPreferences("fair_memory_prefs", android.content.Context.MODE_PRIVATE)
+                val route = prefs.getString("saved_route", null) ?: return@LaunchedEffect
+                val argsJson = prefs.getString("saved_args", null)
+                prefs.edit().clear().apply()
+                Pair(route, argsJson)
+            }
+            val (savedRoute, savedArgsJson) = saved
+            if (savedRoute.contains("{")) {
+                // 参数化路由：用 JSON 恢复参数值拼出实际路由字符串
+                val argsObj = try {
+                    org.json.JSONObject(savedArgsJson ?: "")
+                } catch (_: Exception) { null }
+                if (argsObj != null && argsObj.length() > 0) {
+                    val actualRoute = buildString {
+                        var remaining = savedRoute
+                        while (true) {
+                            val start = remaining.indexOf('{')
+                            if (start == -1) { append(remaining); break }
+                            append(remaining.substring(0, start))
+                            val end = remaining.indexOf('}', start)
+                            if (end == -1) break
+                            val key = remaining.substring(start + 1, end)
+                            val value = argsObj.opt(key)
+                            if (value == null || value == org.json.JSONObject.NULL) break
+                            append(value.toString())
+                            remaining = remaining.substring(end + 1)
+                        }
+                    }
+                    navController.navigate(actualRoute) {
+                        popUpTo(0) { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+            } else {
+                navController.navigate(savedRoute) {
+                    popUpTo(0) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+        // ──────────────────────────────────────────────
 
         Box(modifier = Modifier.fillMaxSize()) {
             NavHost(
