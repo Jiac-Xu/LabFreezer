@@ -80,6 +80,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.CachePolicy
 import coil.request.ImageRequest
 import com.labfreezer.ui.NavAnimState
 import com.labfreezer.ui.navigation.Screen
@@ -115,7 +116,8 @@ fun SampleEditScreen(
         state.photoPath?.let { path ->
             ImageRequest.Builder(context)
                 .data(Uri.parse(path))
-                .memoryCacheKey("${path}_v${state.photoVersion}")
+                .memoryCachePolicy(CachePolicy.DISABLED)
+                .diskCachePolicy(CachePolicy.DISABLED)
                 .build()
         }
     }
