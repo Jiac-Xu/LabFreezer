@@ -6,6 +6,7 @@ import android.app.DatePickerDialog
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
+import java.io.File
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -80,8 +81,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
-import coil.request.CachePolicy
-import coil.request.ImageRequest
 import com.labfreezer.ui.NavAnimState
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.move.MoveState
@@ -114,11 +113,12 @@ fun SampleEditScreen(
 
     val imageModel = remember(state.photoPath, state.photoVersion) {
         state.photoPath?.let { path ->
-            ImageRequest.Builder(context)
-                .data(Uri.parse(path))
-                .memoryCachePolicy(CachePolicy.DISABLED)
-                .diskCachePolicy(CachePolicy.DISABLED)
-                .build()
+            val uri = Uri.parse(path)
+            if (uri.scheme == "file") {
+                uri.buildUpon().appendQueryParameter("v", File(uri.path!!).lastModified().toString()).build()
+            } else {
+                uri
+            }
         }
     }
 
