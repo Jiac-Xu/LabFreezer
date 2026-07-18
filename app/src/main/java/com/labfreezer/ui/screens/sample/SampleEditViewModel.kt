@@ -290,6 +290,17 @@ class SampleEditViewModel @Inject constructor(
         return uri
     }
 
+    fun rotatePhoto() {
+        val path = _state.value.photoPath ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = photoManager.rotatePhoto(path)
+            if (result != null) {
+                _state.update { it.copy(photoPath = path) }
+                _toastEvent.emit(context.getString(R.string.sample_edit_photo_rotated))
+            }
+        }
+    }
+
     companion object {
         fun positionToLabel(row: Int, col: Int): String = "${'A' + row}${col + 1}"
     }

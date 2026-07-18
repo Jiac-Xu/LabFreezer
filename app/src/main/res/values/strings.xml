@@ -246,6 +246,7 @@
     <string name="sample_edit_last_sample">已经是当前冻存盒的最后一个样本</string>
     <string name="sample_edit_first_sample">已经是当前冻存盒的第一个样本</string>
     <string name="sample_edit_saved">已保存</string>
+    <string name="sample_edit_photo_rotated">照片已旋转</string>
 
     <!-- ========== Tag Detail ========== -->
     <string name="tag_detail_title">标签详情</string>

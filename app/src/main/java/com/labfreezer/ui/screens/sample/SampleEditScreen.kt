@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.Inventory2
+import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
@@ -58,6 +59,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -79,6 +81,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.labfreezer.ui.NavAnimState
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.move.MoveState
@@ -108,6 +111,16 @@ fun SampleEditScreen(
     ) { success -> viewModel.onCameraResult(success) }
 
     var showFullImage by remember { mutableStateOf(false) }
+
+    var imageVersion by remember { mutableIntStateOf(0) }
+    val imageModel = remember(state.photoPath, imageVersion) {
+        state.photoPath?.let { path ->
+            ImageRequest.Builder(context)
+                .data(Uri.parse(path))
+                .memoryCacheKey("${path}_v$imageVersion")
+                .build()
+        }
+    }
 
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
@@ -214,11 +227,28 @@ fun SampleEditScreen(
                 Box(modifier = Modifier.fillMaxWidth().height(180.dp)) {
                     if (state.photoPath != null) {
                         AsyncImage(
-                            model = Uri.parse(state.photoPath),
+                            model = imageModel,
                             contentDescription = null,
                             modifier = Modifier.fillMaxSize().clickable { showFullImage = true },
                             contentScale = ContentScale.Crop
                         )
+                        Box(
+                            modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp).size(36.dp)
+                                .clip(CircleShape)
+                                .background(Color.Black.copy(alpha = 0.5f))
+                                .clickable {
+                                    viewModel.rotatePhoto()
+                                    imageVersion++
+                                },
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                Icons.Default.RotateRight,
+                                contentDescription = "Rotate",
+                                tint = Color.White,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
                     } else {
                             Box(
                                 modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.surface),

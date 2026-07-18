@@ -80,6 +80,28 @@ class PhotoManager @Inject constructor(
         return Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
     }
 
+    fun rotatePhoto(photoPath: String): String? {
+        return try {
+            val uri = Uri.parse(photoPath)
+            val file = if (uri.scheme == "file") File(uri.path!!) else return null
+            if (!file.exists()) return null
+
+            val bitmap = BitmapFactory.decodeFile(file.absolutePath) ?: return null
+            val matrix = Matrix().apply { postRotate(90f) }
+            val rotatedBitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.width, bitmap.height, matrix, true)
+            if (rotatedBitmap !== bitmap) bitmap.recycle()
+
+            FileOutputStream(file).use { out ->
+                rotatedBitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
+            }
+            rotatedBitmap.recycle()
+
+            photoPath
+        } catch (e: Exception) {
+            null
+        }
+    }
+
     fun deletePhoto(photoPath: String?) {
         if (photoPath.isNullOrBlank()) return
         try {
