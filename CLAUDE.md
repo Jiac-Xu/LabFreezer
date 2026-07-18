@@ -8,6 +8,8 @@ JAVA_HOME用Android Studio的JBR：D:\Program Files\AndroidStudio\jbr
 
 设计可以读取工作目录下的design.md
 
+本程序已适配i18n，写对应代码时记得适配。
+
 # 重要规则 - 请严格遵守
 
 ## 用户数据第一位

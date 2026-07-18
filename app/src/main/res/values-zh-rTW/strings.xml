@@ -235,6 +235,7 @@
     <string name="sample_edit_last_sample">已經是目前凍存盒的最後一個樣本</string>
     <string name="sample_edit_first_sample">已經是目前凍存盒的第一個樣本</string>
     <string name="sample_edit_saved">已儲存</string>
+    <string name="sample_edit_photo_rotated">照片已旋轉</string>
 
     <!-- ========== Tag Detail ========== -->
     <string name="tag_detail_title">標籤詳情</string>
