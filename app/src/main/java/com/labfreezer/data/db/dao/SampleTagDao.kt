@@ -48,4 +48,7 @@ interface SampleTagDao {
 
     @Query("DELETE FROM sample_tag WHERE sample_id = :sampleId")
     suspend fun deleteAllBySampleId(sampleId: Long)
+
+    @Query("SELECT tag_id FROM sample_tag")
+    fun getSampleTagChanges(): Flow<List<Long>>
 }

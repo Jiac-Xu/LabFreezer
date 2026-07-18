@@ -34,6 +34,9 @@ class TagRepository @Inject constructor(
     suspend fun countSamplesByTagId(tagId: Long): Int =
         sampleTagDao.countSamplesByTagId(tagId)
 
+    fun getSampleTagChanges(): Flow<List<Long>> =
+        sampleTagDao.getSampleTagChanges()
+
     suspend fun addTagToSample(sampleId: Long, tagId: Long) {
         if (sampleTagDao.countBySampleAndTag(sampleId, tagId) == 0) {
             sampleTagDao.insert(SampleTagEntity(sampleId = sampleId, tagId = tagId))

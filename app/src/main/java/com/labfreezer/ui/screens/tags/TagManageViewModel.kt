@@ -12,6 +12,7 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -35,7 +36,11 @@ class TagManageViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            tagRepository.getAllFlow().collect { tagList ->
+            combine(
+                tagRepository.getAllFlow(),
+                tagRepository.getSampleTagChanges()
+            ) { tagList, _ -> tagList }
+            .collect { tagList ->
                 val withCounts = coroutineScope {
                     tagList.map { tag ->
                         async { TagWithCount(tag, tagRepository.countSamplesByTagId(tag.id)) }
