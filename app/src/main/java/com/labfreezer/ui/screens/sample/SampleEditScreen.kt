@@ -59,7 +59,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -112,12 +111,11 @@ fun SampleEditScreen(
 
     var showFullImage by remember { mutableStateOf(false) }
 
-    var imageVersion by remember { mutableIntStateOf(0) }
-    val imageModel = remember(state.photoPath, imageVersion) {
+    val imageModel = remember(state.photoPath, state.photoVersion) {
         state.photoPath?.let { path ->
             ImageRequest.Builder(context)
                 .data(Uri.parse(path))
-                .memoryCacheKey("${path}_v$imageVersion")
+                .memoryCacheKey("${path}_v${state.photoVersion}")
                 .build()
         }
     }
@@ -236,10 +234,7 @@ fun SampleEditScreen(
                             modifier = Modifier.align(Alignment.BottomEnd).padding(6.dp).size(36.dp)
                                 .clip(CircleShape)
                                 .background(Color.Black.copy(alpha = 0.5f))
-                                .clickable {
-                                    viewModel.rotatePhoto()
-                                    imageVersion++
-                                },
+                                .clickable { viewModel.rotatePhoto() },
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(

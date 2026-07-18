@@ -39,6 +39,7 @@ data class SampleEditState(
     val date: String = "",
     val note: String = "",
     val photoPath: String? = null,
+    val photoVersion: Int = 0,
     val deleted: Boolean = false,
     val assignedTagIds: Set<Long> = emptySet(),
     val deviceName: String = "",
@@ -295,7 +296,7 @@ class SampleEditViewModel @Inject constructor(
         viewModelScope.launch(Dispatchers.IO) {
             val result = photoManager.rotatePhoto(path)
             if (result != null) {
-                _state.update { it.copy(photoPath = path) }
+                _state.update { it.copy(photoVersion = it.photoVersion + 1) }
                 _toastEvent.emit(context.getString(R.string.sample_edit_photo_rotated))
             }
         }
