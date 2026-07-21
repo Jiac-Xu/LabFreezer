@@ -230,10 +230,9 @@ class SearchViewModel @Inject constructor(
     /**
      * 归一化后置过滤。
      *
-     * 匹配优先级：
-     * 1. normalizedName == normalizedKeyword（完全一致）
-     * 2. normalizedName.startsWith(normalizedKeyword)
-     * 3. normalizedName.contains(normalizedKeyword)
+     * 同时检查 name 和 note 字段：
+     * - name 匹配优先级：== > startsWith > contains
+     * - note 使用 contains 匹配（自由文本内容）
      *
      * 避免 "R10" 匹配到 "R100xxx" 等不相关结果。
      */
@@ -244,10 +243,14 @@ class SearchViewModel @Inject constructor(
         if (normalizedKeyword.isEmpty()) return results
 
         return results.filter { sample ->
-            val stored = SearchNormalizer.normalizeNameForCompare(sample.name)
-            stored == normalizedKeyword ||
-                stored.startsWith(normalizedKeyword) ||
-                stored.contains(normalizedKeyword)
+            val storedName = SearchNormalizer.normalizeNameForCompare(sample.name)
+            val storedNote = SearchNormalizer.normalizeNameForCompare(sample.note)
+            // name 匹配（格式容错）
+            storedName == normalizedKeyword ||
+                storedName.startsWith(normalizedKeyword) ||
+                storedName.contains(normalizedKeyword) ||
+                // note 匹配（自由文本，使用 contains）
+                storedNote.contains(normalizedKeyword)
         }
     }
 
