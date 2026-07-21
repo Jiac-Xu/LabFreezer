@@ -12,8 +12,11 @@ import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.TagRepository
+import com.labfreezer.data.search.SearchNormalizer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -85,6 +88,7 @@ class SearchViewModel @Inject constructor(
             val trimmed = q.trim()
             val tagIds = _selectedTagIds.value.toList()
 
+            // Device/Layer/Box 搜索：使用原始关键词（层级名称格式较统一，无需模糊匹配）
             val deviceResults = deviceRepository.searchByName(trimmed).map { SearchResultItem.Device(it) }
 
             val layerResults = layerRepository.searchByName(trimmed).map { layer ->
@@ -98,11 +102,29 @@ class SearchViewModel @Inject constructor(
                 SearchResultItem.Box(box, device?.name ?: "", layer?.name ?: "")
             }
 
-            val sampleResults = if (tagIds.isEmpty()) {
-                sampleRepository.searchWithPath(trimmed)
+            // Sample 搜索：使用 SearchNormalizer 生成多关键词变体，并行查询后去重
+            val nameVariants = SearchNormalizer.generateNameVariants(trimmed)
+            val dateVariants = SearchNormalizer.generateDateVariants(trimmed)
+            val allVariants = (nameVariants + dateVariants).distinct()
+
+            val sampleResults = if (allVariants.isNotEmpty()) {
+                allVariants
+                    .map { variant ->
+                        async {
+                            if (tagIds.isEmpty()) {
+                                sampleRepository.searchWithPath(variant)
+                            } else {
+                                sampleRepository.searchWithPathByTags(variant, tagIds)
+                            }
+                        }
+                    }
+                    .awaitAll()
+                    .flatten()
+                    .distinctBy { it.sampleId }
+                    .map { SearchResultItem.Sample(it) }
             } else {
-                sampleRepository.searchWithPathByTags(trimmed, tagIds)
-            }.map { SearchResultItem.Sample(it) }
+                emptyList()
+            }
 
             _results.value = deviceResults + layerResults + boxResults + sampleResults
             _isSearching.value = false

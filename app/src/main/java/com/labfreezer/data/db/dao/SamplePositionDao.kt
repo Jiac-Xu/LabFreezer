@@ -49,7 +49,7 @@ interface SamplePositionDao {
         "INNER JOIN storage_box sb ON sp.box_id = sb.id " +
         "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
         "INNER JOIN storage_device sd ON sl.device_id = sd.id " +
-        "WHERE sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' " +
+        "WHERE sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' OR sp.date LIKE '%' || :query || '%' " +
         "ORDER BY sp.name ASC"
     )
     suspend fun searchWithPath(query: String): List<SampleWithPath>
@@ -63,7 +63,7 @@ interface SamplePositionDao {
         "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
         "INNER JOIN storage_device sd ON sl.device_id = sd.id " +
         "LEFT JOIN sample_tag st ON sp.id = st.sample_id " +
-        "WHERE (sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%') " +
+        "WHERE (sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' OR sp.date LIKE '%' || :query || '%') " +
         "AND (:tagCount = 0 OR st.tag_id IN (:tagIds)) " +
         "ORDER BY sp.name ASC"
     )
