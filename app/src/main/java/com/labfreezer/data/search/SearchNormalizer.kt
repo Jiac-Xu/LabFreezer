@@ -12,7 +12,7 @@ import java.util.Calendar
  */
 object SearchNormalizer {
 
-    private val SEPARATORS = setOf('-', '_', ' ', '.')
+    internal val SEPARATORS = setOf('-', '_', ' ', '.')
     private const val MAX_VARIANTS = 12
     private val YEAR_RANGE = 1900..2100
 
@@ -65,6 +65,25 @@ object SearchNormalizer {
         }
 
         return variants.toList()
+    }
+
+    /**
+     * 将样本名称归一化为可供比较的规范形式。
+     *
+     * 规则：
+     * - lowercase()
+     * - 仅保留字母和数字，去除所有分隔符（-、_、空格、.）
+     *
+     * 用于 SQL 查询结果的后置过滤，确保名称匹配不受格式差异影响。
+     *
+     * 例如：
+     * - "MV4-11" → "mv411"
+     * - "MV411"  → "mv411"
+     * - "HL60 WT" → "hl60wt"
+     * - "R-100"  → "r100"
+     */
+    fun normalizeNameForCompare(name: String?): String {
+        return name?.lowercase()?.filter { it.isLetterOrDigit() } ?: ""
     }
 
     // ==================== 日期智能搜索 ====================
@@ -166,6 +185,12 @@ object SearchNormalizer {
     private fun handle4Digits(digits: String, variants: MutableSet<String>, currentYear: Int) {
         val first2 = digits.substring(0, 2).toIntOrNull() ?: 0
         val second2 = digits.substring(2, 4).toIntOrNull() ?: 0
+        val fullValue = digits.toIntOrNull() ?: 0
+
+        // 独立年份：1900-2100 范围内的 4 位数，如 "2026" → 匹配 date 字段中的 "2026-xx-xx"
+        if (fullValue in YEAR_RANGE) {
+            variants.add(digits)
+        }
 
         // YYMM 解释：前2位为年份（20xx），后2位为月份
         if (second2 in 1..12) {
