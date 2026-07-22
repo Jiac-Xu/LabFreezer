@@ -16,6 +16,23 @@ object SearchNormalizer {
     private const val MAX_VARIANTS = 12
     private val YEAR_RANGE = 1900..2100
 
+    /**
+     * 已知实验缩写后缀，用于样本名称的模糊搜索扩展。
+     *
+     * 这些缩写在生物/医学实验命名中具有特定含义：
+     * - WT:  Wild Type（野生型）
+     * - NC:  Negative Control（阴性对照）
+     * - OE:  Over Expression（过表达）
+     * - SH:  shRNA（短发夹RNA）
+     * - KO:  Knock Out（基因敲除）
+     * - KD:  Knock Down（基因敲低）
+     * - MUT: Mutant（突变体）
+     * - CTRL: Control（对照）
+     *
+     * 按长度降序排列，确保最长匹配优先。
+     */
+    internal val knownExperimentSuffixes = listOf("CTRL", "MUT", "WT", "NC", "OE", "SH", "KO", "KD")
+
     // ==================== 名称模糊搜索 ====================
 
     /**
@@ -47,7 +64,13 @@ object SearchNormalizer {
             variants.add(stripped)
         }
 
-        // 3. 在字母/数字边界统一插入各分隔符
+        // 3. 实验缩写后缀识别：当名称以已知实验缩写结尾时，生成带各分隔符的变体
+        //    仅对样本名称有效，不应用于 note/OCR 文本搜索
+        //    例如 "BTKSH" → ["BTK SH", "BTK-SH", "BTK_SH", "BTK.SH"]
+        //    例如 "HL60WT" → ["HL60 WT", "HL60-WT", "HL60_WT", "HL60.WT"]
+        addExperimentSuffixVariants(stripped, variants)
+
+        // 4. 在字母/数字边界统一插入各分隔符
         val boundaries = findLetterDigitBoundaries(stripped)
         if (boundaries.isNotEmpty()) {
             for (sep in SEPARATORS) {
@@ -132,6 +155,40 @@ object SearchNormalizer {
             }
         }
         return boundaries
+    }
+
+    /**
+     * 实验缩写后缀识别：当名称以已知实验缩写结尾时，生成带各分隔符的变体。
+     *
+     * 规则：
+     * - 不区分大小写匹配
+     * - 仅匹配末尾的完整缩写
+     * - base 部分必须非空且以字母或数字结尾（避免空 base 或纯分隔符结尾）
+     * - 对匹配到的每个分隔符生成一个变体
+     *
+     * 例如 "BTKSH" → ["BTK SH", "BTK-SH", "BTK_SH", "BTK.SH"]
+     * 例如 "HL60WT" → ["HL60 WT", "HL60-WT", "HL60_WT", "HL60.WT"]
+     * 例如 "KDM6AOE" → ["KDM6A OE", "KDM6A-OE", "KDM6A_OE", "KDM6A.OE"]
+     *
+     * 仅对 stripped（无分隔符）输入调用，确保不被中间分隔符干扰。
+     * 不应应用于 note/OCR 文本搜索，仅用于样本名称(name)关键词。
+     */
+    private fun addExperimentSuffixVariants(input: String, variants: MutableSet<String>) {
+        if (input.length < 3) return // 最短匹配：1 base + 2 suffix（如 "AOE"），但至少需要 3 字符
+        val upper = input.uppercase()
+        for (suffix in knownExperimentSuffixes) {
+            if (upper.endsWith(suffix) && upper.length > suffix.length) {
+                val base = input.substring(0, input.length - suffix.length)
+                val suffixRaw = input.substring(input.length - suffix.length)
+                // base 必须以字母或数字结尾，避免空 base 或 纯分隔符输入
+                if (base.isNotEmpty() && base.last().isLetterOrDigit()) {
+                    for (sep in SEPARATORS) {
+                        variants.add("$base$sep$suffixRaw")
+                    }
+                }
+                return // 只匹配最长后缀（列表已按长度降序排列）
+            }
+        }
     }
 
     /**
