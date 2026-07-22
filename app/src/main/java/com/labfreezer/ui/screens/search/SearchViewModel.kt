@@ -93,9 +93,6 @@ class SearchViewModel @Inject constructor(
             return
         }
 
-        // 保存搜索历史（非空关键词）
-        searchHistoryManager.addKeyword(q)
-        _searchHistory.value = searchHistoryManager.getHistory()
         _isSearching.value = true
         searchJob = viewModelScope.launch {
             delay(300)
@@ -283,11 +280,23 @@ class SearchViewModel @Inject constructor(
     // ========== 搜索历史 ==========
 
     /**
+     * 保存当前搜索关键词到历史（仅在完整搜索行为时调用）。
+     */
+    fun saveCurrentQuery() {
+        val q = _query.value.trim()
+        if (q.isNotBlank()) {
+            searchHistoryManager.addKeyword(q)
+            _searchHistory.value = searchHistoryManager.getHistory()
+        }
+    }
+
+    /**
      * 点击历史搜索关键词，直接执行搜索。
      */
     fun onHistoryItemClick(keyword: String) {
         _query.value = keyword
         triggerSearch()
+        saveCurrentQuery()
     }
 
     /**

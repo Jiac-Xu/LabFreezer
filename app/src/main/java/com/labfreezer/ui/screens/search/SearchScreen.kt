@@ -46,6 +46,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -86,6 +87,7 @@ fun SearchScreen(
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
     LaunchedEffect(Unit) { if (query.isEmpty()) focusRequester.requestFocus() }
+    DisposableEffect(Unit) { onDispose { viewModel.saveCurrentQuery() } }
 
     val fieldShape = RoundedCornerShape(12.dp)
     val fieldColors = OutlinedTextFieldDefaults.colors(

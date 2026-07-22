@@ -353,7 +353,7 @@ fun SampleEditScreen(
 
             Spacer(Modifier.height(12.dp))
 
-            OutlinedTextField(value = state.note, onValueChange = { viewModel.updateNote(it) }, label = { Text(stringResource(R.string.sample_edit_label_note)) }, minLines = 3, maxLines = 6, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
+            OutlinedTextField(value = state.note, onValueChange = { viewModel.updateNote(it) }, label = { Text(stringResource(R.string.sample_edit_label_note)) }, minLines = 1, maxLines = 8, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors)
 
             Spacer(Modifier.height(16.dp))
 
