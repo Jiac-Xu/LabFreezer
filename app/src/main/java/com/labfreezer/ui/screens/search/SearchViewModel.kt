@@ -13,6 +13,8 @@ import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.TagRepository
 import com.labfreezer.data.search.ParsedQuery
+import com.labfreezer.data.search.SearchHistoryManager
+import com.labfreezer.data.search.SearchHistoryItem
 import com.labfreezer.data.search.SearchNormalizer
 import com.labfreezer.data.search.SearchQueryParser
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -39,7 +41,8 @@ class SearchViewModel @Inject constructor(
     private val tagRepository: TagRepository,
     private val deviceRepository: StorageDeviceRepository,
     private val layerRepository: StorageLayerRepository,
-    private val boxRepository: StorageBoxRepository
+    private val boxRepository: StorageBoxRepository,
+    private val searchHistoryManager: SearchHistoryManager
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
@@ -57,12 +60,16 @@ class SearchViewModel @Inject constructor(
     private val _selectedTagIds = MutableStateFlow<Set<Long>>(emptySet())
     val selectedTagIds: StateFlow<Set<Long>> = _selectedTagIds
 
+    private val _searchHistory = MutableStateFlow<List<SearchHistoryItem>>(emptyList())
+    val searchHistory: StateFlow<List<SearchHistoryItem>> = _searchHistory
+
     private var searchJob: Job? = null
 
     init {
         viewModelScope.launch {
             _allTags.value = tagRepository.getAll()
         }
+        _searchHistory.value = searchHistoryManager.getHistory()
     }
 
     fun onQueryChange(newQuery: String) {
@@ -85,6 +92,10 @@ class SearchViewModel @Inject constructor(
             _isSearching.value = false
             return
         }
+
+        // 保存搜索历史（非空关键词）
+        searchHistoryManager.addKeyword(q)
+        _searchHistory.value = searchHistoryManager.getHistory()
         _isSearching.value = true
         searchJob = viewModelScope.launch {
             delay(300)
@@ -267,5 +278,23 @@ class SearchViewModel @Inject constructor(
         val stripped = keyword.filter { it !in SearchNormalizer.SEPARATORS }
         val prefix = stripped.takeWhile { it.isLetter() }
         return if (prefix.length >= 2) prefix else null
+    }
+
+    // ========== 搜索历史 ==========
+
+    /**
+     * 点击历史搜索关键词，直接执行搜索。
+     */
+    fun onHistoryItemClick(keyword: String) {
+        _query.value = keyword
+        triggerSearch()
+    }
+
+    /**
+     * 清空所有搜索历史。
+     */
+    fun clearSearchHistory() {
+        searchHistoryManager.clearAll()
+        _searchHistory.value = emptyList()
     }
 }

@@ -225,6 +225,10 @@
     <string name="search_device">Device</string>
     <string name="search_note">Note: %1$s</string>
 
+    <!-- ========== Search History ========== -->
+    <string name="search_history_title">Search History</string>
+    <string name="search_history_clear">Clear All</string>
+
     <!-- ========== Sample Edit ========== -->
     <string name="sample_edit_ocr_button">Recognize Text</string>
     <string name="sample_edit_take_photo">Take Photo</string>

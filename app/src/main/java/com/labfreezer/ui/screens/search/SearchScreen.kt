@@ -68,6 +68,7 @@ import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.dao.SampleWithPath
 import com.labfreezer.data.db.entity.TagEntity
+import com.labfreezer.data.search.SearchHistoryItem
 import com.labfreezer.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
@@ -82,8 +83,9 @@ fun SearchScreen(
     val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
     val allTags by viewModel.allTags.collectAsStateWithLifecycle()
     val selectedTagIds by viewModel.selectedTagIds.collectAsStateWithLifecycle()
+    val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
     val focusRequester = remember { FocusRequester() }
-    LaunchedEffect(Unit) { focusRequester.requestFocus() }
+    LaunchedEffect(Unit) { if (query.isEmpty()) focusRequester.requestFocus() }
 
     val fieldShape = RoundedCornerShape(12.dp)
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -131,6 +133,14 @@ fun SearchScreen(
                     onNavigateToTagManage = { navController.navigate(Screen.TagManage.route) }
                 )
             }
+            if (query.isBlank() && searchHistory.isNotEmpty()) {
+                Spacer(Modifier.height(8.dp))
+                SearchHistoryRow(
+                    history = searchHistory,
+                    onItemClick = { viewModel.onHistoryItemClick(it) },
+                    onClearAll = { viewModel.clearSearchHistory() }
+                )
+            }
             Spacer(Modifier.height(8.dp))
             when {
                 query.isBlank() -> Column(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
@@ -161,6 +171,55 @@ fun SearchScreen(
                             is SearchResultItem.Sample -> SearchSampleItem(result.sample, onClick = { navController.navigate(Screen.SampleEdit.createRoute(result.sample.sampleId)) })
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun SearchHistoryRow(
+    history: List<SearchHistoryItem>,
+    onItemClick: (String) -> Unit,
+    onClearAll: () -> Unit
+) {
+    Column {
+        // 标题行：历史搜索（左） + 全部清除（右）
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                stringResource(R.string.search_history_title),
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Text(
+                stringResource(R.string.search_history_clear),
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.clickable(onClick = onClearAll)
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            history.forEach { item ->
+                Surface(
+                    onClick = { onItemClick(item.keyword) },
+                    shape = RoundedCornerShape(20.dp),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                    contentColor = MaterialTheme.colorScheme.onSurface
+                ) {
+                    Text(
+                        text = item.keyword,
+                        style = MaterialTheme.typography.labelMedium,
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                    )
                 }
             }
         }

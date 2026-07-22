@@ -225,6 +225,10 @@
     <string name="search_device">设备</string>
     <string name="search_note">备注: %1$s</string>
 
+    <!-- ========== Search History ========== -->
+    <string name="search_history_title">历史搜索</string>
+    <string name="search_history_clear">全部清除</string>
+
     <!-- ========== Sample Edit ========== -->
     <string name="sample_edit_ocr_button">识别文字</string>
     <string name="sample_edit_take_photo">拍照</string>

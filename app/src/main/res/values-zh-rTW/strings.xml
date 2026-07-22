@@ -214,6 +214,10 @@
     <string name="search_device">設備</string>
     <string name="search_note">備註: %1$s</string>
 
+    <!-- ========== Search History ========== -->
+    <string name="search_history_title">歷史搜尋</string>
+    <string name="search_history_clear">全部清除</string>
+
     <!-- ========== Sample Edit ========== -->
     <string name="sample_edit_ocr_button">辨識文字</string>
     <string name="sample_edit_take_photo">拍照</string>
