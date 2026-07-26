@@ -1,5 +1,8 @@
 package com.labfreezer.ui.navigation
 
+import android.net.Uri
+import com.labfreezer.data.search.ScopeType
+
 sealed class Screen(val route: String) {
     data object DeviceList : Screen("device_list")
     data object DeviceDetail : Screen("device_detail/{deviceId}") {
@@ -17,7 +20,17 @@ sealed class Screen(val route: String) {
     data object SampleCreate : Screen("sample_create/{boxId}/{row}/{col}") {
         fun createRoute(boxId: Long, row: Int, col: Int) = "sample_create/$boxId/$row/$col"
     }
-    data object Search : Screen("search")
+    data object Search : Screen("search?scope={scope}&scopeId={scopeId}&scopeName={scopeName}") {
+        fun createRoute(scopeType: ScopeType = ScopeType.ALL, scopeId: Long? = null, scopeName: String? = null): String {
+            val sb = StringBuilder("search")
+            sb.append("?scope=${scopeType.name}")
+            sb.append("&scopeId=${scopeId ?: -1L}")
+            if (scopeName != null) {
+                sb.append("&scopeName=${Uri.encode(scopeName)}")
+            }
+            return sb.toString()
+        }
+    }
     data object TagManage : Screen("tag_manage")
     data object TagDetail : Screen("tag_detail/{tagId}") {
         fun createRoute(tagId: Long) = "tag_detail/$tagId"

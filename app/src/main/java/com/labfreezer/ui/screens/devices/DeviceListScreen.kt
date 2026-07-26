@@ -72,6 +72,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.navigation.NavController
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.repository.RecentBox
+import com.labfreezer.data.search.ScopeType
 import com.labfreezer.ui.navigation.Screen
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
@@ -148,7 +149,7 @@ fun DeviceListScreen(
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error)
                         }
                     } else {
-                        IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
+                        IconButton(onClick = { navController.navigate(Screen.Search.createRoute(ScopeType.ALL)) }) {
                             Icon(Icons.Default.Search, contentDescription = stringResource(R.string.device_list_search))
                         }
                     }

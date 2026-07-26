@@ -62,6 +62,7 @@ import androidx.navigation.NavController
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
+import com.labfreezer.data.search.ScopeType
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.move.MoveState
 import com.labfreezer.ui.screens.move.MoveTarget
@@ -119,7 +120,13 @@ fun LayerDetailScreen(navController: NavController, layerId: Long, viewModel: La
                             Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error)
                         }
                     } else {
-                        IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
+                        IconButton(onClick = {
+                            navController.navigate(Screen.Search.createRoute(
+                                scopeType = ScopeType.LEVEL,
+                                scopeId = layerId,
+                                scopeName = layer?.name
+                            ))
+                        }) {
                             Icon(Icons.Default.Search, contentDescription = "\u641c\u7d22")
                         }
                     }

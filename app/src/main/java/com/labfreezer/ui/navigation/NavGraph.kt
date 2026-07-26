@@ -6,6 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
+import com.labfreezer.data.search.ScopeType
+import com.labfreezer.data.search.SearchScope
 import com.labfreezer.ui.screens.boxgrid.BoxGridScreen
 import com.labfreezer.ui.screens.devices.DeviceDetailScreen
 import com.labfreezer.ui.screens.devices.DeviceListScreen
@@ -62,8 +64,25 @@ fun NavGraph(navController: NavHostController) {
                 navArgument("col") { type = NavType.IntType }
             )
         ) { }
-        composable(Screen.Search.route) {
-            SearchScreen(navController)
+        composable(
+            route = Screen.Search.route,
+            arguments = listOf(
+                navArgument("scope") { type = NavType.StringType; defaultValue = ScopeType.ALL.name },
+                navArgument("scopeId") { type = NavType.LongType; defaultValue = -1L },
+                navArgument("scopeName") { type = NavType.StringType; defaultValue = "" }
+            )
+        ) { backStackEntry ->
+            val scope = backStackEntry.arguments?.getString("scope") ?: ScopeType.ALL.name
+            val scopeId = backStackEntry.arguments?.getLong("scopeId") ?: -1L
+            val scopeName = backStackEntry.arguments?.getString("scopeName") ?: ""
+            SearchScreen(
+                navController = navController,
+                scope = SearchScope(
+                    type = ScopeType.valueOf(scope),
+                    id = scopeId.takeIf { it != -1L },
+                    name = scopeName.ifBlank { null }
+                )
+            )
         }
         composable(Screen.MoveBrowser.route) {
             MoveBrowserScreen(onBack = { navController.popBackStack() })

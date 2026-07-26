@@ -49,6 +49,7 @@ import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material.icons.filled.OpenWith
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -90,6 +91,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.labfreezer.data.search.ScopeType
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.move.MoveState
 import com.labfreezer.ui.screens.move.MoveTarget
@@ -179,6 +181,16 @@ fun BoxGridScreen(
                         }
                         IconButton(onClick = { showDeleteBatchConfirm = true }) {
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error)
+                        }
+                    } else {
+                        IconButton(onClick = {
+                            navController.navigate(Screen.Search.createRoute(
+                                scopeType = ScopeType.BOX,
+                                scopeId = boxId,
+                                scopeName = box?.name
+                            ))
+                        }) {
+                            Icon(Icons.Default.Search, contentDescription = stringResource(R.string.device_list_search))
                         }
                     }
                 },

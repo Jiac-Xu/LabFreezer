@@ -139,6 +139,101 @@ object SearchNormalizer {
         return variants.take(MAX_VARIANTS).toList()
     }
 
+    /**
+     * 将数据库中任意格式的日期字符串标准化为 yyyy-MM 格式，用于日期聚合统计。
+     *
+     * 支持格式：
+     * - yyyy-MM-dd / yyyy-M-d
+     * - yyyy.MM.dd / yyyy.M.d
+     * - yyyy/MM/dd / yyyy/M/d
+     * - M-d-yyyy / MM-dd-yyyy（月日年）
+     * - yyyy年M月d日
+     * - yyyyMMdd（8位紧凑）
+     * - yyyyMM（6位，年份前4位在合理范围）
+     * - yyMMdd（6位，年份前2位，自动补20xx）
+     * - YYMM（4位，前2位为年份后2位为月份）
+     *
+     * @param date 数据库中的原始日期字符串
+     * @return yyyy-MM 格式字符串，解析失败返回 null
+     */
+    fun parseDateToYearMonth(date: String?): String? {
+        if (date.isNullOrBlank()) return null
+        val trimmed = date.trim()
+
+        // 1. 尝试 yyyy-MM-dd / yyyy-M-d（最常用，自动日期格式）
+        //    yyyy.MM.dd / yyyy.M.d
+        //    yyyy/MM/dd / yyyy/M/d
+        YYYY_MM_DD_REGEX.find(trimmed)?.let { m ->
+            val y = m.groupValues[1]
+            val mo = m.groupValues[2].padStart(2, '0')
+            return "$y-$mo"
+        }
+
+        // 2. 尝试 M-d-yyyy / MM-dd-yyyy（OCR 月日年格式）
+        M_D_YYYY_REGEX.find(trimmed)?.let { m ->
+            val y = m.groupValues[3]
+            val mo = m.groupValues[1].padStart(2, '0')
+            return "$y-$mo"
+        }
+
+        // 3. 尝试 yyyy年M月d日
+        CHINESE_DATE_REGEX.find(trimmed)?.let { m ->
+            val y = m.groupValues[1]
+            val mo = m.groupValues[2].padStart(2, '0')
+            return "$y-$mo"
+        }
+
+        // 4. 纯数字格式
+        val digits = trimmed.filter { it.isDigit() }
+        if (digits.length == trimmed.length && digits.isNotEmpty()) {
+            return when (digits.length) {
+                8 -> {
+                    // yyyyMMdd
+                    "${digits.substring(0, 4)}-${digits.substring(4, 6)}"
+                }
+                6 -> {
+                    val first4 = digits.substring(0, 4).toIntOrNull() ?: 0
+                    if (first4 in YEAR_RANGE) {
+                        // yyyyMM
+                        "${digits.substring(0, 4)}-${digits.substring(4, 6)}"
+                    } else {
+                        // yyMMdd → 20xx
+                        val year = "20${digits.substring(0, 2)}"
+                        "$year-${digits.substring(2, 4)}"
+                    }
+                }
+                4 -> {
+                    val yy = digits.substring(0, 2).toIntOrNull() ?: 0
+                    val mm = digits.substring(2, 4).toIntOrNull() ?: 0
+                    if (mm in 1..12) {
+                        // YYMM
+                        "20${digits.substring(0, 2)}-${digits.substring(2, 4)}"
+                    } else {
+                        null // 无法解析为年月
+                    }
+                }
+                else -> null
+            }
+        }
+
+        // 5. 尝试提取年份和月份（通用 fallback：查找 4 位年份 + 1-2 位月份）
+        //    例如 "2026年7月" 但前面没匹配到，或者 "2026-07" 这类
+        FALLBACK_DATE_REGEX.find(trimmed)?.let { m ->
+            val y = m.groupValues[1]
+            val mo = m.groupValues[2].padStart(2, '0')
+            return "$y-$mo"
+        }
+
+        return null
+    }
+
+    // ==================== 日期解析正则表达式 ====================
+
+    private val YYYY_MM_DD_REGEX = Regex("""(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})""")
+    private val M_D_YYYY_REGEX = Regex("""(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})""")
+    private val CHINESE_DATE_REGEX = Regex("""(\d{4})年(\d{1,2})月(\d{1,2})日""")
+    private val FALLBACK_DATE_REGEX = Regex("""(\d{4})\D(\d{1,2})""")
+
     // ==================== 内部辅助方法 ====================
 
     /**

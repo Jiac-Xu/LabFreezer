@@ -217,13 +217,18 @@
 
     <!-- ========== Search ========== -->
     <string name="search_title">搜索</string>
-    <string name="search_placeholder">智能搜索</string>
+    <string name="search_placeholder_scope">搜索 %1$s</string>
+    <string name="search_placeholder_all">搜索</string>
     <string name="search_empty">输入样本名、日期或关键词，支持智能匹配</string>
     <string name="search_loading">搜索中…</string>
     <string name="search_no_results">未找到匹配项</string>
-    <string name="search_tag_manage">标签管理</string>
     <string name="search_device">设备</string>
     <string name="search_note">备注: %1$s</string>
+    <string name="search_result_count">%1$d 个结果</string>
+    <string name="search_facet_location">位置</string>
+    <string name="search_facet_date">日期</string>
+    <string name="search_facet_tag">标签</string>
+    <string name="search_facet_clear">清除筛选</string>
 
     <!-- ========== Search History ========== -->
     <string name="search_history_title">历史搜索</string>

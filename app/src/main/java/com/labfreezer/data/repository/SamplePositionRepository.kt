@@ -1,8 +1,10 @@
 package com.labfreezer.data.repository
 
 import com.labfreezer.data.db.dao.SamplePositionDao
+import com.labfreezer.data.db.dao.SampleTagInfo
 import com.labfreezer.data.db.dao.SampleWithPath
 import com.labfreezer.data.db.entity.SamplePositionEntity
+import com.labfreezer.data.db.entity.StorageBoxEntity
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -25,11 +27,44 @@ class SamplePositionRepository @Inject constructor(
     suspend fun searchByName(query: String): List<SamplePositionEntity> =
         sampleDao.searchByName(query)
 
+    // 全局搜索
     suspend fun searchWithPath(query: String): List<SampleWithPath> =
         sampleDao.searchWithPath(query)
 
     suspend fun searchWithPathByTags(query: String, tagIds: List<Long>): List<SampleWithPath> =
         sampleDao.searchWithPathByTags(query, tagIds, tagIds.size)
+
+    // 设备范围搜索
+    suspend fun searchWithPathByDevice(query: String, deviceId: Long): List<SampleWithPath> =
+        sampleDao.searchWithPathByDevice(query, deviceId)
+
+    suspend fun searchWithPathByDeviceAndTags(query: String, deviceId: Long, tagIds: List<Long>): List<SampleWithPath> =
+        sampleDao.searchWithPathByDeviceAndTags(query, deviceId, tagIds, tagIds.size)
+
+    // 层级范围搜索
+    suspend fun searchWithPathByLayer(query: String, layerId: Long): List<SampleWithPath> =
+        sampleDao.searchWithPathByLayer(query, layerId)
+
+    suspend fun searchWithPathByLayerAndTags(query: String, layerId: Long, tagIds: List<Long>): List<SampleWithPath> =
+        sampleDao.searchWithPathByLayerAndTags(query, layerId, tagIds, tagIds.size)
+
+    // 盒子范围搜索
+    suspend fun searchWithPathByBox(query: String, boxId: Long): List<SampleWithPath> =
+        sampleDao.searchWithPathByBox(query, boxId)
+
+    suspend fun searchWithPathByBoxAndTags(query: String, boxId: Long, tagIds: List<Long>): List<SampleWithPath> =
+        sampleDao.searchWithPathByBoxAndTags(query, boxId, tagIds, tagIds.size)
+
+    // 范围搜索：盒子实体
+    suspend fun searchBoxesByDevice(query: String, deviceId: Long): List<StorageBoxEntity> =
+        sampleDao.searchBoxesByDevice(query, deviceId)
+
+    suspend fun searchBoxesByLayer(query: String, layerId: Long): List<StorageBoxEntity> =
+        sampleDao.searchBoxesByLayer(query, layerId)
+
+    // 批量标签查询
+    suspend fun getTagsBySampleIds(sampleIds: List<Long>): List<SampleTagInfo> =
+        sampleDao.getTagsBySampleIds(sampleIds)
 
     suspend fun getAllWithPath(): List<SampleWithPath> =
         sampleDao.getAllWithPath()

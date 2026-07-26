@@ -206,11 +206,9 @@
 
     <!-- ========== Search ========== -->
     <string name="search_title">搜尋</string>
-    <string name="search_placeholder">智能搜尋</string>
     <string name="search_empty">輸入樣本名、日期或關鍵詞，支援智能匹配</string>
     <string name="search_loading">搜尋中…</string>
     <string name="search_no_results">未找到相符項目</string>
-    <string name="search_tag_manage">標籤管理</string>
     <string name="search_device">設備</string>
     <string name="search_note">備註: %1$s</string>
 

@@ -217,11 +217,9 @@
 
     <!-- ========== Search ========== -->
     <string name="search_title">Search</string>
-    <string name="search_placeholder">Smart Search</string>
     <string name="search_empty">Enter sample name, date, or keyword for smart matching</string>
     <string name="search_loading">Searching...</string>
     <string name="search_no_results">No results found</string>
-    <string name="search_tag_manage">Tag Management</string>
     <string name="search_device">Device</string>
     <string name="search_note">Note: %1$s</string>
 

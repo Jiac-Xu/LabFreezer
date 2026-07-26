@@ -66,6 +66,8 @@ import androidx.navigation.compose.rememberNavController
 import com.labfreezer.R
 import com.labfreezer.export.ZipAnalysis
 import com.labfreezer.export.ZipType
+import com.labfreezer.data.search.ScopeType
+import com.labfreezer.data.search.SearchScope
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.boxgrid.BoxGridScreen
 import com.labfreezer.ui.screens.devices.DeviceDetailScreen
@@ -117,7 +119,7 @@ fun MainScreen(
 
         LaunchedEffect(Unit) {
             when (startPage.route) {
-                Screen.Search.route -> navController.navigate(Screen.Search.route)
+                Screen.Search.route -> navController.navigate(Screen.Search.createRoute(ScopeType.ALL))
                 Screen.DeviceDetail.route -> navController.navigate(Screen.DeviceDetail.createRoute(startPage.id))
                 Screen.LayerDetail.route -> navController.navigate(Screen.LayerDetail.createRoute(startPage.id))
                 Screen.BoxGrid.route -> navController.navigate(Screen.BoxGrid.createRoute(startPage.id))
@@ -292,8 +294,26 @@ fun MainScreen(
                     val sampleId = backStackEntry.arguments?.getLong("sampleId") ?: return@composable
                     SampleEditScreen(navController, sampleId)
                 }
-                composable(Screen.Search.route) {
-                    SearchScreen(navController, showBackButton = true)
+                composable(
+                    route = Screen.Search.route,
+                    arguments = listOf(
+                        androidx.navigation.navArgument("scope") { type = androidx.navigation.NavType.StringType; defaultValue = ScopeType.ALL.name },
+                        androidx.navigation.navArgument("scopeId") { type = androidx.navigation.NavType.LongType; defaultValue = -1L },
+                        androidx.navigation.navArgument("scopeName") { type = androidx.navigation.NavType.StringType; defaultValue = "" }
+                    )
+                ) { backStackEntry ->
+                    val scope = backStackEntry.arguments?.getString("scope") ?: ScopeType.ALL.name
+                    val scopeId = backStackEntry.arguments?.getLong("scopeId") ?: -1L
+                    val scopeName = backStackEntry.arguments?.getString("scopeName") ?: ""
+                    SearchScreen(
+                        navController = navController,
+                        showBackButton = true,
+                        scope = SearchScope(
+                            type = ScopeType.valueOf(scope),
+                            id = scopeId.takeIf { it != -1L },
+                            name = scopeName.ifBlank { null }
+                        )
+                    )
                 }
                 composable(Screen.MoveBrowser.route) {
                     MoveBrowserScreen(onBack = { navController.popBackStack() })
@@ -498,7 +518,7 @@ private fun MainTabPager(
         when (tabConfig.getOrNull(targetPage)) {
             BottomTab.DEVICE_LIST -> DeviceListScreen(navController, showFabPadding = true)
             BottomTab.TAG_MANAGE -> TagManageScreen(navController, showBackButton = false, showFabPadding = true)
-            BottomTab.SEARCH -> SearchScreen(navController, showBackButton = false)
+            BottomTab.SEARCH -> SearchScreen(navController, showBackButton = false, scope = SearchScope(ScopeType.ALL))
             BottomTab.SETTINGS -> SettingsScreen(
                 onThemeChanged = onThemeChanged,
                 onNavigateToStartPagePicker = onNavigateToStartPagePicker,

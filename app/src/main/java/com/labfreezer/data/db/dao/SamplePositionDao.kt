@@ -23,6 +23,12 @@ data class SampleWithPath(
     val boxName: String
 )
 
+data class SampleTagInfo(
+    val sampleId: Long,
+    val tagId: Long,
+    val tagName: String
+)
+
 @Dao
 interface SamplePositionDao {
 
@@ -40,6 +46,8 @@ interface SamplePositionDao {
 
     @Query("SELECT * FROM sample_position WHERE name LIKE '%' || :query || '%' ORDER BY name ASC")
     suspend fun searchByName(query: String): List<SamplePositionEntity>
+
+    // ==================== 全局搜索（所有范围） ====================
 
     @Query(
         "SELECT sp.id AS sampleId, sp.box_id AS boxId, sp.row, sp.col, " +
@@ -68,6 +76,119 @@ interface SamplePositionDao {
         "ORDER BY sp.name ASC"
     )
     suspend fun searchWithPathByTags(query: String, tagIds: List<Long>, tagCount: Int): List<SampleWithPath>
+
+    // ==================== 设备范围搜索 ====================
+
+    @Query(
+        "SELECT sp.id AS sampleId, sp.box_id AS boxId, sp.row, sp.col, " +
+        "sp.name, sp.note, sp.date, sp.photo_path AS photoPath, " +
+        "sd.name AS deviceName, sl.name AS layerName, sb.name AS boxName " +
+        "FROM sample_position sp " +
+        "INNER JOIN storage_box sb ON sp.box_id = sb.id " +
+        "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
+        "INNER JOIN storage_device sd ON sl.device_id = sd.id " +
+        "WHERE (sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' OR sp.date LIKE '%' || :query || '%') " +
+        "AND sd.id = :deviceId " +
+        "ORDER BY sp.name ASC"
+    )
+    suspend fun searchWithPathByDevice(query: String, deviceId: Long): List<SampleWithPath>
+
+    @Query(
+        "SELECT DISTINCT sp.id AS sampleId, sp.box_id AS boxId, sp.row, sp.col, " +
+        "sp.name, sp.note, sp.date, sp.photo_path AS photoPath, " +
+        "sd.name AS deviceName, sl.name AS layerName, sb.name AS boxName " +
+        "FROM sample_position sp " +
+        "INNER JOIN storage_box sb ON sp.box_id = sb.id " +
+        "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
+        "INNER JOIN storage_device sd ON sl.device_id = sd.id " +
+        "LEFT JOIN sample_tag st ON sp.id = st.sample_id " +
+        "WHERE (sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' OR sp.date LIKE '%' || :query || '%') " +
+        "AND sd.id = :deviceId " +
+        "AND (:tagCount = 0 OR st.tag_id IN (:tagIds)) " +
+        "ORDER BY sp.name ASC"
+    )
+    suspend fun searchWithPathByDeviceAndTags(query: String, deviceId: Long, tagIds: List<Long>, tagCount: Int): List<SampleWithPath>
+
+    // ==================== 层级范围搜索 ====================
+
+    @Query(
+        "SELECT sp.id AS sampleId, sp.box_id AS boxId, sp.row, sp.col, " +
+        "sp.name, sp.note, sp.date, sp.photo_path AS photoPath, " +
+        "sd.name AS deviceName, sl.name AS layerName, sb.name AS boxName " +
+        "FROM sample_position sp " +
+        "INNER JOIN storage_box sb ON sp.box_id = sb.id " +
+        "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
+        "INNER JOIN storage_device sd ON sl.device_id = sd.id " +
+        "WHERE (sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' OR sp.date LIKE '%' || :query || '%') " +
+        "AND sl.id = :layerId " +
+        "ORDER BY sp.name ASC"
+    )
+    suspend fun searchWithPathByLayer(query: String, layerId: Long): List<SampleWithPath>
+
+    @Query(
+        "SELECT DISTINCT sp.id AS sampleId, sp.box_id AS boxId, sp.row, sp.col, " +
+        "sp.name, sp.note, sp.date, sp.photo_path AS photoPath, " +
+        "sd.name AS deviceName, sl.name AS layerName, sb.name AS boxName " +
+        "FROM sample_position sp " +
+        "INNER JOIN storage_box sb ON sp.box_id = sb.id " +
+        "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
+        "INNER JOIN storage_device sd ON sl.device_id = sd.id " +
+        "LEFT JOIN sample_tag st ON sp.id = st.sample_id " +
+        "WHERE (sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' OR sp.date LIKE '%' || :query || '%') " +
+        "AND sl.id = :layerId " +
+        "AND (:tagCount = 0 OR st.tag_id IN (:tagIds)) " +
+        "ORDER BY sp.name ASC"
+    )
+    suspend fun searchWithPathByLayerAndTags(query: String, layerId: Long, tagIds: List<Long>, tagCount: Int): List<SampleWithPath>
+
+    // ==================== 盒子范围搜索 ====================
+
+    @Query(
+        "SELECT sp.id AS sampleId, sp.box_id AS boxId, sp.row, sp.col, " +
+        "sp.name, sp.note, sp.date, sp.photo_path AS photoPath, " +
+        "sd.name AS deviceName, sl.name AS layerName, sb.name AS boxName " +
+        "FROM sample_position sp " +
+        "INNER JOIN storage_box sb ON sp.box_id = sb.id " +
+        "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
+        "INNER JOIN storage_device sd ON sl.device_id = sd.id " +
+        "WHERE (sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' OR sp.date LIKE '%' || :query || '%') " +
+        "AND sb.id = :boxId " +
+        "ORDER BY sp.name ASC"
+    )
+    suspend fun searchWithPathByBox(query: String, boxId: Long): List<SampleWithPath>
+
+    @Query(
+        "SELECT DISTINCT sp.id AS sampleId, sp.box_id AS boxId, sp.row, sp.col, " +
+        "sp.name, sp.note, sp.date, sp.photo_path AS photoPath, " +
+        "sd.name AS deviceName, sl.name AS layerName, sb.name AS boxName " +
+        "FROM sample_position sp " +
+        "INNER JOIN storage_box sb ON sp.box_id = sb.id " +
+        "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
+        "INNER JOIN storage_device sd ON sl.device_id = sd.id " +
+        "LEFT JOIN sample_tag st ON sp.id = st.sample_id " +
+        "WHERE (sp.name LIKE '%' || :query || '%' OR sp.note LIKE '%' || :query || '%' OR sp.date LIKE '%' || :query || '%') " +
+        "AND sb.id = :boxId " +
+        "AND (:tagCount = 0 OR st.tag_id IN (:tagIds)) " +
+        "ORDER BY sp.name ASC"
+    )
+    suspend fun searchWithPathByBoxAndTags(query: String, boxId: Long, tagIds: List<Long>, tagCount: Int): List<SampleWithPath>
+
+    // ==================== 范围搜索：盒子/层级（用于搜索结果中非样本实体的范围限制） ====================
+
+    @Query("SELECT * FROM storage_box WHERE name LIKE '%' || :query || '%' AND layer_id IN (SELECT id FROM storage_layer WHERE device_id = :deviceId) ORDER BY name ASC")
+    suspend fun searchBoxesByDevice(query: String, deviceId: Long): List<com.labfreezer.data.db.entity.StorageBoxEntity>
+
+    @Query("SELECT * FROM storage_box WHERE name LIKE '%' || :query || '%' AND layer_id = :layerId ORDER BY name ASC")
+    suspend fun searchBoxesByLayer(query: String, layerId: Long): List<com.labfreezer.data.db.entity.StorageBoxEntity>
+
+    // ==================== 批量标签查询 ====================
+
+    @Query(
+        "SELECT st.sample_id AS sampleId, t.id AS tagId, t.name AS tagName " +
+        "FROM sample_tag st INNER JOIN tag t ON st.tag_id = t.id " +
+        "WHERE st.sample_id IN (:sampleIds)"
+    )
+    suspend fun getTagsBySampleIds(sampleIds: List<Long>): List<SampleTagInfo>
 
     @Query(
         "SELECT sp.id AS sampleId, sp.box_id AS boxId, sp.row, sp.col, " +

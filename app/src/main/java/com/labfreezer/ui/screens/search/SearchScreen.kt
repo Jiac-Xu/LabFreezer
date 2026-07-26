@@ -1,4 +1,5 @@
 package com.labfreezer.ui.screens.search
+
 import com.labfreezer.R
 
 import androidx.compose.foundation.background
@@ -10,7 +11,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,7 +28,7 @@ import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DeviceHub
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
-import androidx.compose.material.icons.filled.Tag
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.SearchOff
 import androidx.compose.material.icons.filled.Search
@@ -43,6 +43,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -68,7 +69,8 @@ import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.dao.SampleWithPath
-import com.labfreezer.data.db.entity.TagEntity
+import com.labfreezer.data.search.ScopeType
+import com.labfreezer.data.search.SearchScope
 import com.labfreezer.data.search.SearchHistoryItem
 import com.labfreezer.ui.navigation.Screen
 
@@ -77,15 +79,23 @@ import com.labfreezer.ui.navigation.Screen
 fun SearchScreen(
     navController: NavController,
     showBackButton: Boolean = true,
+    scope: SearchScope = SearchScope(ScopeType.ALL),
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val query by viewModel.query.collectAsStateWithLifecycle()
     val results by viewModel.results.collectAsStateWithLifecycle()
     val isSearching by viewModel.isSearching.collectAsStateWithLifecycle()
-    val allTags by viewModel.allTags.collectAsStateWithLifecycle()
-    val selectedTagIds by viewModel.selectedTagIds.collectAsStateWithLifecycle()
     val searchHistory by viewModel.searchHistory.collectAsStateWithLifecycle()
+    val facetGroups by viewModel.facetGroups.collectAsStateWithLifecycle()
+    val activeFacetIds by viewModel.activeFacetIds.collectAsStateWithLifecycle()
+
     val focusRequester = remember { FocusRequester() }
+
+    // 设置搜索范围
+    LaunchedEffect(scope) {
+        viewModel.setScope(scope)
+    }
+
     LaunchedEffect(Unit) { if (query.isEmpty()) focusRequester.requestFocus() }
     DisposableEffect(Unit) { onDispose { viewModel.saveCurrentQuery() } }
 
@@ -94,6 +104,16 @@ fun SearchScreen(
         focusedBorderColor = MaterialTheme.colorScheme.primary,
         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
     )
+
+    // 动态 placeholder
+    val placeholderText = when (scope.type) {
+        ScopeType.ALL -> stringResource(R.string.search_placeholder_all)
+        else -> {
+            val name = scope.name ?: ""
+            if (name.length > 20) stringResource(R.string.search_placeholder_scope, name.take(18) + "…")
+            else stringResource(R.string.search_placeholder_scope, name)
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -118,7 +138,7 @@ fun SearchScreen(
             OutlinedTextField(
                 value = query,
                 onValueChange = { viewModel.onQueryChange(it) },
-                label = { Text(stringResource(R.string.search_placeholder)) },
+                label = { Text(placeholderText) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null) },
                 trailingIcon = { if (query.isNotEmpty()) IconButton(onClick = { viewModel.onQueryChange("") }) { Icon(Icons.Default.Clear, contentDescription = stringResource(R.string.content_description_clear)) } },
                 singleLine = true,
@@ -126,15 +146,19 @@ fun SearchScreen(
                 shape = fieldShape,
                 colors = fieldColors
             )
-            if (allTags.isNotEmpty()) {
+
+            // 动态筛选区域（有结果且有筛选条件时显示）
+            if (facetGroups.isNotEmpty() && results.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
-                TagFilterRow(
-                    tags = allTags,
-                    selectedIds = selectedTagIds,
-                    onToggle = { viewModel.toggleTag(it) },
-                    onNavigateToTagManage = { navController.navigate(Screen.TagManage.route) }
+                FacetedFilterRow(
+                    facetGroups = facetGroups,
+                    onToggleFacet = { viewModel.toggleFacet(it) },
+                    onClearAll = { viewModel.clearFacets() },
+                    hasActiveFacets = activeFacetIds.isNotEmpty()
                 )
             }
+
+            // 搜索历史（仅在搜索框为空时显示）
             if (query.isBlank() && searchHistory.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
                 SearchHistoryRow(
@@ -143,41 +167,178 @@ fun SearchScreen(
                     onClearAll = { viewModel.clearSearchHistory() }
                 )
             }
+
             Spacer(Modifier.height(8.dp))
+
+            // 主内容区域
             when {
-                query.isBlank() -> Column(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-                    Spacer(Modifier.height(16.dp))
-                    Text(stringResource(R.string.search_empty), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
-                }
-                isSearching -> Column(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-                    Spacer(Modifier.height(16.dp))
-                    Text(stringResource(R.string.search_loading), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
-                }
-                results.isEmpty() -> Column(modifier = Modifier.fillMaxWidth().padding(top = 64.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Outlined.SearchOff, contentDescription = null, modifier = Modifier.size(72.dp), tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
-                    Spacer(Modifier.height(16.dp))
-                    Text(stringResource(R.string.search_no_results), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
-                }
-                else -> LazyColumn(
-                    modifier = Modifier.fillMaxWidth().weight(1f),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                    contentPadding = PaddingValues(vertical = 12.dp)
-                ) {
-                    items(results, key = { when (it) { is SearchResultItem.Device -> "dev_${it.entity.id}"; is SearchResultItem.Layer -> "lay_${it.entity.id}"; is SearchResultItem.Box -> "box_${it.entity.id}"; is SearchResultItem.Sample -> "smp_${it.sample.sampleId}" } }) { result ->
-                        when (result) {
-                            is SearchResultItem.Device -> SearchDeviceItem(result.entity, onClick = { navController.navigate(Screen.DeviceDetail.createRoute(result.entity.id)) })
-                            is SearchResultItem.Layer -> SearchLayerItem(result.entity, result.deviceName, onClick = { navController.navigate(Screen.LayerDetail.createRoute(result.entity.id)) })
-                            is SearchResultItem.Box -> SearchBoxItem(result.entity, result.deviceName, result.layerName, onClick = { navController.navigate(Screen.BoxGrid.createRoute(result.entity.id)) })
-                            is SearchResultItem.Sample -> SearchSampleItem(result.sample, onClick = { navController.navigate(Screen.SampleEdit.createRoute(result.sample.sampleId)) })
-                        }
-                    }
-                }
+                query.isBlank() -> EmptyQueryState()
+                isSearching -> SearchingState()
+                results.isEmpty() -> NoResultsState()
+                else -> ResultsList(results, navController)
             }
         }
     }
 }
+
+// ==================== 空状态、搜索中、无结果 ====================
+
+@Composable
+private fun EmptyQueryState() {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(top = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(72.dp),
+            tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+        Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.search_empty), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+    }
+}
+
+@Composable
+private fun SearchingState() {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(top = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Outlined.Search, contentDescription = null, modifier = Modifier.size(72.dp),
+            tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+        Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.search_loading), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+    }
+}
+
+@Composable
+private fun NoResultsState() {
+    Column(
+        modifier = Modifier.fillMaxWidth().padding(top = 64.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(Icons.Outlined.SearchOff, contentDescription = null, modifier = Modifier.size(72.dp),
+            tint = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f))
+        Spacer(Modifier.height(16.dp))
+        Text(stringResource(R.string.search_no_results), style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
+    }
+}
+
+// ==================== 结果列表 ====================
+
+@Composable
+private fun ResultsList(
+    results: List<SearchResultItem>,
+    navController: NavController
+) {
+    LazyColumn(
+        modifier = Modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+        contentPadding = PaddingValues(vertical = 12.dp)
+    ) {
+        items(results, key = { when (it) {
+            is SearchResultItem.Device -> "dev_${it.entity.id}"
+            is SearchResultItem.Layer -> "lay_${it.entity.id}"
+            is SearchResultItem.Box -> "box_${it.entity.id}"
+            is SearchResultItem.Sample -> "smp_${it.sample.sampleId}"
+        } }) { result ->
+            when (result) {
+                is SearchResultItem.Device -> SearchDeviceItem(result.entity,
+                    onClick = { navController.navigate(Screen.DeviceDetail.createRoute(result.entity.id)) })
+                is SearchResultItem.Layer -> SearchLayerItem(result.entity, result.deviceName,
+                    onClick = { navController.navigate(Screen.LayerDetail.createRoute(result.entity.id)) })
+                is SearchResultItem.Box -> SearchBoxItem(result.entity, result.deviceName, result.layerName,
+                    onClick = { navController.navigate(Screen.BoxGrid.createRoute(result.entity.id)) })
+                is SearchResultItem.Sample -> SearchSampleItem(result.sample,
+                    onClick = { navController.navigate(Screen.SampleEdit.createRoute(result.sample.sampleId)) })
+            }
+        }
+    }
+}
+
+// ==================== Faceted 筛选区域 ====================
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun FacetedFilterRow(
+    facetGroups: List<FacetGroup>,
+    onToggleFacet: (String) -> Unit,
+    onClearAll: () -> Unit,
+    hasActiveFacets: Boolean
+) {
+    Column {
+        // 筛选标题 + 清除按钮
+        if (hasActiveFacets) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(onClick = onClearAll) {
+                    Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(14.dp))
+                    Spacer(Modifier.width(4.dp))
+                    Text(stringResource(R.string.search_facet_clear), style = MaterialTheme.typography.labelSmall)
+                }
+            }
+        }
+
+        facetGroups.forEach { group ->
+            Text(
+                text = group.label,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(vertical = 4.dp)
+            )
+            FlowRow(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                group.options.forEach { option ->
+                    FacetChip(
+                        label = option.label,
+                        count = option.count,
+                        isSelected = option.isSelected,
+                        onClick = { onToggleFacet(option.id) }
+                    )
+                }
+            }
+            Spacer(Modifier.height(4.dp))
+        }
+    }
+}
+
+@Composable
+private fun FacetChip(
+    label: String,
+    count: Int,
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(20.dp),
+        color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer
+                else MaterialTheme.colorScheme.surfaceContainerHigh,
+        contentColor = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
+                       else MaterialTheme.colorScheme.onSurface
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(label, style = MaterialTheme.typography.labelMedium)
+            Spacer(Modifier.width(4.dp))
+            Text(
+                "($count)",
+                style = MaterialTheme.typography.labelSmall,
+                color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                        else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
+            )
+        }
+    }
+}
+
+// ==================== 搜索历史 ====================
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -187,7 +348,6 @@ private fun SearchHistoryRow(
     onClearAll: () -> Unit
 ) {
     Column {
-        // 标题行：历史搜索（左） + 全部清除（右）
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -228,64 +388,7 @@ private fun SearchHistoryRow(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
-@Composable
-private fun TagFilterRow(
-    tags: List<TagEntity>,
-    selectedIds: Set<Long>,
-    onToggle: (Long) -> Unit,
-    onNavigateToTagManage: () -> Unit = {}
-) {
-    FlowRow(
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        tags.forEach { tag ->
-            val isSelected = tag.id in selectedIds
-            Surface(
-                onClick = { onToggle(tag.id) },
-                shape = RoundedCornerShape(20.dp),
-                color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer
-                        else MaterialTheme.colorScheme.surfaceContainerHigh,
-                contentColor = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer
-                               else MaterialTheme.colorScheme.onSurface
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier.size(10.dp)
-                            .clip(CircleShape)
-                            .background(Color(android.graphics.Color.parseColor(tag.color)))
-                    )
-                    Spacer(Modifier.width(6.dp))
-                    Text(tag.name, style = MaterialTheme.typography.labelMedium)
-                }
-            }
-        }
-        // 标签管理入口
-        Surface(
-            onClick = onNavigateToTagManage,
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.tertiaryContainer,
-            contentColor = MaterialTheme.colorScheme.onTertiaryContainer
-        ) {
-            Row(
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Icon(
-                    Icons.Default.Tag,
-                    contentDescription = null,
-                    modifier = Modifier.size(14.dp)
-                )
-                Spacer(Modifier.width(4.dp))
-                Text(stringResource(R.string.search_tag_manage), style = MaterialTheme.typography.labelMedium)
-            }
-        }
-    }
-}
+// ==================== 搜索结果卡片 ====================
 
 @Composable
 private fun SearchDeviceItem(entity: StorageDeviceEntity, onClick: () -> Unit) {

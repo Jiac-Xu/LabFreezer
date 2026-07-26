@@ -60,6 +60,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.labfreezer.data.db.entity.StorageLayerEntity
+import com.labfreezer.data.search.ScopeType
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.move.MoveState
 import com.labfreezer.ui.screens.move.MoveTarget
@@ -117,7 +118,13 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
                             Icon(Icons.Default.Delete, contentDescription = "\u5220\u9664", tint = MaterialTheme.colorScheme.error)
                         }
                     } else {
-                        IconButton(onClick = { navController.navigate(Screen.Search.route) }) {
+                        IconButton(onClick = {
+                            navController.navigate(Screen.Search.createRoute(
+                                scopeType = ScopeType.DEVICE,
+                                scopeId = deviceId,
+                                scopeName = device?.name
+                            ))
+                        }) {
                             Icon(Icons.Default.Search, contentDescription = "\u641c\u7d22")
                         }
                     }
