@@ -18,12 +18,15 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -205,12 +208,14 @@ fun SearchScreen(
 
             Spacer(Modifier.height(8.dp))
 
-            // 主内容区域
-            when {
-                query.isBlank() -> EmptyQueryState()
-                isSearching -> SearchingState()
-                results.isEmpty() -> NoResultsState()
-                else -> ResultsList(results, navController, listState)
+            // 主内容区域（填充剩余空间）
+            Box(modifier = Modifier.weight(1f)) {
+                when {
+                    query.isBlank() -> EmptyQueryState()
+                    isSearching -> SearchingState()
+                    results.isEmpty() -> NoResultsState()
+                    else -> ResultsList(results, navController, listState)
+                }
             }
         }
     }
@@ -308,8 +313,9 @@ private fun FacetedFilterRow(
 ) {
     Column {
         // 标题行：筛选（左）+ 清除筛选 + 收起/展开按钮（右）
+        // 固定高度，不参与滚动
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier.fillMaxWidth().height(40.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // 左侧标题
@@ -320,13 +326,15 @@ private fun FacetedFilterRow(
                 color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
-            // 清除筛选按钮（有活跃筛选时显示）
+            // 清除筛选（有活跃筛选时显示）
             if (hasActiveFacets) {
-                TextButton(onClick = onClearAll) {
-                    Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(14.dp))
-                    Spacer(Modifier.width(4.dp))
-                    Text(stringResource(R.string.search_facet_clear), style = MaterialTheme.typography.labelSmall)
-                }
+                Text(
+                    text = stringResource(R.string.search_facet_clear),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable(onClick = onClearAll)
+                )
+                Spacer(Modifier.width(8.dp))
             }
             // 收起/展开按钮
             IconButton(
@@ -342,20 +350,25 @@ private fun FacetedFilterRow(
             }
         }
 
-        // 筛选内容（可折叠）
+        // 筛选内容（可折叠，可滚动，限制最大高度）
         AnimatedVisibility(
             visible = isExpanded,
             enter = expandVertically(),
             exit = shrinkVertically()
         ) {
-            Column {
-                Spacer(Modifier.height(4.dp))
+            val scrollState = rememberScrollState()
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 200.dp)
+                    .verticalScroll(scrollState)
+            ) {
                 facetGroups.forEach { group ->
                     Text(
                         text = group.label,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(vertical = 4.dp)
+                        modifier = Modifier.padding(top = 4.dp, bottom = 2.dp)
                     )
                     FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
