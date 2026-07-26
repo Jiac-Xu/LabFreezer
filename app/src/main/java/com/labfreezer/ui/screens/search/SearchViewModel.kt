@@ -601,7 +601,12 @@ class SearchViewModel @Inject constructor(
             locationMatch && dateMatch && tagMatch
         }
 
-        _results.value = getNonSampleResults() + filteredSamples
+        _results.value = if (activeIds.isNotEmpty()) {
+            // 有筛选条件时，只显示样本结果，隐藏设备/层/盒子
+            filteredSamples
+        } else {
+            getNonSampleResults() + filteredSamples
+        }
     }
 
     /**
