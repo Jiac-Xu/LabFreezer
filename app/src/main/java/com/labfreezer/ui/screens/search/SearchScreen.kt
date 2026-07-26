@@ -10,6 +10,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -73,6 +74,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -183,17 +185,23 @@ fun SearchScreen(
             // 动态筛选区域（有结果且有筛选条件时显示）
             if (facetGroups.isNotEmpty() && results.isNotEmpty()) {
                 Spacer(Modifier.height(8.dp))
-                FacetedFilterRow(
-                    facetGroups = facetGroups,
-                    isExpanded = isFilterExpanded,
-                    hasActiveFacets = activeFacetIds.isNotEmpty(),
-                    onToggleExpand = {
-                        filterManualOverride = true
-                        isFilterExpanded = !isFilterExpanded
-                    },
-                    onToggleFacet = { viewModel.toggleFacet(it) },
-                    onClearAll = { viewModel.clearFacets() }
-                )
+                // 用 BoxWithConstraints 测量可用高度，动态计算筛选面板最大高度
+                BoxWithConstraints(Modifier.fillMaxWidth()) {
+                    // 留出约 280dp 给搜索框(64) + 标题栏(40) + 间隔(16) + 两个结果项(~160)
+                    val filterMaxHeight = (maxHeight - 280.dp).coerceAtLeast(120.dp)
+                    FacetedFilterRow(
+                        facetGroups = facetGroups,
+                        isExpanded = isFilterExpanded,
+                        filterMaxHeight = filterMaxHeight,
+                        hasActiveFacets = activeFacetIds.isNotEmpty(),
+                        onToggleExpand = {
+                            filterManualOverride = true
+                            isFilterExpanded = !isFilterExpanded
+                        },
+                        onToggleFacet = { viewModel.toggleFacet(it) },
+                        onClearAll = { viewModel.clearFacets() }
+                    )
+                }
             }
 
             // 搜索历史（仅在搜索框为空时显示）
@@ -306,6 +314,7 @@ private fun ResultsList(
 private fun FacetedFilterRow(
     facetGroups: List<FacetGroup>,
     isExpanded: Boolean,
+    filterMaxHeight: androidx.compose.ui.unit.Dp,
     hasActiveFacets: Boolean,
     onToggleExpand: () -> Unit,
     onToggleFacet: (String) -> Unit,
@@ -360,7 +369,7 @@ private fun FacetedFilterRow(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(max = 200.dp)
+                    .heightIn(max = filterMaxHeight)
                     .verticalScroll(scrollState)
             ) {
                 facetGroups.forEach { group ->
