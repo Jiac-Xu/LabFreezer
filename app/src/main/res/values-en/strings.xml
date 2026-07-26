@@ -222,6 +222,11 @@
     <string name="search_no_results">No results found</string>
     <string name="search_device">Device</string>
     <string name="search_note">Note: %1$s</string>
+    <string name="search_facet_location">Location</string>
+    <string name="search_facet_date">Date</string>
+    <string name="search_facet_tag">Tag</string>
+    <string name="search_facet_title">Filter</string>
+    <string name="search_facet_clear">Clear</string>
 
     <!-- ========== Search History ========== -->
     <string name="search_history_title">Search History</string>

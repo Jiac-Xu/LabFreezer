@@ -2,6 +2,9 @@ package com.labfreezer.ui.screens.search
 
 import com.labfreezer.R
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,12 +23,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.DeviceHub
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.FilterList
@@ -49,8 +55,11 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -98,6 +107,27 @@ fun SearchScreen(
 
     LaunchedEffect(Unit) { if (query.isEmpty()) focusRequester.requestFocus() }
     DisposableEffect(Unit) { onDispose { viewModel.saveCurrentQuery() } }
+
+    // 结果列表滚动状态
+    val listState = rememberLazyListState()
+
+    // 筛选面板状态
+    var isFilterExpanded by remember { mutableStateOf(true) }
+    var filterManualOverride by remember { mutableStateOf(false) }
+
+    // 判断是否已滚动（首项不可见 = 已滚动）
+    val isScrolled by remember {
+        derivedStateOf {
+            listState.firstVisibleItemIndex > 0 || listState.firstVisibleItemScrollOffset > 0
+        }
+    }
+
+    // 自动收起/展开（仅在用户未手动操作时生效）
+    LaunchedEffect(isScrolled) {
+        if (!filterManualOverride) {
+            isFilterExpanded = !isScrolled
+        }
+    }
 
     val fieldShape = RoundedCornerShape(12.dp)
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -152,9 +182,14 @@ fun SearchScreen(
                 Spacer(Modifier.height(8.dp))
                 FacetedFilterRow(
                     facetGroups = facetGroups,
+                    isExpanded = isFilterExpanded,
+                    hasActiveFacets = activeFacetIds.isNotEmpty(),
+                    onToggleExpand = {
+                        filterManualOverride = true
+                        isFilterExpanded = !isFilterExpanded
+                    },
                     onToggleFacet = { viewModel.toggleFacet(it) },
-                    onClearAll = { viewModel.clearFacets() },
-                    hasActiveFacets = activeFacetIds.isNotEmpty()
+                    onClearAll = { viewModel.clearFacets() }
                 )
             }
 
@@ -175,7 +210,7 @@ fun SearchScreen(
                 query.isBlank() -> EmptyQueryState()
                 isSearching -> SearchingState()
                 results.isEmpty() -> NoResultsState()
-                else -> ResultsList(results, navController)
+                else -> ResultsList(results, navController, listState)
             }
         }
     }
@@ -230,9 +265,11 @@ private fun NoResultsState() {
 @Composable
 private fun ResultsList(
     results: List<SearchResultItem>,
-    navController: NavController
+    navController: NavController,
+    listState: androidx.compose.foundation.lazy.LazyListState
 ) {
     LazyColumn(
+        state = listState,
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
         contentPadding = PaddingValues(vertical = 12.dp)
@@ -263,46 +300,79 @@ private fun ResultsList(
 @Composable
 private fun FacetedFilterRow(
     facetGroups: List<FacetGroup>,
+    isExpanded: Boolean,
+    hasActiveFacets: Boolean,
+    onToggleExpand: () -> Unit,
     onToggleFacet: (String) -> Unit,
-    onClearAll: () -> Unit,
-    hasActiveFacets: Boolean
+    onClearAll: () -> Unit
 ) {
     Column {
-        // 筛选标题 + 清除按钮
-        if (hasActiveFacets) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
+        // 标题行：筛选（左）+ 清除筛选 + 收起/展开按钮（右）
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            // 左侧标题
+            Text(
+                text = stringResource(R.string.search_facet_title),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            // 清除筛选按钮（有活跃筛选时显示）
+            if (hasActiveFacets) {
                 TextButton(onClick = onClearAll) {
                     Icon(Icons.Default.FilterList, contentDescription = null, modifier = Modifier.size(14.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(stringResource(R.string.search_facet_clear), style = MaterialTheme.typography.labelSmall)
                 }
             }
+            // 收起/展开按钮
+            IconButton(
+                onClick = onToggleExpand,
+                modifier = Modifier.size(32.dp)
+            ) {
+                Icon(
+                    if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                    contentDescription = if (isExpanded) "收起筛选" else "展开筛选",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp)
+                )
+            }
         }
 
-        facetGroups.forEach { group ->
-            Text(
-                text = group.label,
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(vertical = 4.dp)
-            )
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalArrangement = Arrangement.spacedBy(4.dp)
-            ) {
-                group.options.forEach { option ->
-                    FacetChip(
-                        label = option.label,
-                        count = option.count,
-                        isSelected = option.isSelected,
-                        onClick = { onToggleFacet(option.id) }
+        // 筛选内容（可折叠）
+        AnimatedVisibility(
+            visible = isExpanded,
+            enter = expandVertically(),
+            exit = shrinkVertically()
+        ) {
+            Column {
+                Spacer(Modifier.height(4.dp))
+                facetGroups.forEach { group ->
+                    Text(
+                        text = group.label,
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 4.dp)
                     )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp)
+                    ) {
+                        group.options.forEach { option ->
+                            FacetChip(
+                                label = option.label,
+                                count = option.count,
+                                isSelected = option.isSelected,
+                                onClick = { onToggleFacet(option.id) }
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(4.dp))
                 }
             }
-            Spacer(Modifier.height(4.dp))
         }
     }
 }
