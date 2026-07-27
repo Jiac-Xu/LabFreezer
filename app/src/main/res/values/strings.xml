@@ -290,9 +290,9 @@
     <string name="search_hint">搜索</string>
 
     <!-- ========== Sample Browse Context ========== -->
-    <string name="browse_context_box">盒子「%1$s」· %2$d/%3$d</string>
-    <string name="browse_context_search">搜索「%1$s」· %2$d/%3$d</string>
-    <string name="browse_context_search_with_filters">搜索「%1$s」+%2$s · %3$d/%4$d</string>
-    <string name="browse_context_tag">标签「%1$s」· %2$d/%3$d</string>
+    <string name="browse_context_box">%2$d/%3$d · 盒子「%1$s」</string>
+    <string name="browse_context_search">%2$d/%3$d · 搜索「%1$s」</string>
+    <string name="browse_context_search_with_filters">%3$d/%4$d · 搜索「%1$s」+%2$s</string>
+    <string name="browse_context_tag">%2$d/%3$d · 标签「%1$s」</string>
     <string name="browse_context_filter_count">%1$d个筛选条件</string>
 </resources>

@@ -276,9 +276,9 @@
     <string name="search_hint">搜尋</string>
 
     <!-- ========== Sample Browse Context ========== -->
-    <string name="browse_context_box">盒子「%1$s」· %2$d/%3$d</string>
-    <string name="browse_context_search">搜尋「%1$s」· %2$d/%3$d</string>
-    <string name="browse_context_search_with_filters">搜尋「%1$s」+%2$s · %3$d/%4$d</string>
-    <string name="browse_context_tag">標籤「%1$s」· %2$d/%3$d</string>
+    <string name="browse_context_box">%2$d/%3$d · 盒子「%1$s」</string>
+    <string name="browse_context_search">%2$d/%3$d · 搜尋「%1$s」</string>
+    <string name="browse_context_search_with_filters">%3$d/%4$d · 搜尋「%1$s」+%2$s</string>
+    <string name="browse_context_tag">%2$d/%3$d · 標籤「%1$s」</string>
     <string name="browse_context_filter_count">%1$d個篩選條件</string>
 </resources>

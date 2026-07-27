@@ -2,7 +2,7 @@ Android Studio在D:\Program Files\AndroidStudio
 adb在C:\Users\Administrator\AppData\Local\Android\Sdk\platform-tools\adb.exe
 JAVA_HOME用Android Studio的JBR：D:\Program Files\AndroidStudio\jbr
 
-每次修改完成后请用adb推送到手机上测试，同时git保存
+每次修改完成后请git保存
 
 除非主动要求，否则全部打release包（`./gradlew.bat assembleRelease`）
 
