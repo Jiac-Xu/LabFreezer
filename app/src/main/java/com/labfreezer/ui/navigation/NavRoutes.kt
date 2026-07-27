@@ -14,8 +14,11 @@ sealed class Screen(val route: String) {
     data object BoxGrid : Screen("box_grid/{boxId}") {
         fun createRoute(boxId: Long) = "box_grid/$boxId"
     }
-    data object SampleEdit : Screen("sample_edit/{sampleId}") {
-        fun createRoute(sampleId: Long) = "sample_edit/$sampleId"
+    data object SampleEdit : Screen("sample_edit/{sampleId}?browseCtx={browseCtx}") {
+        fun createRoute(sampleId: Long, browseCtx: String? = null): String {
+            return if (browseCtx != null) "sample_edit/$sampleId?browseCtx=$browseCtx"
+            else "sample_edit/$sampleId"
+        }
     }
     data object SampleCreate : Screen("sample_create/{boxId}/{row}/{col}") {
         fun createRoute(boxId: Long, row: Int, col: Int) = "sample_create/$boxId/$row/$col"

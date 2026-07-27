@@ -17,6 +17,10 @@ import com.labfreezer.data.search.SearchHistoryItem
 import com.labfreezer.data.search.SearchNormalizer
 import com.labfreezer.data.search.SearchQueryParser
 import com.labfreezer.data.search.SearchScope
+import com.labfreezer.ui.screens.sample.FilterLogic
+import com.labfreezer.ui.screens.sample.FilterType
+import com.labfreezer.ui.screens.sample.SearchCondition
+import com.labfreezer.ui.screens.sample.SearchFilterContext
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -639,6 +643,50 @@ class SearchViewModel @Inject constructor(
      */
     private fun getNonSampleResults(): List<SearchResultItem> {
         return _results.value.filter { it !is SearchResultItem.Sample }
+    }
+
+    /**
+     * 从当前 Facet 状态构建 SearchFilterContext。
+     * 用于传递到 SampleEditPage 展示筛选条件摘要。
+     */
+    fun buildFilterContext(): SearchFilterContext {
+        val activeIds = _activeFacetIds.value
+        if (activeIds.isEmpty()) return SearchFilterContext(emptyList(), FilterLogic.AND)
+
+        val conditions = mutableListOf<SearchCondition>()
+
+        // 盒子筛选
+        val boxLabels = activeIds.filter { it.startsWith("loc_") }.mapNotNull { id ->
+            val boxId = id.removePrefix("loc_").toLongOrNull()
+            if (boxId != null) {
+                // 从 facetGroups 中查找对应的 label
+                _facetGroups.value.find { it.type == FacetType.LOCATION }
+                    ?.options?.find { it.id == id }?.label
+            } else null
+        }
+        if (boxLabels.isNotEmpty()) {
+            conditions.add(SearchCondition(FilterType.BOX, boxLabels))
+        }
+
+        // 日期筛选
+        val dateLabels = activeIds.filter { it.startsWith("date_") }.mapNotNull { id ->
+            _facetGroups.value.find { it.type == FacetType.DATE }
+                ?.options?.find { it.id == id }?.label
+        }
+        if (dateLabels.isNotEmpty()) {
+            conditions.add(SearchCondition(FilterType.DATE, dateLabels))
+        }
+
+        // 标签筛选
+        val tagLabels = activeIds.filter { it.startsWith("tag_") }.mapNotNull { id ->
+            _facetGroups.value.find { it.type == FacetType.TAG }
+                ?.options?.find { it.id == id }?.label
+        }
+        if (tagLabels.isNotEmpty()) {
+            conditions.add(SearchCondition(FilterType.TAG, tagLabels))
+        }
+
+        return SearchFilterContext(conditions, FilterLogic.AND)
     }
 
     // ==================== 搜索历史 ====================

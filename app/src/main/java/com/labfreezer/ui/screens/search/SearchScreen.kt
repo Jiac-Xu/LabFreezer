@@ -87,6 +87,8 @@ import com.labfreezer.data.search.ScopeType
 import com.labfreezer.data.search.SearchScope
 import com.labfreezer.data.search.SearchHistoryItem
 import com.labfreezer.ui.navigation.Screen
+import com.labfreezer.ui.screens.sample.BrowseContextStore
+import com.labfreezer.ui.screens.sample.SampleBrowseContext
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -222,7 +224,24 @@ fun SearchScreen(
                     query.isBlank() -> EmptyQueryState()
                     isSearching -> SearchingState()
                     results.isEmpty() -> NoResultsState()
-                    else -> ResultsList(results, navController, listState)
+                    else -> ResultsList(
+                        results = results,
+                        navController = navController,
+                        listState = listState,
+                        onSampleClick = { sample ->
+                            // 构建搜索浏览上下文
+                            val sampleIds = results.filterIsInstance<SearchResultItem.Sample>()
+                                .map { it.sample.sampleId }
+                            val filterContext = viewModel.buildFilterContext()
+                            val searchCtx = SampleBrowseContext.Search(
+                                query = query,
+                                sampleIds = sampleIds,
+                                filterContext = filterContext
+                            )
+                            val ctxKey = BrowseContextStore.put(searchCtx)
+                            navController.navigate(Screen.SampleEdit.createRoute(sample.sampleId, ctxKey))
+                        }
+                    )
                 }
             }
         }
@@ -279,7 +298,8 @@ private fun NoResultsState() {
 private fun ResultsList(
     results: List<SearchResultItem>,
     navController: NavController,
-    listState: androidx.compose.foundation.lazy.LazyListState
+    listState: androidx.compose.foundation.lazy.LazyListState,
+    onSampleClick: (SampleWithPath) -> Unit
 ) {
     LazyColumn(
         state = listState,
@@ -301,7 +321,7 @@ private fun ResultsList(
                 is SearchResultItem.Box -> SearchBoxItem(result.entity, result.deviceName, result.layerName,
                     onClick = { navController.navigate(Screen.BoxGrid.createRoute(result.entity.id)) })
                 is SearchResultItem.Sample -> SearchSampleItem(result.sample,
-                    onClick = { navController.navigate(Screen.SampleEdit.createRoute(result.sample.sampleId)) })
+                    onClick = { onSampleClick(result.sample) })
             }
         }
     }

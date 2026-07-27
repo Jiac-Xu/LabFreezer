@@ -93,6 +93,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.labfreezer.data.search.ScopeType
 import com.labfreezer.ui.navigation.Screen
+import com.labfreezer.ui.screens.sample.BrowseContextStore
+import com.labfreezer.ui.screens.sample.SampleBrowseContext
 import com.labfreezer.ui.screens.move.MoveState
 import com.labfreezer.ui.screens.move.MoveTarget
 import kotlin.math.max
@@ -245,7 +247,15 @@ fun BoxGridScreen(
                                             viewModel.onCellClick(cell)
                                         } else {
                                             cell.sampleId?.let { sampleId ->
-                                                navController.navigate(Screen.SampleEdit.createRoute(sampleId))
+                                                // 创建盒子浏览上下文：提取所有有样本的单元格的 sampleId，按 grid 顺序排列
+                                                val sampleIds = cells.filter { it.sampleId != null }.map { it.sampleId!! }
+                                                val boxCtx = SampleBrowseContext.Box(
+                                                    boxId = boxId,
+                                                    boxName = box?.name ?: "",
+                                                    sampleIds = sampleIds
+                                                )
+                                                val ctxKey = BrowseContextStore.put(boxCtx)
+                                                navController.navigate(Screen.SampleEdit.createRoute(sampleId, ctxKey))
                                             }
                                         }
                                     }

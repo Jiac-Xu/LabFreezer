@@ -28,6 +28,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -39,6 +40,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.labfreezer.data.db.dao.SampleWithPath
 import com.labfreezer.ui.navigation.Screen
+import com.labfreezer.ui.screens.sample.BrowseContextStore
+import com.labfreezer.ui.screens.sample.SampleBrowseContext
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,7 +72,16 @@ fun TagDetailScreen(navController: NavController, tagId: Long, viewModel: TagDet
                 contentPadding = PaddingValues(vertical = 12.dp)
             ) {
                 items(samples, key = { it.sampleId }) { result ->
-                    SampleItem(result = result, onClick = { navController.navigate(Screen.SampleEdit.createRoute(result.sampleId)) })
+                    val sampleIds = samples.map { it.sampleId }
+                    val tagCtx = SampleBrowseContext.Tag(
+                        tagId = tagId,
+                        tagName = tag?.name ?: "",
+                        sampleIds = sampleIds
+                    )
+                    val ctxKey = remember(tagId, tag?.name, sampleIds.size) { BrowseContextStore.put(tagCtx) }
+                    SampleItem(result = result, onClick = {
+                        navController.navigate(Screen.SampleEdit.createRoute(result.sampleId, ctxKey))
+                    })
                 }
             }
         }

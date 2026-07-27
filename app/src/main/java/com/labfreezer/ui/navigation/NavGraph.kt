@@ -51,10 +51,14 @@ fun NavGraph(navController: NavHostController) {
         }
         composable(
             route = Screen.SampleEdit.route,
-            arguments = listOf(navArgument("sampleId") { type = NavType.LongType })
+            arguments = listOf(
+                navArgument("sampleId") { type = NavType.LongType },
+                navArgument("browseCtx") { type = NavType.StringType; defaultValue = "" }
+            )
         ) { backStackEntry ->
             val sampleId = backStackEntry.arguments?.getLong("sampleId") ?: return@composable
-            SampleEditScreen(navController, sampleId)
+            val browseCtxKey = backStackEntry.arguments?.getString("browseCtx")?.ifBlank { null }
+            SampleEditScreen(navController, sampleId, browseCtxKey)
         }
         composable(
             route = Screen.SampleCreate.route,

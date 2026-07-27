@@ -289,10 +289,14 @@ fun MainScreen(
                 }
                 composable(
                     route = Screen.SampleEdit.route,
-                    arguments = listOf(androidx.navigation.navArgument("sampleId") { type = androidx.navigation.NavType.LongType })
+                    arguments = listOf(
+                        androidx.navigation.navArgument("sampleId") { type = androidx.navigation.NavType.LongType },
+                        androidx.navigation.navArgument("browseCtx") { type = androidx.navigation.NavType.StringType; defaultValue = "" }
+                    )
                 ) { backStackEntry ->
                     val sampleId = backStackEntry.arguments?.getLong("sampleId") ?: return@composable
-                    SampleEditScreen(navController, sampleId)
+                    val browseCtxKey = backStackEntry.arguments?.getString("browseCtx")?.ifBlank { null }
+                    SampleEditScreen(navController, sampleId, browseCtxKey)
                 }
                 composable(
                     route = Screen.Search.route,

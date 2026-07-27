@@ -92,6 +92,7 @@ import java.util.Calendar
 fun SampleEditScreen(
     navController: NavController,
     sampleId: Long,
+    browseCtxKey: String? = null,
     viewModel: SampleEditViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -132,9 +133,10 @@ fun SampleEditScreen(
         }
     }
 
+    // 导航事件：携带 browseCtxKey 以保持上下文
     LaunchedEffect(Unit) {
-        viewModel.navigationEvent.collect { nextSampleId ->
-            navController.navigate(Screen.SampleEdit.createRoute(nextSampleId)) {
+        viewModel.navigationEvent.collect { nav ->
+            navController.navigate(Screen.SampleEdit.createRoute(nav.sampleId, nav.browseCtxKey)) {
                 popUpTo(Screen.SampleEdit.route) { inclusive = true }
             }
         }
@@ -161,6 +163,13 @@ fun SampleEditScreen(
         }
     }
 
+    // 生成浏览上下文副标题
+    val browseSubtitle = browseCtxKey?.let { key ->
+        BrowseContextStore.get(key)?.let { ctx ->
+            buildBrowseSubtitle(ctx, state.currentIndex, state.totalCount, context)
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier.pointerInput(Unit) {
@@ -182,11 +191,25 @@ fun SampleEditScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    val s = state.sample
-                    Text(
-                        if (s != null) SampleEditViewModel.positionToLabel(s.row, s.col) else stringResource(R.string.sample_edit_title_fallback),
-                        fontWeight = FontWeight.SemiBold
-                    )
+                    Column {
+                        val s = state.sample
+                        Text(
+                            if (s != null) SampleEditViewModel.positionToLabel(s.row, s.col) else stringResource(R.string.sample_edit_title_fallback),
+                            fontWeight = FontWeight.SemiBold,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                        // 浏览上下文副标题：仅在有上下文且总样本数 > 1 时显示
+                        if (browseSubtitle != null && state.totalCount > 1) {
+                            Text(
+                                text = browseSubtitle,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
+                            )
+                        }
+                    }
                 },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
@@ -426,4 +449,106 @@ fun SampleEditScreen(
             dismissButton = { TextButton(onClick = { showDeleteDialog = false }) { Text(stringResource(R.string.btn_cancel)) } })
     }
 
+}
+
+/**
+ * 根据浏览上下文生成副标题文本。
+ * 由 UI 根据 Context 的原始字段生成，支持国际化。
+ */
+@Composable
+fun buildBrowseSubtitleText(
+    context: SampleBrowseContext,
+    currentIndex: Int,
+    totalCount: Int
+): String? {
+    if (totalCount <= 1) return null
+    return when (context) {
+        is SampleBrowseContext.Box -> {
+            stringResource(R.string.browse_context_box, context.boxName, currentIndex + 1, totalCount)
+        }
+        is SampleBrowseContext.Search -> {
+            val filterSummary = buildFilterSummaryText(context.filterContext)
+            if (filterSummary != null) {
+                stringResource(R.string.browse_context_search_with_filters, context.query, filterSummary, currentIndex + 1, totalCount)
+            } else {
+                stringResource(R.string.browse_context_search, context.query, currentIndex + 1, totalCount)
+            }
+        }
+        is SampleBrowseContext.Tag -> {
+            stringResource(R.string.browse_context_tag, context.tagName, currentIndex + 1, totalCount)
+        }
+    }
+}
+
+/**
+ * 生成筛选条件摘要文本。
+ * 少量条件时显示具体值，大量条件时显示数量。
+ */
+@Composable
+fun buildFilterSummaryText(filterContext: SearchFilterContext): String? {
+    val conditions = filterContext.conditions
+    if (conditions.isEmpty()) return null
+    val totalFilterCount = conditions.sumOf { it.values.size }
+    return if (totalFilterCount <= 3) {
+        conditions.joinToString("+") { cond ->
+            when (cond.type) {
+                FilterType.BOX -> cond.values.joinToString("/")
+                FilterType.DATE -> cond.values.joinToString("/")
+                FilterType.TAG -> cond.values.joinToString("/")
+            }
+        }
+    } else {
+        stringResource(R.string.browse_context_filter_count, totalFilterCount)
+    }
+}
+
+/**
+ * 非 Composable 版本的副标题生成（用于需要 Context 的场景）。
+ */
+fun buildBrowseSubtitle(
+    context: SampleBrowseContext,
+    currentIndex: Int,
+    totalCount: Int,
+    androidContext: android.content.Context
+): String? {
+    if (totalCount <= 1) return null
+    return when (context) {
+        is SampleBrowseContext.Box -> {
+            androidContext.getString(R.string.browse_context_box, context.boxName, currentIndex + 1, totalCount)
+        }
+        is SampleBrowseContext.Search -> {
+            val filterSummary = buildFilterSummary(context.filterContext, androidContext)
+            if (filterSummary != null) {
+                androidContext.getString(R.string.browse_context_search_with_filters, context.query, filterSummary, currentIndex + 1, totalCount)
+            } else {
+                androidContext.getString(R.string.browse_context_search, context.query, currentIndex + 1, totalCount)
+            }
+        }
+        is SampleBrowseContext.Tag -> {
+            androidContext.getString(R.string.browse_context_tag, context.tagName, currentIndex + 1, totalCount)
+        }
+    }
+}
+
+/**
+ * 非 Composable 版本的筛选条件摘要生成。
+ */
+fun buildFilterSummary(
+    filterContext: SearchFilterContext,
+    androidContext: android.content.Context
+): String? {
+    val conditions = filterContext.conditions
+    if (conditions.isEmpty()) return null
+    val totalFilterCount = conditions.sumOf { it.values.size }
+    return if (totalFilterCount <= 3) {
+        conditions.joinToString("+") { cond ->
+            when (cond.type) {
+                FilterType.BOX -> cond.values.joinToString("/")
+                FilterType.DATE -> cond.values.joinToString("/")
+                FilterType.TAG -> cond.values.joinToString("/")
+            }
+        }
+    } else {
+        androidContext.getString(R.string.browse_context_filter_count, totalFilterCount)
+    }
 }

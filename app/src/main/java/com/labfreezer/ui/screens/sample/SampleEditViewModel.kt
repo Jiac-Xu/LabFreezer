@@ -45,7 +45,17 @@ data class SampleEditState(
     val deviceName: String = "",
     val layerName: String = "",
     val boxName: String = "",
-    val ocrEnabled: Boolean = true
+    val ocrEnabled: Boolean = true,
+    /** 当前在浏览上下文中的位置索引（0-based），-1 表示无上下文 */
+    val currentIndex: Int = -1,
+    /** 浏览上下文中的总样本数，0 表示无上下文 */
+    val totalCount: Int = 0
+)
+
+/** 导航事件：携带下一个样本 ID 和浏览上下文 key */
+data class SampleEditNavigation(
+    val sampleId: Long,
+    val browseCtxKey: String?
 )
 
 @HiltViewModel
@@ -63,6 +73,12 @@ class SampleEditViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val sampleId: Long = savedStateHandle["sampleId"] ?: -1L
+
+    /** 浏览上下文 key，从导航参数获取 */
+    private val browseCtxKey: String? = savedStateHandle.get<String>("browseCtx")?.takeIf { it.isNotBlank() }
+
+    /** 浏览上下文，从 store 读取 */
+    val browseContext: SampleBrowseContext? = browseCtxKey?.let { BrowseContextStore.get(it) }
 
     private val _state = MutableStateFlow(SampleEditState())
     val state: StateFlow<SampleEditState> = _state
@@ -103,6 +119,12 @@ class SampleEditViewModel @Inject constructor(
             val box = boxRepository.getById(sample.boxId)
             val layer = if (box != null) layerRepository.getById(box.layerId) else null
             val device = if (layer != null) deviceRepository.getById(layer.deviceId) else null
+
+            // 计算浏览上下文中的位置
+            val ctx = browseContext
+            val idx = ctx?.sampleIds?.indexOf(sampleId) ?: -1
+            val total = ctx?.sampleIds?.size ?: 0
+
             _state.value = SampleEditState(
                 sample = sample,
                 name = sample.name ?: "",
@@ -113,31 +135,57 @@ class SampleEditViewModel @Inject constructor(
                 assignedTagIds = tags.map { it.id }.toSet(),
                 deviceName = device?.name ?: "",
                 layerName = layer?.name ?: "",
-                boxName = box?.name ?: ""
+                boxName = box?.name ?: "",
+                currentIndex = idx,
+                totalCount = total
             )
             _allDevices.value = deviceRepository.getAll()
         }
     }
 
-    private val _navigationEvent = MutableSharedFlow<Long>()
-    val navigationEvent: SharedFlow<Long> = _navigationEvent.asSharedFlow()
+    private val _navigationEvent = MutableSharedFlow<SampleEditNavigation>()
+    val navigationEvent: SharedFlow<SampleEditNavigation> = _navigationEvent.asSharedFlow()
 
     private val _toastEvent = MutableSharedFlow<String>()
     val toastEvent: SharedFlow<String> = _toastEvent.asSharedFlow()
 
+    /**
+     * 导航到相邻样本。
+     * 优先使用浏览上下文（browseContext）的 sampleIds 列表，
+     * 回退到按盒子查询数据库的旧逻辑。
+     */
     fun navigateAdjacent(isNext: Boolean) {
-        viewModelScope.launch(Dispatchers.IO) {
-            val current = currentSample ?: return@launch
-            val allSamples = sampleRepository.getByBoxId(current.boxId)
-                .sortedWith(compareBy({ it.row }, { it.col }))
-            val currentIndex = allSamples.indexOfFirst { it.id == current.id }
-            if (currentIndex != -1) {
-                val targetIndex = if (isNext) currentIndex + 1 else currentIndex - 1
-                if (targetIndex in allSamples.indices) {
-                    _navigationEvent.emit(allSamples[targetIndex].id)
-                } else {
-                    val msg = if (isNext) context.getString(R.string.sample_edit_last_sample) else context.getString(R.string.sample_edit_first_sample)
-                    _toastEvent.emit(msg)
+        val ctx = browseContext
+        if (ctx != null) {
+            // 使用浏览上下文导航
+            val currentIndex = ctx.sampleIds.indexOf(sampleId)
+            if (currentIndex == -1) return
+            val targetIndex = if (isNext) currentIndex + 1 else currentIndex - 1
+            if (targetIndex in ctx.sampleIds.indices) {
+                viewModelScope.launch {
+                    _navigationEvent.emit(SampleEditNavigation(ctx.sampleIds[targetIndex], browseCtxKey))
+                }
+            } else {
+                val msg = if (isNext) context.getString(R.string.sample_edit_last_sample)
+                          else context.getString(R.string.sample_edit_first_sample)
+                viewModelScope.launch { _toastEvent.emit(msg) }
+            }
+        } else {
+            // 回退到旧逻辑：按盒子查询数据库
+            viewModelScope.launch(Dispatchers.IO) {
+                val current = currentSample ?: return@launch
+                val allSamples = sampleRepository.getByBoxId(current.boxId)
+                    .sortedWith(compareBy({ it.row }, { it.col }))
+                val currentIndex = allSamples.indexOfFirst { it.id == current.id }
+                if (currentIndex != -1) {
+                    val targetIndex = if (isNext) currentIndex + 1 else currentIndex - 1
+                    if (targetIndex in allSamples.indices) {
+                        _navigationEvent.emit(SampleEditNavigation(allSamples[targetIndex].id, null))
+                    } else {
+                        val msg = if (isNext) context.getString(R.string.sample_edit_last_sample)
+                                  else context.getString(R.string.sample_edit_first_sample)
+                        _toastEvent.emit(msg)
+                    }
                 }
             }
         }
@@ -264,7 +312,7 @@ class SampleEditViewModel @Inject constructor(
             val parsed = ocrEngine.parseResult(result.simpleText)
             val name = parsed.name.ifBlank { null }
             val date = parsed.date.ifBlank { null }
-            val ocrNote = if (result.simpleText.isNotBlank()) "\u3010OCR\u3011${result.simpleText}" else null
+            val ocrNote = if (result.simpleText.isNotBlank()) "【OCR】${result.simpleText}" else null
             val note = listOfNotNull(_state.value.note.takeIf { it.isNotBlank() }, ocrNote).ifEmpty { null }?.joinToString("\n")
             if (name != null || date != null || ocrNote != null) {
                 _state.update { it.copy(
