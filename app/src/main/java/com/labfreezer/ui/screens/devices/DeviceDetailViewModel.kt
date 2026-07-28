@@ -169,12 +169,20 @@ class DeviceDetailViewModel @Inject constructor(
     fun showDeleteConfirm(layer: StorageLayerEntity) { _deletingLayer.value = layer }
     fun hideDeleteConfirm() { _deletingLayer.value = null }
 
-    fun showEditBoxDialog(box: StorageBoxEntity) {
-        _editingBox.value = box
+    fun showEditBoxDialog(boxId: Long) {
+        viewModelScope.launch {
+            val box = boxRepository.getById(boxId) ?: return@launch
+            _editingBox.value = box
+        }
     }
     fun hideEditBoxDialog() { _editingBox.value = null }
 
-    fun showDeleteBoxConfirm(box: StorageBoxEntity) { _deletingBox.value = box }
+    fun showDeleteBoxConfirm(boxId: Long) {
+        viewModelScope.launch {
+            val box = boxRepository.getById(boxId) ?: return@launch
+            _deletingBox.value = box
+        }
+    }
     fun hideDeleteBoxConfirm() { _deletingBox.value = null }
 
     fun updateBox(id: Long, name: String, layerId: Long, rows: Int, cols: Int, note: String?) {

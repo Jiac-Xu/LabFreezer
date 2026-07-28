@@ -203,12 +203,7 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
                                     viewModel.showEditDialog(layer)
                                 }
                                 NodeType.BOX -> {
-                                    val box = com.labfreezer.data.db.entity.StorageBoxEntity(
-                                        id = node.id,
-                                        layerId = 0,
-                                        name = node.name
-                                    )
-                                    viewModel.showEditBoxDialog(box)
+                                    viewModel.showEditBoxDialog(node.id)
                                 }
                                 else -> {}
                             }
@@ -224,12 +219,7 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
                                     viewModel.showDeleteConfirm(layer)
                                 }
                                 NodeType.BOX -> {
-                                    val box = com.labfreezer.data.db.entity.StorageBoxEntity(
-                                        id = node.id,
-                                        layerId = 0,
-                                        name = node.name
-                                    )
-                                    viewModel.showDeleteBoxConfirm(box)
+                                    viewModel.showDeleteBoxConfirm(node.id)
                                 }
                                 else -> {}
                             }
