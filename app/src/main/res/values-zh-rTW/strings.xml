@@ -183,14 +183,14 @@
     <string name="ocr_settings_section_model">模型檔案</string>
     <string name="ocr_settings_model_label">PaddleOCR Lite 本地模型</string>
     <string name="ocr_settings_section_batch">手動批次辨識</string>
-    <string name="ocr_settings_batch_description">對已有照片但缺少名稱的樣品執行批次辨識，結果自動儲存</string>
+    <string name="ocr_settings_batch_description">對已有照片但缺少名稱的樣本執行批次辨識，結果自動儲存</string>
     <string name="ocr_settings_batch_running">執行中…</string>
     <string name="ocr_settings_batch_start">開始執行</string>
 
     <!-- ========== OCR ViewModel ========== -->
-    <string name="ocr_batch_no_samples">沒有找到需要 OCR 的樣品</string>
-    <string name="ocr_batch_fallback_name">樣品 #%1$d</string>
-    <string name="ocr_batch_result">完成：%1$d/%2$d 個樣品已更新</string>
+    <string name="ocr_batch_no_samples">沒有找到需要 OCR 的樣本</string>
+    <string name="ocr_batch_fallback_name">樣本 #%1$d</string>
+    <string name="ocr_batch_result">完成：%1$d/%2$d 個樣本已更新</string>
     <string name="ocr_batch_error">執行出錯</string>
 
     <!-- ========== Image Cleanup ========== -->

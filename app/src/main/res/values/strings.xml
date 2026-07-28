@@ -125,7 +125,7 @@
     <string name="personalization_input_mode_subtitle">点击新增样本时默认的录入方式</string>
     <string name="personalization_temp_mode">允许临时修改</string>
     <string name="personalization_temp_mode_subtitle">在盒子页修改的录入方式只在本次启动生效</string>
-    <string name="personalization_auto_save">样品编辑页自动保存</string>
+    <string name="personalization_auto_save">样本编辑页自动保存</string>
     <string name="personalization_auto_save_subtitle">编辑样本信息时自动保存修改</string>
     <string name="personalization_zoom_slider">盒子页缩放控制栏</string>
     <string name="personalization_zoom_slider_subtitle">控制盒子页面底部缩放工具栏是否显示</string>
@@ -194,14 +194,14 @@
     <string name="ocr_settings_section_model">模型文件</string>
     <string name="ocr_settings_model_label">PaddleOCR Lite 本地模型</string>
     <string name="ocr_settings_section_batch">手动批量识别</string>
-    <string name="ocr_settings_batch_description">对已有照片但缺少名称的样品执行批量识别，结果自动保存</string>
+    <string name="ocr_settings_batch_description">对已有照片但缺少名称的样本执行批量识别，结果自动保存</string>
     <string name="ocr_settings_batch_running">执行中…</string>
     <string name="ocr_settings_batch_start">开始执行</string>
 
     <!-- ========== OCR ViewModel ========== -->
-    <string name="ocr_batch_no_samples">没有找到需要 OCR 的样品</string>
-    <string name="ocr_batch_fallback_name">样品 #%1$d</string>
-    <string name="ocr_batch_result">完成：%1$d/%2$d 个样品已更新</string>
+    <string name="ocr_batch_no_samples">没有找到需要 OCR 的样本</string>
+    <string name="ocr_batch_fallback_name">样本 #%1$d</string>
+    <string name="ocr_batch_result">完成：%1$d/%2$d 个样本已更新</string>
     <string name="ocr_batch_error">执行出错</string>
 
     <!-- ========== Image Cleanup ========== -->
