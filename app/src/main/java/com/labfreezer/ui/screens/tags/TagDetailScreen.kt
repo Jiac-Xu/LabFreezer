@@ -39,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.labfreezer.data.db.dao.SampleWithPath
+import com.labfreezer.data.db.isHiddenMarker
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.sample.BrowseContextStore
 import com.labfreezer.ui.screens.sample.SampleBrowseContext
@@ -100,7 +101,11 @@ private fun SampleItem(result: SampleWithPath, onClick: () -> Unit) {
             Text(result.name ?: stringResource(R.string.fallback_unnamed), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(4.dp))
             Text(
-                "${result.deviceName} > ${result.layerName} > ${result.boxName} > ${'A' + result.row}${result.col + 1}",
+                buildString {
+                    append(result.deviceName)
+                    if (!result.layerName.isHiddenMarker()) append(" > ${result.layerName}")
+                    append(" > ${result.boxName} > ${'A' + result.row}${result.col + 1}")
+                },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,
                 maxLines = 1,
