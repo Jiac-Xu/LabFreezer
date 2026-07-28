@@ -120,6 +120,7 @@ fun BoxGridScreen(
     val cells = cellsState.list
     val pendingInput by viewModel.pendingInput.collectAsStateWithLifecycle()
     val inputMode by viewModel.inputMode.collectAsStateWithLifecycle()
+    val zoomSliderEnabled by viewModel.zoomSliderEnabled.collectAsStateWithLifecycle()
     val isSelecting by viewModel.isSelecting.collectAsStateWithLifecycle()
     val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
     var showDeleteBatchConfirm by remember { mutableStateOf(false) }
@@ -347,60 +348,62 @@ fun BoxGridScreen(
                     }
                 }
 
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .align(Alignment.BottomCenter)
-                        .navigationBarsPadding()
-                        .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                ) {
-                    Surface(
-                        color = MaterialTheme.colorScheme.surface,
-                        tonalElevation = 6.dp,
-                        shadowElevation = 8.dp,
-                        shape = RoundedCornerShape(24.dp)
+                if (zoomSliderEnabled) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .align(Alignment.BottomCenter)
+                            .navigationBarsPadding()
+                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                     ) {
-                        Box {
-                            Box(
-                                modifier = Modifier
-                                    .matchParentSize()
-                                    .background(
-                                        Brush.verticalGradient(
-                                            colors = listOf(
-                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
-                                                MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                        Surface(
+                            color = MaterialTheme.colorScheme.surface,
+                            tonalElevation = 6.dp,
+                            shadowElevation = 8.dp,
+                            shape = RoundedCornerShape(24.dp)
+                        ) {
+                            Box {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .background(
+                                            Brush.verticalGradient(
+                                                colors = listOf(
+                                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                                                    MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                                                )
                                             )
                                         )
-                                    )
-                            )
-                            Row(
-                                modifier = Modifier.fillMaxWidth().height(64.dp)
-                                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Icon(Icons.Default.ZoomOut, contentDescription = stringResource(R.string.content_description_zoom_out), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Slider(
-                                    value = visibleCols,
-                                    onValueChange = { visibleCols = it },
-                                    valueRange = 3f..max(3f, cols.toFloat()),
-                                    modifier = Modifier.weight(1f),
-                                    colors = SliderDefaults.colors(
-                                        thumbColor = MaterialTheme.colorScheme.primary,
-                                        activeTrackColor = MaterialTheme.colorScheme.primary,
-                                        inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
-                                    ),
-                                    thumb = {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(16.dp)
-                                                .clip(androidx.compose.foundation.shape.CircleShape)
-                                                .background(MaterialTheme.colorScheme.primary)
-                                        )
-                                    }
                                 )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.ZoomIn, contentDescription = stringResource(R.string.content_description_zoom_in), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().height(64.dp)
+                                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Default.ZoomOut, contentDescription = stringResource(R.string.content_description_zoom_out), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Slider(
+                                        value = visibleCols,
+                                        onValueChange = { visibleCols = it },
+                                        valueRange = 3f..max(3f, cols.toFloat()),
+                                        modifier = Modifier.weight(1f),
+                                        colors = SliderDefaults.colors(
+                                            thumbColor = MaterialTheme.colorScheme.primary,
+                                            activeTrackColor = MaterialTheme.colorScheme.primary,
+                                            inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                                        ),
+                                        thumb = {
+                                            Box(
+                                                modifier = Modifier
+                                                    .size(16.dp)
+                                                    .clip(androidx.compose.foundation.shape.CircleShape)
+                                                    .background(MaterialTheme.colorScheme.primary)
+                                            )
+                                        }
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Icon(Icons.Default.ZoomIn, contentDescription = stringResource(R.string.content_description_zoom_in), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                }
                             }
                         }
                     }

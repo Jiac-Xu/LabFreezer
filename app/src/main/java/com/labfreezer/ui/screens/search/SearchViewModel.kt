@@ -21,6 +21,7 @@ import com.labfreezer.ui.screens.sample.FilterLogic
 import com.labfreezer.ui.screens.sample.FilterType
 import com.labfreezer.ui.screens.sample.SearchCondition
 import com.labfreezer.ui.screens.sample.SearchFilterContext
+import com.labfreezer.ui.screens.settings.PersonalizationPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -69,7 +70,8 @@ class SearchViewModel @Inject constructor(
     private val deviceRepository: StorageDeviceRepository,
     private val layerRepository: StorageLayerRepository,
     private val boxRepository: StorageBoxRepository,
-    private val searchHistoryManager: SearchHistoryManager
+    private val searchHistoryManager: SearchHistoryManager,
+    private val personalizationPreferences: PersonalizationPreferences
 ) : ViewModel() {
 
     private val _query = MutableStateFlow("")
@@ -693,7 +695,7 @@ class SearchViewModel @Inject constructor(
 
     fun saveCurrentQuery() {
         val q = _query.value.trim()
-        if (q.isNotBlank()) {
+        if (q.isNotBlank() && personalizationPreferences.isSearchHistoryEnabled()) {
             searchHistoryManager.addKeyword(q)
             _searchHistory.value = searchHistoryManager.getHistory()
         }

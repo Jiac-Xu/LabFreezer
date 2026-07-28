@@ -19,6 +19,7 @@ import com.labfreezer.data.repository.SamplePositionRepository
 import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
+import com.labfreezer.ui.screens.settings.PersonalizationPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -71,6 +72,7 @@ class BoxGridViewModel @Inject constructor(
     private val ocrPreferences: OcrPreferences,
     private val recentBoxRepo: RecentlyViewedRepository,
     private val inputModePreferences: InputModePreferences,
+    private val personalizationPreferences: PersonalizationPreferences,
 ) : ViewModel() {
 
     private val _box = MutableStateFlow<StorageBoxEntity?>(null)
@@ -82,10 +84,28 @@ class BoxGridViewModel @Inject constructor(
     private val _pendingInput = MutableStateFlow<PendingInput?>(null)
     val pendingInput: StateFlow<PendingInput?> = _pendingInput
 
-    private val _inputMode = MutableStateFlow(inputModePreferences.getInputMode())
-    val inputMode: StateFlow<InputMode> = _inputMode
+    private val _inputMode: MutableStateFlow<InputMode>
+    val inputMode: StateFlow<InputMode>
+        get() = _inputMode
+
+    private val _zoomSliderEnabled = MutableStateFlow(personalizationPreferences.isZoomSliderEnabled())
+    val zoomSliderEnabled: StateFlow<Boolean> = _zoomSliderEnabled
 
     private val _isSelecting = MutableStateFlow(false)
+
+    init {
+        // 根据"允许临时修改"开关决定初始录入方式
+        val initialMode = if (personalizationPreferences.isTempModeAllowed()) {
+            // 临时模式开启时，从个性化设置读取默认值
+            runCatching {
+                InputMode.valueOf(personalizationPreferences.getInputMode())
+            }.getOrDefault(InputMode.CAMERA)
+        } else {
+            // 临时模式关闭时，使用上次持久化的值
+            inputModePreferences.getInputMode()
+        }
+        _inputMode = MutableStateFlow(initialMode)
+    }
     val isSelecting: StateFlow<Boolean> = _isSelecting
 
     private val _selectedIds = MutableStateFlow<Set<Long>>(emptySet())
@@ -243,7 +263,10 @@ class BoxGridViewModel @Inject constructor(
 
     fun setInputMode(mode: InputMode) {
         _inputMode.value = mode
-        inputModePreferences.setInputMode(mode)
+        // 临时模式开启时不持久化，重启后回退到默认值
+        if (!personalizationPreferences.isTempModeAllowed()) {
+            inputModePreferences.setInputMode(mode)
+        }
     }
 
     fun clearPendingInput() {

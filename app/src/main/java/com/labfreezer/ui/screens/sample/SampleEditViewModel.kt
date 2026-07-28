@@ -19,9 +19,13 @@ import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.TagRepository
+import com.labfreezer.ui.screens.settings.PersonalizationPreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -69,7 +73,8 @@ class SampleEditViewModel @Inject constructor(
     private val layerRepository: StorageLayerRepository,
     private val boxRepository: StorageBoxRepository,
     private val ocrEngine: OcrEngine,
-    private val ocrPreferences: OcrPreferences
+    private val ocrPreferences: OcrPreferences,
+    private val personalizationPreferences: PersonalizationPreferences
 ) : ViewModel() {
 
     private val sampleId: Long = savedStateHandle["sampleId"] ?: -1L
@@ -108,6 +113,8 @@ class SampleEditViewModel @Inject constructor(
     private var pendingBoxId: Long? = null
     private var pendingRow: Int? = null
     private var pendingCol: Int? = null
+
+    private var autoSaveJob: Job? = null
 
     init { loadSample() }
 
@@ -230,9 +237,27 @@ class SampleEditViewModel @Inject constructor(
         }
     }
 
-    fun updateName(name: String) { _state.update { it.copy(name = name) } }
-    fun updateDate(date: String) { _state.update { it.copy(date = date) } }
-    fun updateNote(note: String) { _state.update { it.copy(note = note) } }
+    fun updateName(name: String) {
+        _state.update { it.copy(name = name) }
+        triggerAutoSave()
+    }
+    fun updateDate(date: String) {
+        _state.update { it.copy(date = date) }
+        triggerAutoSave()
+    }
+    fun updateNote(note: String) {
+        _state.update { it.copy(note = note) }
+        triggerAutoSave()
+    }
+
+    private fun triggerAutoSave() {
+        if (!personalizationPreferences.isAutoSaveEnabled()) return
+        autoSaveJob?.cancel()
+        autoSaveJob = viewModelScope.launch {
+            delay(600) // 600ms 防抖，避免每次按键都保存
+            save()
+        }
+    }
 
     fun toggleTag(tagId: Long) {
         _state.update { st ->
