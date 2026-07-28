@@ -1,6 +1,8 @@
 package com.labfreezer.ui.screens.settings
 
 import androidx.lifecycle.ViewModel
+import com.labfreezer.ui.screens.boxgrid.InputMode
+import com.labfreezer.ui.screens.boxgrid.InputModePreferences
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,12 +18,13 @@ data class PersonalizationState(
 
 @HiltViewModel
 class PersonalizationViewModel @Inject constructor(
-    private val preferences: PersonalizationPreferences
+    private val preferences: PersonalizationPreferences,
+    private val inputModePreferences: InputModePreferences
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
         PersonalizationState(
-            inputMode = preferences.getInputMode(),
+            inputMode = inputModePreferences.getInputMode().name,
             tempModeAllowed = preferences.isTempModeAllowed(),
             autoSaveEnabled = preferences.isAutoSaveEnabled(),
             zoomSliderEnabled = preferences.isZoomSliderEnabled(),
@@ -31,7 +34,9 @@ class PersonalizationViewModel @Inject constructor(
     val state: StateFlow<PersonalizationState> = _state
 
     fun setInputMode(mode: String) {
-        preferences.setInputMode(mode)
+        runCatching {
+            inputModePreferences.setInputMode(InputMode.valueOf(mode))
+        }
         _state.value = _state.value.copy(inputMode = mode)
     }
 

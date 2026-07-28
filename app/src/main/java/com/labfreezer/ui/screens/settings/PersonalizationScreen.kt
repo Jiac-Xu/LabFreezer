@@ -185,11 +185,12 @@ fun PersonalizationScreen(
                     offset = DpOffset(x = screenWidth - 196.dp, y = 0.dp)
                 ) {
                     val modes = listOf(
-                        "CAMERA" to stringResource(R.string.box_grid_input_mode_camera),
-                        "GALLERY" to stringResource(R.string.box_grid_input_mode_gallery),
-                        "TEXT" to stringResource(R.string.box_grid_input_mode_text)
+                        "CAMERA" to stringResource(R.string.box_grid_input_mode_camera) to Icons.Filled.CameraAlt,
+                        "GALLERY" to stringResource(R.string.box_grid_input_mode_gallery) to Icons.Filled.PhotoLibrary,
+                        "TEXT" to stringResource(R.string.box_grid_input_mode_text) to Icons.Filled.EditNote
                     )
-                    modes.forEach { (value, label) ->
+                    modes.forEach { (pair, icon) ->
+                        val (value, label) = pair
                         val isSelected = state.inputMode == value
                         DropdownMenuItem(
                             text = {
@@ -197,6 +198,13 @@ fun PersonalizationScreen(
                                     text = label,
                                     color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                )
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface
                                 )
                             },
                             onClick = {

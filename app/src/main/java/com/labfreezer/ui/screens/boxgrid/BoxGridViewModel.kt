@@ -94,17 +94,8 @@ class BoxGridViewModel @Inject constructor(
     private val _isSelecting = MutableStateFlow(false)
 
     init {
-        // 根据"允许临时修改"开关决定初始录入方式
-        val initialMode = if (personalizationPreferences.isTempModeAllowed()) {
-            // 临时模式开启时，从个性化设置读取默认值
-            runCatching {
-                InputMode.valueOf(personalizationPreferences.getInputMode())
-            }.getOrDefault(InputMode.CAMERA)
-        } else {
-            // 临时模式关闭时，使用上次持久化的值
-            inputModePreferences.getInputMode()
-        }
-        _inputMode = MutableStateFlow(initialMode)
+        // 以 InputModePreferences 为唯一数据源（与个性化页共用）
+        _inputMode = MutableStateFlow(inputModePreferences.getInputMode())
     }
     val isSelecting: StateFlow<Boolean> = _isSelecting
 

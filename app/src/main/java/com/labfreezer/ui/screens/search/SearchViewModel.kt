@@ -103,7 +103,11 @@ class SearchViewModel @Inject constructor(
     private var searchJob: Job? = null
 
     init {
-        _searchHistory.value = searchHistoryManager.getHistory()
+        _searchHistory.value = if (personalizationPreferences.isSearchHistoryEnabled()) {
+            searchHistoryManager.getHistory()
+        } else {
+            emptyList()
+        }
     }
 
     /**
