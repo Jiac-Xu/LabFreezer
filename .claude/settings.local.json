@@ -93,7 +93,8 @@
       "Bash(dir /s /b \"C:\\\\Program Files\\\\Python*\")",
       "Bash(dir /s /b \"C:\\\\Users\\\\Administrator\\\\AppData\\\\Local\\\\Programs\\\\Python\\\\Python*\")",
       "Bash(pwsh --version)",
-      "Bash(where pwsh *)"
+      "Bash(where pwsh *)",
+      "Bash(git checkout *)"
     ]
   }
 }
