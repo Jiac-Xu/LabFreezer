@@ -120,8 +120,8 @@ fun SettingsScreen(
             } catch (e: Exception) { "" }
             SettingsCard(
                 icon = Icons.Default.Info,
-                title = stringResource(R.string.settings_check_update),
-                subtitle = stringResource(R.string.settings_check_update_subtitle, versionName),
+                title = stringResource(R.string.settings_about),
+                subtitle = stringResource(R.string.settings_about_subtitle, versionName),
                 onClick = onNavigateToCheckUpdate
             )
             SettingsCard(
