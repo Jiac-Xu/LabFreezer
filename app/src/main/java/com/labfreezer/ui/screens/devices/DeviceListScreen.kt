@@ -176,7 +176,8 @@ fun DeviceListScreen(
                     onCreateSecond = { viewModel.showAddDialog() },
                     showSecondButton = true,
                     secondButtonLabel = stringResource(R.string.device_list_add_device),
-                    secondButtonIcon = Icons.Default.DeviceHub
+                    secondButtonIcon = Icons.Default.DeviceHub,
+                    modifier = if (showFabPadding) Modifier.padding(bottom = 88.dp) else Modifier
                 )
             }
         }

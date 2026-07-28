@@ -61,7 +61,8 @@ fun SpeedDialFAB(
     onCreateSecond: () -> Unit,
     showSecondButton: Boolean,
     secondButtonLabel: String = stringResource(R.string.speed_dial_create_level),
-    secondButtonIcon: ImageVector = Icons.Default.Layers
+    secondButtonIcon: ImageVector = Icons.Default.Layers,
+    modifier: Modifier = Modifier
 ) {
     val rotation = animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
@@ -69,6 +70,7 @@ fun SpeedDialFAB(
     ).value
 
     Column(
+        modifier = modifier,
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.Bottom
     ) {
