@@ -23,19 +23,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudDownload
 import androidx.compose.material.icons.filled.CloudUpload
 import androidx.compose.material.icons.filled.Description
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.DocumentScanner
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.Save
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.SettingsBrightness
 import androidx.compose.material.icons.filled.TableChart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -46,43 +42,32 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labfreezer.ui.screens.export.ExportFormat
 import com.labfreezer.ui.screens.export.ExportViewModel
-import com.labfreezer.ui.theme.LocalThemeMode
-import com.labfreezer.ui.theme.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onThemeChanged: (ThemeMode) -> Unit = {},
-    onNavigateToStartPagePicker: () -> Unit = {},
-    onNavigateToBottomBarEdit: () -> Unit = {},
+    onNavigateToPersonalization: () -> Unit = {},
+    onNavigateToCheckUpdate: () -> Unit = {},
     onNavigateToImageCleanup: () -> Unit = {},
     onNavigateToOcrSettings: () -> Unit = {},
     onImportFileSelected: (Uri) -> Unit = {},
-    onNavigateToAbout: () -> Unit = {},
     viewModel: ExportViewModel = hiltViewModel()
 ) {
     val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
     val exportResult by viewModel.result.collectAsStateWithLifecycle()
     val activity = LocalContext.current
-    val currentThemeMode = LocalThemeMode.current
-    val screenWidth = LocalConfiguration.current.screenWidthDp.dp
-    var showThemeDialog by remember { mutableStateOf(false) }
 
     val importLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -126,68 +111,30 @@ fun SettingsScreen(
         Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(8.dp))
 
-            Text("  " + stringResource(R.string.settings_section_appearance), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
-
+            // ── 偏好 (Preferences) ──
+            Text("  " + stringResource(R.string.settings_section_preferences), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
             Spacer(Modifier.height(8.dp))
 
-            val themeLabel = when (currentThemeMode) {
-                ThemeMode.LIGHT -> stringResource(R.string.settings_theme_light)
-                ThemeMode.DARK -> stringResource(R.string.settings_theme_dark)
-                ThemeMode.SYSTEM -> stringResource(R.string.settings_theme_system)
-            }
-            val themeLabels = listOf(stringResource(R.string.settings_theme_light), stringResource(R.string.settings_theme_dark), stringResource(R.string.settings_theme_system))
-
-            Box {
-                SettingsCard(
-                    icon = Icons.Filled.SettingsBrightness,
-                    title = stringResource(R.string.settings_theme_mode),
-                    subtitle = themeLabel,
-                    onClick = { showThemeDialog = true }
-                )
-                DropdownMenu(
-                    expanded = showThemeDialog,
-                    onDismissRequest = { showThemeDialog = false },
-                    offset = DpOffset(x = screenWidth - 196.dp, y = 0.dp)
-                ) {
-                    themeLabels.forEachIndexed { index, label ->
-                        val mode = ThemeMode.entries[index]
-                        val isSelected = currentThemeMode == mode
-                        DropdownMenuItem(
-                            text = {
-                                Text(
-                                    text = label,
-                                    color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
-                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                )
-                            },
-                            onClick = {
-                                showThemeDialog = false
-                                onThemeChanged(mode)
-                            }
-                        )
-                    }
-                }
-            }
-
+            val versionName = try {
+                activity.packageManager.getPackageInfo(activity.packageName, 0).versionName ?: ""
+            } catch (e: Exception) { "" }
             SettingsCard(
-                icon = Icons.Filled.Edit,
-                title = stringResource(R.string.settings_bottom_bar_edit),
-                subtitle = stringResource(R.string.settings_bottom_bar_edit_subtitle),
-                onClick = onNavigateToBottomBarEdit
+                icon = Icons.Default.Info,
+                title = stringResource(R.string.settings_check_update),
+                subtitle = stringResource(R.string.settings_check_update_subtitle, versionName),
+                onClick = onNavigateToCheckUpdate
             )
-
-            val startPageSetting = StartPagePreference.get(activity)
             SettingsCard(
-                icon = Icons.Filled.Home,
-                title = stringResource(R.string.settings_start_page),
-                subtitle = startPageSetting.label,
-                onClick = onNavigateToStartPagePicker
+                icon = Icons.Filled.SettingsBrightness,
+                title = stringResource(R.string.settings_personalization),
+                subtitle = stringResource(R.string.settings_personalization_subtitle),
+                onClick = onNavigateToPersonalization
             )
 
             Spacer(Modifier.height(16.dp))
 
+            // ── 管理 (Management) ──
             Text("  " + stringResource(R.string.settings_section_management), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
-
             Spacer(Modifier.height(8.dp))
 
             SettingsCard(
@@ -205,8 +152,8 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // ── 布局导入导出 (Layout Import/Export) ──
             Text("  " + stringResource(R.string.settings_section_import_export), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
-
             Spacer(Modifier.height(8.dp))
 
             SettingsCard(
@@ -240,8 +187,8 @@ fun SettingsScreen(
 
             Spacer(Modifier.height(16.dp))
 
+            // ── 数据备份与恢复 (Data Backup & Restore) ──
             Text("  " + stringResource(R.string.settings_section_data_backup), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
-
             Spacer(Modifier.height(8.dp))
 
             SettingsCard(
@@ -268,22 +215,6 @@ fun SettingsScreen(
                 onClick = { importLauncher.launch(arrayOf("application/zip")) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
-            Spacer(Modifier.height(16.dp))
-
-            Text("  " + stringResource(R.string.settings_section_about), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
-
-            Spacer(Modifier.height(8.dp))
-
-            val versionName = try {
-                activity.packageManager.getPackageInfo(activity.packageName, 0).versionName ?: ""
-            } catch (e: Exception) { "" }
-            SettingsCard(
-                icon = Icons.Default.Info,
-                title = stringResource(R.string.settings_about),
-                subtitle = stringResource(R.string.settings_about_subtitle, versionName),
-                onClick = onNavigateToAbout
-            )
-
             Spacer(Modifier.height(100.dp))
         }
     }

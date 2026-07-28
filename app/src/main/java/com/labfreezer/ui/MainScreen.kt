@@ -82,6 +82,7 @@ import com.labfreezer.ui.screens.tags.TagDetailScreen
 import com.labfreezer.ui.screens.tags.TagManageScreen
 import com.labfreezer.ui.screens.settings.ImageCleanupScreen
 import com.labfreezer.ui.screens.settings.OcrSettingsScreen
+import com.labfreezer.ui.screens.settings.PersonalizationScreen
 import com.labfreezer.ui.screens.settings.SettingsScreen
 import com.labfreezer.ui.screens.settings.StartPagePickerScreen
 import com.labfreezer.ui.screens.settings.StartPagePickerViewModel
@@ -254,15 +255,10 @@ fun MainScreen(
                         tabConfig = tabConfig,
                         onTabChange = { currentTabIndex = it },
                         navController = navController,
-                        onThemeChanged = { mode ->
-                            themeModeOrdinal = mode.ordinal
-                            ThemePreferences.setMode(activity, mode)
-                        },
-                        onNavigateToStartPagePicker = { navController.navigate(Screen.StartPagePicker.route) },
-                        onNavigateToBottomBarEdit = { navController.navigate(Screen.BottomBarEdit.route) },
+                        onNavigateToPersonalization = { navController.navigate(Screen.Personalization.route) },
+                        onNavigateToCheckUpdate = { navController.navigate(Screen.About.route) },
                         onNavigateToImageCleanup = { navController.navigate(Screen.ImageCleanup.route) },
                         onNavigateToOcrSettings = { navController.navigate(Screen.OcrSettings.route) },
-                        onNavigateToAbout = { navController.navigate(Screen.About.route) },
                         onImportFileSelected = { uri -> pendingImportUri?.value = uri }
                     )
                 }
@@ -353,6 +349,17 @@ fun MainScreen(
                 }
                 composable(Screen.About.route) {
                     AboutScreen(onBack = { navController.popBackStack() })
+                }
+                composable(Screen.Personalization.route) {
+                    PersonalizationScreen(
+                        onBack = { navController.popBackStack() },
+                        onNavigateToStartPagePicker = { navController.navigate(Screen.StartPagePicker.route) },
+                        onNavigateToBottomBarEdit = { navController.navigate(Screen.BottomBarEdit.route) },
+                        onThemeChanged = { mode ->
+                            themeModeOrdinal = mode.ordinal
+                            ThemePreferences.setMode(activity, mode)
+                        }
+                    )
                 }
                 composable(Screen.BottomBarEdit.route) {
                     BottomBarEditScreen(onBack = { navController.popBackStack() })
@@ -470,12 +477,10 @@ private fun MainTabPager(
     tabConfig: List<BottomTab>,
     onTabChange: (Int) -> Unit,
     navController: NavController,
-    onThemeChanged: (ThemeMode) -> Unit,
-    onNavigateToStartPagePicker: () -> Unit,
-    onNavigateToBottomBarEdit: () -> Unit,
-    onNavigateToImageCleanup: () -> Unit,
+    onNavigateToPersonalization: () -> Unit = {},
+    onNavigateToCheckUpdate: () -> Unit = {},
+    onNavigateToImageCleanup: () -> Unit = {},
     onNavigateToOcrSettings: () -> Unit = {},
-    onNavigateToAbout: () -> Unit = {},
     onImportFileSelected: (Uri) -> Unit = {},
 ) {
     // 🎯 使用 AnimatedContent 彻底重构，零预加载，完美复刻 MomentLog 动效
@@ -524,12 +529,10 @@ private fun MainTabPager(
             BottomTab.TAG_MANAGE -> TagManageScreen(navController, showBackButton = false, showFabPadding = true)
             BottomTab.SEARCH -> SearchScreen(navController, showBackButton = false, scope = SearchScope(ScopeType.ALL))
             BottomTab.SETTINGS -> SettingsScreen(
-                onThemeChanged = onThemeChanged,
-                onNavigateToStartPagePicker = onNavigateToStartPagePicker,
-                onNavigateToBottomBarEdit = onNavigateToBottomBarEdit,
+                onNavigateToPersonalization = onNavigateToPersonalization,
+                onNavigateToCheckUpdate = onNavigateToCheckUpdate,
                 onNavigateToImageCleanup = onNavigateToImageCleanup,
                 onNavigateToOcrSettings = onNavigateToOcrSettings,
-                onNavigateToAbout = onNavigateToAbout,
                 onImportFileSelected = onImportFileSelected
             )
             null -> Box(modifier = Modifier.fillMaxSize())

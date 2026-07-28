@@ -46,5 +46,6 @@ sealed class Screen(val route: String) {
     data object DeviceTypeManage : Screen("device_type_manage")
     data object About : Screen("about")
     data object BottomBarEdit : Screen("bottom_bar_edit")
+    data object Personalization : Screen("personalization")
     data object MainTabs : Screen("main_tabs")
 }

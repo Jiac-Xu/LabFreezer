@@ -100,6 +100,11 @@
 
     <!-- ========== Settings Screen ========== -->
     <string name="settings_title">Settings</string>
+    <string name="settings_section_preferences">Preferences</string>
+    <string name="settings_check_update">Check for Updates</string>
+    <string name="settings_check_update_subtitle">Version %1$s</string>
+    <string name="settings_personalization">Personalization</string>
+    <string name="settings_personalization_subtitle">Theme, start page, input mode, etc.</string>
     <string name="settings_section_appearance">Appearance</string>
     <string name="settings_theme_mode">Theme Mode</string>
     <string name="settings_theme_light">Light</string>
@@ -108,6 +113,25 @@
     <string name="settings_bottom_bar_edit">Bottom Bar Edit</string>
     <string name="settings_bottom_bar_edit_subtitle">Customize bottom bar tab order and visibility</string>
     <string name="settings_start_page">Start Page</string>
+
+    <!-- ========== Personalization Screen ========== -->
+    <string name="personalization_title">Personalization</string>
+    <string name="personalization_section_appearance">Appearance</string>
+    <string name="personalization_section_input">Input</string>
+    <string name="personalization_section_edit">Editing</string>
+    <string name="personalization_section_browsing">Browsing</string>
+    <string name="personalization_section_search">Search</string>
+    <string name="personalization_input_mode">Sample Input Mode</string>
+    <string name="personalization_input_mode_subtitle">Default input mode when adding samples</string>
+    <string name="personalization_temp_mode">Allow Temporary Change</string>
+    <string name="personalization_temp_mode_subtitle">Changes made on box page apply only for this session</string>
+    <string name="personalization_auto_save">Auto-save Sample Edit</string>
+    <string name="personalization_auto_save_subtitle">Automatically save changes when editing sample info</string>
+    <string name="personalization_zoom_slider">Box Grid Zoom Slider</string>
+    <string name="personalization_zoom_slider_subtitle">Show/hide the zoom slider on the box page</string>
+    <string name="personalization_search_history">Search History</string>
+    <string name="personalization_search_history_subtitle">Save search history for quick access</string>
+
     <string name="settings_section_management">Management</string>
     <string name="settings_image_cleanup">Image Cleanup</string>
     <string name="settings_image_cleanup_subtitle">Remove unnecessary sample photos</string>

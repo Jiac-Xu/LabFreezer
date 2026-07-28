@@ -89,6 +89,11 @@
 
     <!-- ========== Settings Screen ========== -->
     <string name="settings_title">設定</string>
+    <string name="settings_section_preferences">偏好</string>
+    <string name="settings_check_update">檢查更新</string>
+    <string name="settings_check_update_subtitle">版本 %1$s</string>
+    <string name="settings_personalization">個人化</string>
+    <string name="settings_personalization_subtitle">主題、啟動頁、輸入方式等</string>
     <string name="settings_section_appearance">外觀</string>
     <string name="settings_theme_mode">主題模式</string>
     <string name="settings_theme_light">淺色模式</string>
@@ -97,6 +102,25 @@
     <string name="settings_bottom_bar_edit">底欄編輯</string>
     <string name="settings_bottom_bar_edit_subtitle">自訂底欄標籤順序與可見性</string>
     <string name="settings_start_page">啟動頁</string>
+
+    <!-- ========== Personalization Screen ========== -->
+    <string name="personalization_title">個人化</string>
+    <string name="personalization_section_appearance">介面</string>
+    <string name="personalization_section_input">輸入</string>
+    <string name="personalization_section_edit">編輯</string>
+    <string name="personalization_section_browsing">瀏覽</string>
+    <string name="personalization_section_search">搜尋</string>
+    <string name="personalization_input_mode">樣本輸入方式</string>
+    <string name="personalization_input_mode_subtitle">點擊新增樣本時預設的輸入方式</string>
+    <string name="personalization_temp_mode">允許臨時修改</string>
+    <string name="personalization_temp_mode_subtitle">在盒子頁修改的輸入方式只在本次啟動生效</string>
+    <string name="personalization_auto_save">樣本編輯頁自動儲存</string>
+    <string name="personalization_auto_save_subtitle">編輯樣本資訊時自動儲存修改</string>
+    <string name="personalization_zoom_slider">盒子頁縮放控制欄</string>
+    <string name="personalization_zoom_slider_subtitle">控制盒子頁面底部縮放工具欄是否顯示</string>
+    <string name="personalization_search_history">歷史搜尋記錄</string>
+    <string name="personalization_search_history_subtitle">控制是否儲存使用者搜尋歷史</string>
+
     <string name="settings_section_management">管理</string>
     <string name="settings_image_cleanup">圖片清理</string>
     <string name="settings_image_cleanup_subtitle">清理不需要的樣本照片</string>
