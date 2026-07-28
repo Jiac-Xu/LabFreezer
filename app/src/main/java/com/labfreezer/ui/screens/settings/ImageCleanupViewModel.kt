@@ -40,7 +40,11 @@ class ImageCleanupViewModel @Inject constructor(
     fun load() {
         viewModelScope.launch {
             val all = sampleRepo.getAllWithPhoto()
-            val grouped = all.groupBy { Triple(it.deviceName, if (it.layerName.isHiddenMarker()) "" else it.layerName, it.boxName) }
+            val grouped = all.groupBy { Triple(
+                if (it.deviceName.isHiddenMarker()) "" else it.deviceName,
+                if (it.layerName.isHiddenMarker()) "" else it.layerName,
+                it.boxName
+            ) }
                 .map { (key, samples) ->
                     PhotoGroup(deviceName = key.first, layerName = key.second, boxName = key.third, samples = samples)
                 }

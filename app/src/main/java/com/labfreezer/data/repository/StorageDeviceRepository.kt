@@ -35,6 +35,8 @@ class StorageDeviceRepository @Inject constructor(
 
     suspend fun getAll(): List<StorageDeviceEntity> = deviceDao.getAll()
 
+    suspend fun getAllHidden(): List<StorageDeviceEntity> = deviceDao.getAllHidden()
+
     suspend fun getById(id: Long): StorageDeviceEntity? = deviceDao.getById(id)
 
     fun getByIdFlow(id: Long): Flow<StorageDeviceEntity?> = deviceDao.getByIdFlow(id)

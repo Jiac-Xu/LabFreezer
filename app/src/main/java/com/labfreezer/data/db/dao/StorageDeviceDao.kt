@@ -21,6 +21,9 @@ interface StorageDeviceDao {
     @Query("SELECT * FROM storage_device WHERE name != '__hidden__' ORDER BY sort_order ASC, name ASC")
     suspend fun getAll(): List<StorageDeviceEntity>
 
+    @Query("SELECT * FROM storage_device WHERE name = '__hidden__' ORDER BY sort_order ASC, name ASC")
+    suspend fun getAllHidden(): List<StorageDeviceEntity>
+
     @Query("SELECT * FROM storage_device WHERE id = :id")
     suspend fun getById(id: Long): StorageDeviceEntity?
 

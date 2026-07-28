@@ -111,6 +111,7 @@ fun DeviceListScreen(
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
                 viewModel.refreshRecentBoxes()
+                viewModel.refreshStandaloneBoxes()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

@@ -5,7 +5,6 @@ import androidx.lifecycle.viewModelScope
 import com.labfreezer.data.db.entity.DeviceTypeEntity
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
-import com.labfreezer.data.db.isHidden
 import com.labfreezer.data.repository.DeviceTypeRepository
 import com.labfreezer.data.repository.RecentlyViewedRepository
 import com.labfreezer.data.repository.StorageBoxRepository
@@ -120,7 +119,7 @@ class DeviceListViewModel @Inject constructor(
 
     fun refreshStandaloneBoxes() {
         viewModelScope.launch {
-            val hiddenDevices = repository.getAll().filter { it.isHidden() }
+            val hiddenDevices = repository.getAllHidden()
             val result = mutableListOf<StorageBoxEntity>()
             for (device in hiddenDevices) {
                 val boxes = boxRepository.getBoxesByDeviceDirect(device.id)
