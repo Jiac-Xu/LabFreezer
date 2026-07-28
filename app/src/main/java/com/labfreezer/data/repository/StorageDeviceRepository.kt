@@ -1,6 +1,7 @@
 package com.labfreezer.data.repository
 
 import com.labfreezer.data.db.dao.StorageDeviceDao
+import com.labfreezer.data.db.dao.StorageBoxDao
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.dao.StorageLayerDao
 import kotlinx.coroutines.flow.Flow
@@ -12,10 +13,21 @@ data class DeviceWithCount(
     val layerCount: Int
 )
 
+/**
+ * 设备概要：包含「可见子节点」的计数。
+ * 子节点可以是 Layer 或 Box（通过 hidden layer 直接挂载的盒子）。
+ */
+data class DeviceWithSummary(
+    val device: StorageDeviceEntity,
+    val visibleChildCount: Int,
+    val hasBoxesDirect: Boolean   // 是否有直接挂在设备下的盒子（跳过层级）
+)
+
 @Singleton
 class StorageDeviceRepository @Inject constructor(
     private val deviceDao: StorageDeviceDao,
-    private val layerDao: StorageLayerDao
+    private val layerDao: StorageLayerDao,
+    private val boxDao: StorageBoxDao
 ) {
     fun getAllFlow(): Flow<List<StorageDeviceEntity>> = deviceDao.getAllFlow()
 
@@ -33,6 +45,22 @@ class StorageDeviceRepository @Inject constructor(
             DeviceWithCount(
                 device = device,
                 layerCount = layerDao.countByDeviceId(device.id)
+            )
+        }
+    }
+
+    /**
+     * 获取设备概要列表，包含可见子节点（Layer + 直接挂载的 Box）的数量。
+     */
+    suspend fun getDevicesWithSummary(): List<DeviceWithSummary> {
+        val devices = deviceDao.getAll()
+        return devices.map { device ->
+            val layerCount = layerDao.countByDeviceId(device.id)
+            val directBoxes = boxDao.getBoxesByDeviceDirect(device.id)
+            DeviceWithSummary(
+                device = device,
+                visibleChildCount = layerCount + directBoxes.size,
+                hasBoxesDirect = directBoxes.isNotEmpty()
             )
         }
     }

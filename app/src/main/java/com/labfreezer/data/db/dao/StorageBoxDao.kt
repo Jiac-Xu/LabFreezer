@@ -36,6 +36,18 @@ interface StorageBoxDao {
     @Query("SELECT COUNT(*) FROM storage_box WHERE layer_id IN (SELECT id FROM storage_layer WHERE device_id = :deviceId)")
     suspend fun countByDeviceId(deviceId: Long): Int
 
+    /**
+     * 获取通过 hidden layer 直接挂在某设备下的盒子。
+     * 用于「跳过层级」场景：设备下没有真实 Layer，只有通过 __hidden__ 占位 Layer 连接的 Box。
+     */
+    @Query(
+        "SELECT sb.* FROM storage_box sb " +
+        "INNER JOIN storage_layer sl ON sb.layer_id = sl.id " +
+        "WHERE sl.device_id = :deviceId AND sl.name = '__hidden__' " +
+        "ORDER BY sb.sort_order ASC, sb.name ASC"
+    )
+    suspend fun getBoxesByDeviceDirect(deviceId: Long): List<StorageBoxEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(box: StorageBoxEntity): Long
 

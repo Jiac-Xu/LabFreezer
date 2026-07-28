@@ -4,27 +4,38 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
+import com.labfreezer.data.model.NodeType
+import com.labfreezer.data.model.VisibleTreeNode
+import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
+import com.labfreezer.data.repository.TreeTransformer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class DeviceDetailViewModel @Inject constructor(
     private val deviceRepository: StorageDeviceRepository,
-    private val layerRepository: StorageLayerRepository
+    private val layerRepository: StorageLayerRepository,
+    private val boxRepository: StorageBoxRepository,
+    private val treeTransformer: TreeTransformer
 ) : ViewModel() {
 
     private val _device = MutableStateFlow<StorageDeviceEntity?>(null)
     val device: StateFlow<StorageDeviceEntity?> = _device
 
-    private val _layers = MutableStateFlow<List<StorageLayerEntity>>(emptyList())
-    val layers: StateFlow<List<StorageLayerEntity>> = _layers
+    private val _visibleChildren = MutableStateFlow<List<VisibleTreeNode>>(emptyList())
+    val visibleChildren: StateFlow<List<VisibleTreeNode>> = _visibleChildren
+
+    /**
+     * 当前节点是否允许创建层级。
+     * 对于非 hidden 的设备（FREEZER）可以创建层级。
+     */
+    private val _canCreateLevel = MutableStateFlow(false)
+    val canCreateLevel: StateFlow<Boolean> = _canCreateLevel
 
     private val _allDevices = MutableStateFlow<List<StorageDeviceEntity>>(emptyList())
     val allDevices: StateFlow<List<StorageDeviceEntity>> = _allDevices
@@ -38,6 +49,10 @@ class DeviceDetailViewModel @Inject constructor(
     private val _showAddDialog = MutableStateFlow(false)
     val showAddDialog: StateFlow<Boolean> = _showAddDialog
 
+    /** true = 创建层级对话框, false = 创建盒子对话框 */
+    private val _addDialogMode = MutableStateFlow(AddDialogMode.NONE)
+    val addDialogMode: StateFlow<AddDialogMode> = _addDialogMode
+
     private val _editingLayer = MutableStateFlow<StorageLayerEntity?>(null)
     val editingLayer: StateFlow<StorageLayerEntity?> = _editingLayer
 
@@ -49,15 +64,13 @@ class DeviceDetailViewModel @Inject constructor(
 
     fun loadDevice(deviceId: Long) {
         viewModelScope.launch {
-            _device.value = deviceRepository.getById(deviceId)
+            val dev = deviceRepository.getById(deviceId)
+            _device.value = dev
             _allDevices.value = deviceRepository.getAll()
-        }
-        layerRepository.getByDeviceIdFlow(deviceId).stateIn(
-            viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
-        ).also { flow ->
-            viewModelScope.launch {
-                flow.collect { _layers.value = it }
-            }
+            _canCreateLevel.value = dev != null
+
+            // 加载可见子节点（混合类型）
+            _visibleChildren.value = treeTransformer.getVisibleChildren(deviceId)
         }
     }
 
@@ -74,7 +87,7 @@ class DeviceDetailViewModel @Inject constructor(
     }
 
     fun selectAll() {
-        val allIds = _layers.value.map { it.id }.toSet()
+        val allIds = _visibleChildren.value.map { it.id }.toSet()
         if (_selectedIds.value == allIds) {
             _selectedIds.value = emptySet()
             _isSelecting.value = false
@@ -90,8 +103,16 @@ class DeviceDetailViewModel @Inject constructor(
 
     fun deleteSelected() {
         viewModelScope.launch {
-            _selectedIds.value.forEach { id -> layerRepository.deleteById(id) }
+            _selectedIds.value.forEach { id ->
+                val node = _visibleChildren.value.find { it.id == id } ?: return@forEach
+                when (node.type) {
+                    NodeType.LEVEL -> layerRepository.deleteById(id)
+                    NodeType.BOX -> boxRepository.deleteById(id)
+                    else -> {}
+                }
+            }
             exitSelection()
+            _device.value?.let { loadDevice(it.id) }
         }
     }
 
@@ -101,16 +122,39 @@ class DeviceDetailViewModel @Inject constructor(
     fun moveSelected(targetDeviceId: Long) {
         viewModelScope.launch {
             _selectedIds.value.forEach { id ->
-                val layer = layerRepository.getById(id) ?: return@forEach
-                layerRepository.update(layer.copy(deviceId = targetDeviceId))
+                val node = _visibleChildren.value.find { it.id == id } ?: return@forEach
+                when (node.type) {
+                    NodeType.LEVEL -> {
+                        val layer = layerRepository.getById(id) ?: return@forEach
+                        layerRepository.update(layer.copy(deviceId = targetDeviceId))
+                    }
+                    else -> {}
+                }
             }
             exitSelection()
             _showMoveDialog.value = false
+            _device.value?.let { loadDevice(it.id) }
         }
     }
 
-    fun showAddDialog() { _showAddDialog.value = true }
-    fun hideAddDialog() { _showAddDialog.value = false }
+    // ==================== Speed Dial 对话框控制 ====================
+
+    /** 显示创建盒子对话框 */
+    fun showCreateBoxDialog() {
+        _addDialogMode.value = AddDialogMode.BOX
+        _showAddDialog.value = true
+    }
+
+    /** 显示创建层级对话框 */
+    fun showCreateLevelDialog() {
+        _addDialogMode.value = AddDialogMode.LEVEL
+        _showAddDialog.value = true
+    }
+
+    fun hideAddDialog() {
+        _showAddDialog.value = false
+        _addDialogMode.value = AddDialogMode.NONE
+    }
 
     fun showEditDialog(layer: StorageLayerEntity) { _editingLayer.value = layer }
     fun hideEditDialog() { _editingLayer.value = null }
@@ -118,11 +162,36 @@ class DeviceDetailViewModel @Inject constructor(
     fun showDeleteConfirm(layer: StorageLayerEntity) { _deletingLayer.value = layer }
     fun hideDeleteConfirm() { _deletingLayer.value = null }
 
+    /**
+     * 创建盒子（自动填充 hidden 层级）。
+     */
+    fun addBox(name: String, rows: Int, cols: Int, note: String?) {
+        val deviceId = _device.value?.id ?: return
+        viewModelScope.launch {
+            treeTransformer.createBoxWithHiddenFill(
+                name = name,
+                rows = rows,
+                cols = cols,
+                note = note,
+                parentDeviceId = deviceId,
+                parentLayerId = null
+            )
+            _showAddDialog.value = false
+            _addDialogMode.value = AddDialogMode.NONE
+            _visibleChildren.value = treeTransformer.getVisibleChildren(deviceId)
+        }
+    }
+
+    /**
+     * 创建层级。
+     */
     fun addLayer(name: String, note: String?) {
         val deviceId = _device.value?.id ?: return
         viewModelScope.launch {
-            layerRepository.insert(StorageLayerEntity(deviceId = deviceId, name = name, note = note))
+            treeTransformer.createLevel(deviceId = deviceId, name = name, note = note)
             _showAddDialog.value = false
+            _addDialogMode.value = AddDialogMode.NONE
+            _visibleChildren.value = treeTransformer.getVisibleChildren(deviceId)
         }
     }
 
@@ -131,6 +200,7 @@ class DeviceDetailViewModel @Inject constructor(
             val existing = layerRepository.getById(id) ?: return@launch
             layerRepository.update(existing.copy(name = name, deviceId = deviceId, note = note))
             _editingLayer.value = null
+            loadDevice(deviceId)
         }
     }
 
@@ -138,6 +208,14 @@ class DeviceDetailViewModel @Inject constructor(
         viewModelScope.launch {
             layerRepository.delete(layer)
             _deletingLayer.value = null
+            _device.value?.let { loadDevice(it.id) }
         }
     }
+}
+
+/** 添加对话框模式 */
+enum class AddDialogMode {
+    NONE,       // 对话框关闭
+    BOX,        // 创建盒子
+    LEVEL       // 创建层级
 }

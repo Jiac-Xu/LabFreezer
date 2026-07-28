@@ -5,14 +5,14 @@ import androidx.lifecycle.viewModelScope
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
+import com.labfreezer.data.model.VisibleTreeNode
 import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
+import com.labfreezer.data.repository.TreeTransformer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,14 +20,15 @@ import javax.inject.Inject
 class LayerDetailViewModel @Inject constructor(
     private val layerRepository: StorageLayerRepository,
     private val boxRepository: StorageBoxRepository,
-    private val deviceRepository: StorageDeviceRepository
+    private val deviceRepository: StorageDeviceRepository,
+    private val treeTransformer: TreeTransformer
 ) : ViewModel() {
 
     private val _layer = MutableStateFlow<StorageLayerEntity?>(null)
     val layer: StateFlow<StorageLayerEntity?> = _layer
 
-    private val _boxes = MutableStateFlow<List<StorageBoxEntity>>(emptyList())
-    val boxes: StateFlow<List<StorageBoxEntity>> = _boxes
+    private val _visibleChildren = MutableStateFlow<List<VisibleTreeNode>>(emptyList())
+    val visibleChildren: StateFlow<List<VisibleTreeNode>> = _visibleChildren
 
     private val _allDevices = MutableStateFlow<List<StorageDeviceEntity>>(emptyList())
     val allDevices: StateFlow<List<StorageDeviceEntity>> = _allDevices
@@ -62,13 +63,9 @@ class LayerDetailViewModel @Inject constructor(
                 allLayers.getOrPut(device.id) { mutableListOf() }.addAll(layerRepository.getByDeviceId(device.id))
             }
             _layersByDevice.value = allLayers
-        }
-        boxRepository.getByLayerIdFlow(layerId).stateIn(
-            viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList()
-        ).also { flow ->
-            viewModelScope.launch {
-                flow.collect { _boxes.value = it }
-            }
+
+            // 加载可见子节点（该 Layer 下的盒子）
+            _visibleChildren.value = treeTransformer.getVisibleChildrenOfLayer(layerId)
         }
     }
 
@@ -85,7 +82,7 @@ class LayerDetailViewModel @Inject constructor(
     }
 
     fun selectAll() {
-        val allIds = _boxes.value.map { it.id }.toSet()
+        val allIds = _visibleChildren.value.map { it.id }.toSet()
         if (_selectedIds.value == allIds) {
             _selectedIds.value = emptySet()
             _isSelecting.value = false
@@ -103,6 +100,7 @@ class LayerDetailViewModel @Inject constructor(
         viewModelScope.launch {
             _selectedIds.value.forEach { id -> boxRepository.deleteById(id) }
             exitSelection()
+            _layer.value?.let { loadLayer(it.id) }
         }
     }
 
@@ -117,6 +115,7 @@ class LayerDetailViewModel @Inject constructor(
             }
             exitSelection()
             _showMoveDialog.value = false
+            _layer.value?.let { loadLayer(it.id) }
         }
     }
 
@@ -134,6 +133,7 @@ class LayerDetailViewModel @Inject constructor(
         viewModelScope.launch {
             boxRepository.insert(StorageBoxEntity(layerId = layerId, name = name, rows = rows, cols = cols, note = note))
             _showAddDialog.value = false
+            _visibleChildren.value = treeTransformer.getVisibleChildrenOfLayer(layerId)
         }
     }
 
@@ -142,6 +142,7 @@ class LayerDetailViewModel @Inject constructor(
             val existing = boxRepository.getById(id) ?: return@launch
             boxRepository.update(existing.copy(name = name, layerId = layerId, rows = rows, cols = cols, note = note))
             _editingBox.value = null
+            _layer.value?.let { loadLayer(it.id) }
         }
     }
 
@@ -149,6 +150,7 @@ class LayerDetailViewModel @Inject constructor(
         viewModelScope.launch {
             boxRepository.delete(box)
             _deletingBox.value = null
+            _layer.value?.let { loadLayer(it.id) }
         }
     }
 }

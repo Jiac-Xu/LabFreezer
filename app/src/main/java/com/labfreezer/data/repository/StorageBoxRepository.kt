@@ -28,6 +28,12 @@ class StorageBoxRepository @Inject constructor(
 
     suspend fun countByDeviceId(deviceId: Long): Int = boxDao.countByDeviceId(deviceId)
 
+    /**
+     * 获取通过 hidden layer 直接挂在某设备下的所有盒子。
+     */
+    suspend fun getBoxesByDeviceDirect(deviceId: Long): List<StorageBoxEntity> =
+        boxDao.getBoxesByDeviceDirect(deviceId)
+
     suspend fun insert(box: StorageBoxEntity): Long = boxDao.insert(box)
 
     suspend fun update(box: StorageBoxEntity) = boxDao.update(box)
