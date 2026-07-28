@@ -85,6 +85,8 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
     val canCreateLevel by viewModel.canCreateLevel.collectAsStateWithLifecycle()
     val editingLayer by viewModel.editingLayer.collectAsStateWithLifecycle()
     val deletingLayer by viewModel.deletingLayer.collectAsStateWithLifecycle()
+    val editingBox by viewModel.editingBox.collectAsStateWithLifecycle()
+    val deletingBox by viewModel.deletingBox.collectAsStateWithLifecycle()
 
     var showDeleteBatchConfirm by remember { mutableStateOf(false) }
     var speedDialExpanded by remember { mutableStateOf(false) }
@@ -191,25 +193,45 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
                         },
                         onLongClick = { viewModel.startSelection(node.id) },
                         onEdit = {
-                            if (node.type == NodeType.LEVEL) {
-                                // 编辑层级
-                                val layer = com.labfreezer.data.db.entity.StorageLayerEntity(
-                                    id = node.id,
-                                    deviceId = device?.id ?: 0,
-                                    name = node.name
-                                )
-                                viewModel.showEditDialog(layer)
+                            when (node.type) {
+                                NodeType.LEVEL -> {
+                                    val layer = com.labfreezer.data.db.entity.StorageLayerEntity(
+                                        id = node.id,
+                                        deviceId = device?.id ?: 0,
+                                        name = node.name
+                                    )
+                                    viewModel.showEditDialog(layer)
+                                }
+                                NodeType.BOX -> {
+                                    val box = com.labfreezer.data.db.entity.StorageBoxEntity(
+                                        id = node.id,
+                                        layerId = 0,
+                                        name = node.name
+                                    )
+                                    viewModel.showEditBoxDialog(box)
+                                }
+                                else -> {}
                             }
-                            // Box 编辑暂不支持（需跳转到 BoxGrid 编辑）
                         },
                         onDelete = {
-                            if (node.type == NodeType.LEVEL) {
-                                val layer = com.labfreezer.data.db.entity.StorageLayerEntity(
-                                    id = node.id,
-                                    deviceId = device?.id ?: 0,
-                                    name = node.name
-                                )
-                                viewModel.showDeleteConfirm(layer)
+                            when (node.type) {
+                                NodeType.LEVEL -> {
+                                    val layer = com.labfreezer.data.db.entity.StorageLayerEntity(
+                                        id = node.id,
+                                        deviceId = device?.id ?: 0,
+                                        name = node.name
+                                    )
+                                    viewModel.showDeleteConfirm(layer)
+                                }
+                                NodeType.BOX -> {
+                                    val box = com.labfreezer.data.db.entity.StorageBoxEntity(
+                                        id = node.id,
+                                        layerId = 0,
+                                        name = node.name
+                                    )
+                                    viewModel.showDeleteBoxConfirm(box)
+                                }
+                                else -> {}
                             }
                         }
                     )
@@ -249,6 +271,21 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
             message = stringResource(R.string.device_list_delete_confirm, layer.name),
             onDismiss = { viewModel.hideDeleteConfirm() },
             onConfirm = { viewModel.deleteLayer(layer) }
+        )
+    }
+    editingBox?.let { box ->
+        BoxDialog(
+            existing = box,
+            navController = null,
+            onDismiss = { viewModel.hideEditBoxDialog() },
+            onConfirm = { name, _, rows, cols, note -> viewModel.updateBox(box.id, name, box.layerId, rows, cols, note) }
+        )
+    }
+    deletingBox?.let { box ->
+        DeleteConfirmDialog(
+            message = stringResource(R.string.device_list_delete_confirm, box.name),
+            onDismiss = { viewModel.hideDeleteBoxConfirm() },
+            onConfirm = { viewModel.deleteBox(box) }
         )
     }
     if (showDeleteBatchConfirm) {
@@ -312,7 +349,7 @@ private fun VisibleChildCard(
             }
             if (!isSelecting) {
                 Spacer(Modifier.width(8.dp))
-                if (node.type == NodeType.LEVEL) {
+                if (node.type == NodeType.LEVEL || node.type == NodeType.BOX) {
                     IconButton(onClick = onEdit) {
                         Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.device_list_edit), tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
                     }

@@ -156,7 +156,7 @@ private fun SpeedDialItem(
             colors = CardDefaults.cardColors(
                 containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
             ),
-            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
         ) {
             Text(
                 text = label,
@@ -172,8 +172,8 @@ private fun SpeedDialItem(
         SmallFloatingActionButton(
             onClick = onClick,
             shape = CircleShape,
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ) {
             icon()
         }

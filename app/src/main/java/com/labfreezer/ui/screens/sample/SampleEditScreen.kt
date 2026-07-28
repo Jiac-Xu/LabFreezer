@@ -379,7 +379,12 @@ fun SampleEditScreen(
                     Column(modifier = Modifier.weight(1f)) {
                         Text(stringResource(R.string.sample_edit_label_location), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                         val pos = state.sample?.let { SampleEditViewModel.positionToLabel(it.row, it.col) } ?: ""
-                        Text("${state.deviceName} > ${state.layerName} > ${state.boxName} > $pos", style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        val location = buildString {
+                            append(state.deviceName)
+                            if (state.layerName.isNotBlank()) append(" > ${state.layerName}")
+                            append(" > ${state.boxName} > $pos")
+                        }
+                        Text(location, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     Icon(Icons.AutoMirrored.Filled.ArrowForwardIos, contentDescription = stringResource(R.string.sample_edit_change_location), modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.outline)
                 }

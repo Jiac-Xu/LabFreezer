@@ -11,6 +11,7 @@ import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.entity.TagEntity
+import com.labfreezer.data.db.isHidden
 import com.labfreezer.data.file.PhotoManager
 import com.labfreezer.data.ocr.OcrEngine
 import com.labfreezer.data.ocr.OcrPreferences
@@ -141,7 +142,7 @@ class SampleEditViewModel @Inject constructor(
                 ocrEnabled = ocrPreferences.isEnabled(),
                 assignedTagIds = tags.map { it.id }.toSet(),
                 deviceName = device?.name ?: "",
-                layerName = layer?.name ?: "",
+                layerName = if (layer?.isHidden() == true) "" else (layer?.name ?: ""),
                 boxName = box?.name ?: "",
                 currentIndex = idx,
                 totalCount = total
@@ -230,7 +231,7 @@ class SampleEditViewModel @Inject constructor(
             _state.update {
                 it.copy(
                     deviceName = device.name,
-                    layerName = layer.name,
+                    layerName = if (layer.isHidden()) "" else layer.name,
                     boxName = box.name
                 )
             }

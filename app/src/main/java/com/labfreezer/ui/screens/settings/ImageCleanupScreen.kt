@@ -136,25 +136,17 @@ fun ImageCleanupScreen(
                     )
                     if (isDeviceExpanded) {
                         deviceGroups.groupBy { it.layerName }.forEach { (layerName, layerGroups) ->
-                            val isLayerExpanded = expandedLayer == layerName
-                            TreeSection(
-                                label = layerName,
-                                icon = "layer",
-                                count = layerGroups.sumOf { it.samples.size },
-                                isExpanded = isLayerExpanded,
-                                indent = 1,
-                                onToggle = { expandedLayer = if (isLayerExpanded) null else layerName; expandedBox = null }
-                            )
-                            if (isLayerExpanded) {
+                            if (layerName.isBlank()) {
+                                // 无层级（原 hidden 层）：盒子直接挂在设备下
                                 layerGroups.groupBy { it.boxName }.forEach { (boxName, boxSamples) ->
-                                    val isBoxExpanded = expandedBox == boxName
+                                    val isBoxExpanded = expandedBox == "direct_$boxName"
                                     TreeSection(
                                         label = boxName,
                                         icon = "box",
                                         count = boxSamples.sumOf { it.samples.size },
                                         isExpanded = isBoxExpanded,
-                                        indent = 2,
-                                        onToggle = { expandedBox = if (isBoxExpanded) null else boxName }
+                                        indent = 1,
+                                        onToggle = { expandedBox = if (isBoxExpanded) null else "direct_$boxName" }
                                     )
                                     if (isBoxExpanded) {
                                         SamplePhotoGrid(
@@ -162,6 +154,36 @@ fun ImageCleanupScreen(
                                             selectedIds = selectedIds,
                                             onToggle = { viewModel.toggleSelection(it) }
                                         )
+                                    }
+                                }
+                            } else {
+                                val isLayerExpanded = expandedLayer == layerName
+                                TreeSection(
+                                    label = layerName,
+                                    icon = "layer",
+                                    count = layerGroups.sumOf { it.samples.size },
+                                    isExpanded = isLayerExpanded,
+                                    indent = 1,
+                                    onToggle = { expandedLayer = if (isLayerExpanded) null else layerName; expandedBox = null }
+                                )
+                                if (isLayerExpanded) {
+                                    layerGroups.groupBy { it.boxName }.forEach { (boxName, boxSamples) ->
+                                        val isBoxExpanded = expandedBox == boxName
+                                        TreeSection(
+                                            label = boxName,
+                                            icon = "box",
+                                            count = boxSamples.sumOf { it.samples.size },
+                                            isExpanded = isBoxExpanded,
+                                            indent = 2,
+                                            onToggle = { expandedBox = if (isBoxExpanded) null else boxName }
+                                        )
+                                        if (isBoxExpanded) {
+                                            SamplePhotoGrid(
+                                                samples = boxSamples.flatMap { it.samples },
+                                                selectedIds = selectedIds,
+                                                onToggle = { viewModel.toggleSelection(it) }
+                                            )
+                                        }
                                     }
                                 }
                             }

@@ -2,6 +2,7 @@ package com.labfreezer.ui.screens.devices
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.model.NodeType
@@ -56,8 +57,14 @@ class DeviceDetailViewModel @Inject constructor(
     private val _editingLayer = MutableStateFlow<StorageLayerEntity?>(null)
     val editingLayer: StateFlow<StorageLayerEntity?> = _editingLayer
 
+    private val _editingBox = MutableStateFlow<StorageBoxEntity?>(null)
+    val editingBox: StateFlow<StorageBoxEntity?> = _editingBox
+
     private val _deletingLayer = MutableStateFlow<StorageLayerEntity?>(null)
     val deletingLayer: StateFlow<StorageLayerEntity?> = _deletingLayer
+
+    private val _deletingBox = MutableStateFlow<StorageBoxEntity?>(null)
+    val deletingBox: StateFlow<StorageBoxEntity?> = _deletingBox
 
     private val _showMoveDialog = MutableStateFlow(false)
     val showMoveDialog: StateFlow<Boolean> = _showMoveDialog
@@ -161,6 +168,31 @@ class DeviceDetailViewModel @Inject constructor(
 
     fun showDeleteConfirm(layer: StorageLayerEntity) { _deletingLayer.value = layer }
     fun hideDeleteConfirm() { _deletingLayer.value = null }
+
+    fun showEditBoxDialog(box: StorageBoxEntity) {
+        _editingBox.value = box
+    }
+    fun hideEditBoxDialog() { _editingBox.value = null }
+
+    fun showDeleteBoxConfirm(box: StorageBoxEntity) { _deletingBox.value = box }
+    fun hideDeleteBoxConfirm() { _deletingBox.value = null }
+
+    fun updateBox(id: Long, name: String, layerId: Long, rows: Int, cols: Int, note: String?) {
+        viewModelScope.launch {
+            val existing = boxRepository.getById(id) ?: return@launch
+            boxRepository.update(existing.copy(name = name, layerId = layerId, rows = rows, cols = cols, note = note))
+            _editingBox.value = null
+            _device.value?.let { loadDevice(it.id) }
+        }
+    }
+
+    fun deleteBox(box: StorageBoxEntity) {
+        viewModelScope.launch {
+            boxRepository.delete(box)
+            _deletingBox.value = null
+            _device.value?.let { loadDevice(it.id) }
+        }
+    }
 
     /**
      * 创建盒子（自动填充 hidden 层级）。
