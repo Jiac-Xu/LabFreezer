@@ -48,6 +48,17 @@ enum class GridCellStatus {
     COMPLETE
 }
 
+enum class InputMode {
+    CAMERA,
+    GALLERY,
+    TEXT
+}
+
+data class PendingInput(
+    val sampleId: Long,
+    val mode: InputMode
+)
+
 @HiltViewModel
 class BoxGridViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
@@ -59,6 +70,7 @@ class BoxGridViewModel @Inject constructor(
     private val ocrEngine: OcrEngine,
     private val ocrPreferences: OcrPreferences,
     private val recentBoxRepo: RecentlyViewedRepository,
+    private val inputModePreferences: InputModePreferences,
 ) : ViewModel() {
 
     private val _box = MutableStateFlow<StorageBoxEntity?>(null)
@@ -67,8 +79,11 @@ class BoxGridViewModel @Inject constructor(
     private val _cells = MutableStateFlow(GridCellsState())
     val cells: StateFlow<GridCellsState> = _cells
 
-    private val _pendingSampleId = MutableStateFlow<Long?>(null)
-    val pendingSampleId: StateFlow<Long?> = _pendingSampleId
+    private val _pendingInput = MutableStateFlow<PendingInput?>(null)
+    val pendingInput: StateFlow<PendingInput?> = _pendingInput
+
+    private val _inputMode = MutableStateFlow(inputModePreferences.getInputMode())
+    val inputMode: StateFlow<InputMode> = _inputMode
 
     private val _isSelecting = MutableStateFlow(false)
     val isSelecting: StateFlow<Boolean> = _isSelecting
@@ -226,24 +241,38 @@ class BoxGridViewModel @Inject constructor(
         }
     }
 
+    fun setInputMode(mode: InputMode) {
+        _inputMode.value = mode
+        inputModePreferences.setInputMode(mode)
+    }
+
+    fun clearPendingInput() {
+        _pendingInput.value = null
+    }
+
     fun onCellClick(cell: GridCell) {
         val box = _box.value ?: return
         viewModelScope.launch {
             if (cell.status == GridCellStatus.EMPTY) {
                 pendingRow = cell.row
                 pendingCol = cell.col
+                val mode = _inputMode.value
                 val id = sampleRepository.insert(
                     SamplePositionEntity(boxId = box.id, row = cell.row, col = cell.col)
                 )
-                _pendingSampleId.value = id
+                if (mode == InputMode.TEXT) {
+                    refreshGrid(box)
+                }
+                _pendingInput.value = PendingInput(id, mode)
             }
         }
     }
 
     fun onCameraResult(success: Boolean) {
-        val sampleId = _pendingSampleId.value ?: return
+        val pending = _pendingInput.value ?: return
+        val sampleId = pending.sampleId
         val box = _box.value
-        _pendingSampleId.value = null
+        _pendingInput.value = null
 
         if (success && box != null && currentPhotoUri != null) {
             viewModelScope.launch {
@@ -257,6 +286,28 @@ class BoxGridViewModel @Inject constructor(
             }
         } else {
             currentPhotoUri = null
+            viewModelScope.launch {
+                sampleRepository.deleteById(sampleId)
+            }
+        }
+    }
+
+    fun onGalleryResult(uri: Uri?) {
+        val pending = _pendingInput.value ?: return
+        val sampleId = pending.sampleId
+        val box = _box.value
+        _pendingInput.value = null
+
+        if (uri != null && box != null) {
+            viewModelScope.launch {
+                val compressedPath = photoManager.compressAndSave(uri, box.id, pendingRow, pendingCol)
+                val sample = sampleRepository.getById(sampleId) ?: return@launch
+                var updatedSample = sample.copy(photoPath = compressedPath)
+                sampleRepository.update(updatedSample)
+                refreshGrid(box)
+                runOcrAndUpdate(updatedSample, compressedPath)
+            }
+        } else {
             viewModelScope.launch {
                 sampleRepository.deleteById(sampleId)
             }

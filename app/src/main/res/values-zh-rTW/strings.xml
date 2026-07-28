@@ -237,6 +237,8 @@
     <string name="sample_edit_manage_tags">管理標籤</string>
     <string name="sample_edit_no_tags">暫無標籤，點擊右上角「管理標籤」建立</string>
     <string name="sample_edit_confirm_delete">確認刪除此樣本？此操作不可撤銷。</string>
+    <string name="sample_edit_gallery">相簿選擇</string>
+    <string name="sample_edit_delete_photo">刪除圖片</string>
 
     <!-- ========== Sample Edit ViewModel ========== -->
     <string name="sample_edit_last_sample">已經是目前凍存盒的最後一個樣本</string>
@@ -268,6 +270,9 @@
     <string name="box_grid_move">移動</string>
     <string name="box_grid_loading">載入中…</string>
     <string name="box_grid_confirm_delete">確認刪除選中的 %1$d 個樣本？該操作不可撤銷。</string>
+    <string name="box_grid_input_mode_camera">拍照</string>
+    <string name="box_grid_input_mode_gallery">相簿</string>
+    <string name="box_grid_input_mode_text">文字</string>
 
     <!-- ========== Search Screen ========== -->
     <string name="search_options">搜尋選項</string>

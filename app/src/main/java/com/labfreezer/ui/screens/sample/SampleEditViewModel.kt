@@ -300,6 +300,33 @@ class SampleEditViewModel @Inject constructor(
         }
     }
 
+    fun onGalleryResult(uri: Uri?) {
+        if (uri != null) {
+            val sample = currentSample ?: return
+            viewModelScope.launch {
+                val compressedPath = photoManager.compressAndSave(uri, sample.boxId, sample.row, sample.col)
+                _state.update { it.copy(photoPath = compressedPath) }
+                // Run auto-OCR if enabled
+                if (ocrPreferences.isAutoOcrEnabled()) {
+                    runOcrAndUpdate(sample.copy(photoPath = compressedPath))
+                }
+                // Apply auto-date after taking photo
+                if (ocrPreferences.isAutoDateEnabled()) {
+                    val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+                    _state.update { it.copy(date = today) }
+                }
+            }
+        }
+    }
+
+    fun deletePhoto() {
+        val path = _state.value.photoPath ?: return
+        viewModelScope.launch(Dispatchers.IO) {
+            photoManager.deletePhoto(path)
+            _state.update { it.copy(photoPath = null, photoVersion = it.photoVersion + 1) }
+        }
+    }
+
     private suspend fun runOcrAndUpdate(sample: SamplePositionEntity) {
         if (!ocrPreferences.isEnabled()) return
         val photoPath = sample.photoPath ?: return

@@ -248,6 +248,8 @@
     <string name="sample_edit_manage_tags">Manage Tags</string>
     <string name="sample_edit_no_tags">No tags yet. Tap \"Manage Tags\" to create one.</string>
     <string name="sample_edit_confirm_delete">Delete this sample? This action cannot be undone.</string>
+    <string name="sample_edit_gallery">Gallery</string>
+    <string name="sample_edit_delete_photo">Delete Photo</string>
 
     <!-- ========== Sample Edit ViewModel ========== -->
     <string name="sample_edit_last_sample">Already at the last sample in this box</string>
@@ -279,6 +281,9 @@
     <string name="box_grid_move">Move</string>
     <string name="box_grid_loading">Loading…</string>
     <string name="box_grid_confirm_delete">Delete %1$d selected samples? This cannot be undone.</string>
+    <string name="box_grid_input_mode_camera">Camera</string>
+    <string name="box_grid_input_mode_gallery">Gallery</string>
+    <string name="box_grid_input_mode_text">Text</string>
 
     <!-- ========== Search Screen ========== -->
     <string name="search_options">Search Options</string>

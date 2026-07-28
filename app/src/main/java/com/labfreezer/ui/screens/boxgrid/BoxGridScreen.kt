@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.expandVertically
@@ -40,12 +41,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.DeviceHub
+import androidx.compose.material.icons.filled.EditNote
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
+import androidx.compose.material.icons.filled.PhotoLibrary
 import androidx.compose.material.icons.filled.ZoomIn
 import androidx.compose.material.icons.filled.ZoomOut
 import androidx.compose.material.icons.filled.OpenWith
@@ -53,6 +57,8 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -79,6 +85,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
@@ -111,10 +118,12 @@ fun BoxGridScreen(
     val box by viewModel.box.collectAsStateWithLifecycle()
     val cellsState by viewModel.cells.collectAsStateWithLifecycle()
     val cells = cellsState.list
-    val pendingSampleId by viewModel.pendingSampleId.collectAsStateWithLifecycle()
+    val pendingInput by viewModel.pendingInput.collectAsStateWithLifecycle()
+    val inputMode by viewModel.inputMode.collectAsStateWithLifecycle()
     val isSelecting by viewModel.isSelecting.collectAsStateWithLifecycle()
     val selectedIds by viewModel.selectedIds.collectAsStateWithLifecycle()
     var showDeleteBatchConfirm by remember { mutableStateOf(false) }
+    var showModeMenu by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
 
@@ -135,13 +144,40 @@ fun BoxGridScreen(
         }
     }
 
-    LaunchedEffect(pendingSampleId) {
-        if (pendingSampleId != null) {
-            if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-                val uri = viewModel.createPhotoUri()
-                cameraLauncher.launch(uri)
-            } else {
-                cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        viewModel.onGalleryResult(uri)
+    }
+
+    LaunchedEffect(pendingInput) {
+        pendingInput?.let { input ->
+            when (input.mode) {
+                InputMode.CAMERA -> {
+                    if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                        val uri = viewModel.createPhotoUri()
+                        cameraLauncher.launch(uri)
+                    } else {
+                        cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+                    }
+                }
+                InputMode.GALLERY -> {
+                    photoPickerLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
+                }
+                InputMode.TEXT -> {
+                    // 文字模式：直接导航到编辑页
+                    input.sampleId.let { sampleId ->
+                        val sampleIds = cells.filter { it.sampleId != null }.map { it.sampleId!! }
+                        val boxCtx = SampleBrowseContext.Box(
+                            boxId = boxId,
+                            boxName = box?.name ?: "",
+                            sampleIds = sampleIds
+                        )
+                        val ctxKey = BrowseContextStore.put(boxCtx)
+                        navController.navigate(Screen.SampleEdit.createRoute(sampleId, ctxKey))
+                    }
+                    viewModel.clearPendingInput()
+                }
             }
         }
     }
@@ -185,6 +221,35 @@ fun BoxGridScreen(
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error)
                         }
                     } else {
+                        Box {
+                            TextButton(onClick = { showModeMenu = true }) {
+                                val (icon, label) = inputModeIconAndLabel(inputMode)
+                                Icon(icon, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.width(2.dp))
+                                Text(label, style = MaterialTheme.typography.bodySmall, maxLines = 1)
+                                Icon(Icons.Default.ArrowDropDown, contentDescription = null, modifier = Modifier.size(18.dp))
+                            }
+                            DropdownMenu(
+                                expanded = showModeMenu,
+                                onDismissRequest = { showModeMenu = false }
+                            ) {
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.box_grid_input_mode_camera)) },
+                                    leadingIcon = { Icon(Icons.Default.CameraAlt, contentDescription = null) },
+                                    onClick = { viewModel.setInputMode(InputMode.CAMERA); showModeMenu = false }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.box_grid_input_mode_gallery)) },
+                                    leadingIcon = { Icon(Icons.Default.PhotoLibrary, contentDescription = null) },
+                                    onClick = { viewModel.setInputMode(InputMode.GALLERY); showModeMenu = false }
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(stringResource(R.string.box_grid_input_mode_text)) },
+                                    leadingIcon = { Icon(Icons.Default.EditNote, contentDescription = null) },
+                                    onClick = { viewModel.setInputMode(InputMode.TEXT); showModeMenu = false }
+                                )
+                            }
+                        }
                         IconButton(onClick = {
                             navController.navigate(Screen.Search.createRoute(
                                 scopeType = ScopeType.BOX,
@@ -353,6 +418,13 @@ fun BoxGridScreen(
             dismissButton = { TextButton(onClick = { showDeleteBatchConfirm = false }) { Text(stringResource(R.string.btn_cancel)) } }
         )
     }
+}
+
+@Composable
+private fun inputModeIconAndLabel(mode: InputMode): Pair<ImageVector, String> = when (mode) {
+    InputMode.CAMERA -> Icons.Default.CameraAlt to stringResource(R.string.box_grid_input_mode_camera)
+    InputMode.GALLERY -> Icons.Default.PhotoLibrary to stringResource(R.string.box_grid_input_mode_gallery)
+    InputMode.TEXT -> Icons.Default.EditNote to stringResource(R.string.box_grid_input_mode_text)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
