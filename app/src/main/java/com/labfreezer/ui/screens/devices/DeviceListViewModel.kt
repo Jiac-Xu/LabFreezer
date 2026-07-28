@@ -196,29 +196,16 @@ class DeviceListViewModel @Inject constructor(
     }
 
     fun createBox(name: String, rows: Int, cols: Int, note: String?) {
+        // 在设备列表页创建的盒子始终为独立盒子（不依赖父设备）
         viewModelScope.launch {
-            val devices = repository.getAll()
-            if (devices.isNotEmpty()) {
-                // 有设备时，取第一个设备创建盒子（自动填充 hidden layer）
-                treeTransformer.createBoxWithHiddenFill(
-                    name = name,
-                    rows = rows,
-                    cols = cols,
-                    note = note,
-                    parentDeviceId = devices.first().id,
-                    parentLayerId = null
-                )
-            } else {
-                // 无设备时，创建独立盒子（自动填充 hidden device + hidden layer）
-                treeTransformer.createBoxWithHiddenFill(
-                    name = name,
-                    rows = rows,
-                    cols = cols,
-                    note = note,
-                    parentDeviceId = null,
-                    parentLayerId = null
-                )
-            }
+            treeTransformer.createBoxWithHiddenFill(
+                name = name,
+                rows = rows,
+                cols = cols,
+                note = note,
+                parentDeviceId = null,
+                parentLayerId = null
+            )
             refreshStandaloneBoxes()
         }
     }
