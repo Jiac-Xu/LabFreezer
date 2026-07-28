@@ -20,7 +20,6 @@
     <string name="label_note_optional">備註（可選）</string>
     <string name="fallback_unnamed">未命名</string>
     <string name="fallback_unknown">未知</string>
-    <string name="tab_boxes">盒子</string>
 
     <!-- ========== Bottom Bar Edit ========== -->
     <string name="bottom_bar_edit_title">底欄編輯</string>

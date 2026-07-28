@@ -26,7 +26,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -99,15 +98,12 @@ fun DeviceListScreen(
     val showAddDialog by viewModel.showAddDialog.collectAsStateWithLifecycle()
     val editingDevice by viewModel.editingDevice.collectAsStateWithLifecycle()
     val deletingDevice by viewModel.deletingDevice.collectAsStateWithLifecycle()
-    val directBoxes by viewModel.directBoxes.collectAsStateWithLifecycle()
-    val allDevices by viewModel.allDevices.collectAsStateWithLifecycle()
     var showDeleteBatchConfirm by remember { mutableStateOf(false) }
     var expandedTypes by remember { mutableStateOf<Set<String>>(emptySet()) }
     var speedDialExpanded by remember { mutableStateOf(false) }
     var showCreateBoxDialog by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val boxGroupLabel = context.getString(R.string.tab_boxes)
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -177,7 +173,7 @@ fun DeviceListScreen(
                 SpeedDialFAB(
                     expanded = speedDialExpanded,
                     onToggle = { speedDialExpanded = !speedDialExpanded },
-                    onCreateBox = { viewModel.showAddDialog(); speedDialExpanded = false },
+                    onCreateBox = { showCreateBoxDialog = true; speedDialExpanded = false },
                     onCreateSecond = { viewModel.showAddDialog() },
                     showSecondButton = true,
                     secondButtonLabel = stringResource(R.string.device_list_add_device),
@@ -270,28 +266,7 @@ fun DeviceListScreen(
                             }
                         }
                     }
-                    // 直接挂载的盒子（通过 hidden layer）→ 归入"盒子"组
-                    if (directBoxes.isNotEmpty()) {
-                        item(key = "header_boxes") {
-                            DeviceGroupHeader(
-                                typeName = boxGroupLabel,
-                                isExpanded = boxGroupLabel in expandedTypes,
-                                onToggle = {
-                                    expandedTypes = if (boxGroupLabel in expandedTypes) expandedTypes - boxGroupLabel else expandedTypes + boxGroupLabel
-                                }
-                            )
-                        }
-                        if (boxGroupLabel in expandedTypes) {
-                            items(directBoxes.sortedBy { it.box.name }, key = { "box_${it.box.id}" }) { item ->
-                                DirectBoxCard(
-                                    box = item,
-                                    onClick = { navController.navigate(Screen.BoxGrid.createRoute(item.box.id)) }
-                                )
-                            }
-                        }
-                    }
                 } else {
-                    // 按名称排序：设备在前，盒子在后
                     items(devices.sortedBy { it.name }, key = { "dev_${it.id}" }) { device ->
                         val isSelected = device.id in selectedIds
                         DeviceCard(
@@ -307,14 +282,6 @@ fun DeviceListScreen(
                             onDelete = { viewModel.showDeleteConfirm(device) }
                         )
                     }
-                    if (directBoxes.isNotEmpty()) {
-                        items(directBoxes.sortedBy { it.box.name }, key = { "box_${it.box.id}" }) { item ->
-                            DirectBoxCard(
-                                box = item,
-                                onClick = { navController.navigate(Screen.BoxGrid.createRoute(item.box.id)) }
-                            )
-                        }
-                    }
                 }
             }
         }
@@ -325,7 +292,6 @@ fun DeviceListScreen(
     }
     if (showCreateBoxDialog) {
         BoxDialog(
-            availableDevices = allDevices,
             onDismiss = { showCreateBoxDialog = false },
             onConfirm = { name, _, rows, cols, note ->
                 showCreateBoxDialog = false
@@ -533,29 +499,6 @@ private fun DeviceGroupHeader(
                 tint = MaterialTheme.colorScheme.outline,
                 modifier = Modifier.size(20.dp)
             )
-        }
-    }
-}
-
-@Composable
-private fun DirectBoxCard(
-    box: DirectBoxWithDevice,
-    onClick: () -> Unit
-) {
-    Card(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick),
-        shape = RoundedCornerShape(12.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-    ) {
-        Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
-            Spacer(Modifier.width(12.dp))
-            Column(modifier = Modifier.weight(1f)) {
-                Text(box.box.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(box.deviceName, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis)
-            }
-            Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
         }
     }
 }

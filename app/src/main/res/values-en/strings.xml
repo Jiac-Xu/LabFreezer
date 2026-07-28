@@ -20,7 +20,6 @@
     <string name="label_note_optional">Note (optional)</string>
     <string name="fallback_unnamed">Unnamed</string>
     <string name="fallback_unknown">Unknown</string>
-    <string name="tab_boxes">Boxes</string>
 
     <!-- ========== Bottom Bar Edit ========== -->
     <string name="bottom_bar_edit_title">Bottom Bar Edit</string>

@@ -3,13 +3,12 @@ package com.labfreezer.ui.screens.devices
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labfreezer.data.db.entity.DeviceTypeEntity
-import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.repository.DeviceTypeRepository
 import com.labfreezer.data.repository.RecentlyViewedRepository
-import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
+import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.TreeTransformer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -20,18 +19,11 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
-data class DirectBoxWithDevice(
-    val box: StorageBoxEntity,
-    val deviceName: String
-)
-
 @HiltViewModel
 class DeviceListViewModel @Inject constructor(
     private val repository: StorageDeviceRepository,
     private val deviceTypeRepository: DeviceTypeRepository,
     private val recentBoxRepo: RecentlyViewedRepository,
-    private val boxRepository: StorageBoxRepository,
-    private val layerRepository: StorageLayerRepository,
     private val treeTransformer: TreeTransformer
 ) : ViewModel() {
 
@@ -108,12 +100,6 @@ class DeviceListViewModel @Inject constructor(
     private val _showDeleteConfirm = MutableStateFlow(false)
     val showDeleteConfirm: StateFlow<Boolean> = _showDeleteConfirm
 
-    private val _directBoxes = MutableStateFlow<List<DirectBoxWithDevice>>(emptyList())
-    val directBoxes: StateFlow<List<DirectBoxWithDevice>> = _directBoxes
-
-    private val _allDevices = MutableStateFlow<List<StorageDeviceEntity>>(emptyList())
-    val allDevices: StateFlow<List<StorageDeviceEntity>> = _allDevices
-
     init {
         viewModelScope.launch {
             if (deviceTypeRepository.getAll().isEmpty()) {
@@ -122,22 +108,6 @@ class DeviceListViewModel @Inject constructor(
                     deviceTypeRepository.insert(DeviceTypeEntity(name = name, sortOrder = i))
                 }
             }
-            refreshDirectBoxes()
-        }
-    }
-
-    fun refreshDirectBoxes() {
-        viewModelScope.launch {
-            val devs = repository.getAll()
-            _allDevices.value = devs
-            val result = mutableListOf<DirectBoxWithDevice>()
-            for (device in devs) {
-                val boxes = boxRepository.getBoxesByDeviceDirect(device.id)
-                for (box in boxes) {
-                    result.add(DirectBoxWithDevice(box = box, deviceName = device.name))
-                }
-            }
-            _directBoxes.value = result
         }
     }
 
@@ -188,7 +158,6 @@ class DeviceListViewModel @Inject constructor(
         viewModelScope.launch {
             repository.insert(StorageDeviceEntity(name = name, type = type, note = note))
             _showAddDialog.value = false
-            refreshDirectBoxes()
         }
     }
 
@@ -204,23 +173,24 @@ class DeviceListViewModel @Inject constructor(
         viewModelScope.launch {
             repository.delete(device)
             _deletingDevice.value = null
-            refreshDirectBoxes()
         }
     }
 
     fun createBox(name: String, rows: Int, cols: Int, note: String?) {
         viewModelScope.launch {
-            val devs = repository.getAll()
-            if (devs.isNotEmpty()) {
+            val devices = repository.getAll()
+            if (devices.isNotEmpty()) {
+                // 有设备时，取第一个设备创建盒子（自动填充 hidden layer）
                 treeTransformer.createBoxWithHiddenFill(
                     name = name,
                     rows = rows,
                     cols = cols,
                     note = note,
-                    parentDeviceId = devs.first().id,
+                    parentDeviceId = devices.first().id,
                     parentLayerId = null
                 )
             } else {
+                // 无设备时，创建独立盒子（自动填充 hidden device + hidden layer）
                 treeTransformer.createBoxWithHiddenFill(
                     name = name,
                     rows = rows,
@@ -230,7 +200,6 @@ class DeviceListViewModel @Inject constructor(
                     parentLayerId = null
                 )
             }
-            refreshDirectBoxes()
         }
     }
 }
