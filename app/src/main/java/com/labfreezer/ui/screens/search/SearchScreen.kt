@@ -79,6 +79,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.labfreezer.data.db.HIDDEN_MARKER
+import com.labfreezer.data.db.isHiddenMarker
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
@@ -544,10 +546,31 @@ private fun SearchBoxItem(entity: StorageBoxEntity, deviceName: String, layerNam
             Spacer(Modifier.width(12.dp))
             Column {
                 Text(entity.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text("$deviceName > $layerName", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
+                Text(buildBoxPath(deviceName, layerName), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
             }
         }
     }
+}
+
+/**
+ * 构建显示路径，跳过 __hidden__ 标记的名称段。
+ */
+private fun buildSamplePath(deviceName: String, layerName: String, boxName: String, position: String): String {
+    val segments = listOfNotNull(
+        deviceName.takeIf { !it.isHiddenMarker() },
+        layerName.takeIf { !it.isHiddenMarker() },
+        boxName,
+        position
+    )
+    return segments.joinToString(" > ")
+}
+
+private fun buildBoxPath(deviceName: String, layerName: String): String {
+    val segments = listOfNotNull(
+        deviceName.takeIf { !it.isHiddenMarker() },
+        layerName.takeIf { !it.isHiddenMarker() }
+    )
+    return segments.joinToString(" > ")
 }
 
 @Composable
@@ -561,7 +584,8 @@ private fun SearchSampleItem(result: SampleWithPath, onClick: () -> Unit) {
         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
             Text(result.name ?: stringResource(R.string.fallback_unnamed), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(4.dp))
-            Text("${result.deviceName} > ${result.layerName} > ${result.boxName} > ${'A' + result.row}${result.col + 1}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            val displayPath = buildSamplePath(result.deviceName, result.layerName, result.boxName, "${'A' + result.row}${result.col + 1}")
+            Text(displayPath, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis)
             result.note?.let { note -> if (note.isNotBlank()) { Spacer(Modifier.height(2.dp)); Text(stringResource(R.string.search_note, note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis) } }
             result.date?.let { date -> Spacer(Modifier.height(2.dp)); Text(date, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline) }
         }

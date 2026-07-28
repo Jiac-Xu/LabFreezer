@@ -11,6 +11,7 @@ import com.labfreezer.data.db.entity.SamplePositionEntity
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
+import com.labfreezer.data.db.isHiddenMarker
 import com.labfreezer.data.file.PhotoManager
 import com.labfreezer.data.ocr.OcrEngine
 import com.labfreezer.data.ocr.OcrPreferences
@@ -123,7 +124,11 @@ class BoxGridViewModel @Inject constructor(
                 withContext(Dispatchers.IO) {
                     val layer = layerRepository.getById(b.layerId)
                     val device = if (layer != null) deviceRepository.getById(layer.deviceId) else null
-                    recentBoxRepo.addBox(b.id, b.name, device?.name, layer?.name)
+                    recentBoxRepo.addBox(
+                        b.id, b.name,
+                        device?.name?.takeIf { !it.isHiddenMarker() },
+                        layer?.name?.takeIf { !it.isHiddenMarker() }
+                    )
                 }
                 refreshGrid(b)
 

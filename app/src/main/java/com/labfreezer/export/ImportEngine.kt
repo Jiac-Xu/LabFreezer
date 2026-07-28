@@ -2,6 +2,7 @@ package com.labfreezer.export
 
 import android.content.Context
 import android.net.Uri
+import com.labfreezer.data.db.HIDDEN_MARKER
 import com.labfreezer.data.db.entity.SamplePositionEntity
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
@@ -134,15 +135,19 @@ class ImportEngine @Inject constructor(
                 for (r in rows) {
                     val pos = parsePosition(r.posLabel) ?: continue
                     val allDevices = deviceRepository.getAll()
-                    var device = allDevices.find { it.name == r.deviceName }
+                    // 如果设备名为空，使用 __hidden__ 标记
+                    val deviceName = r.deviceName.ifBlank { HIDDEN_MARKER }
+                    var device = allDevices.find { it.name == deviceName }
                     if (device == null) {
-                        val newId = deviceRepository.insert(StorageDeviceEntity(name = r.deviceName))
+                        val newId = deviceRepository.insert(StorageDeviceEntity(name = deviceName))
                         device = deviceRepository.getById(newId) ?: continue
                     }
                     val allLayers = layerRepository.getByDeviceId(device.id)
-                    var layer = allLayers.find { it.name == r.layerName }
+                    // 如果层名为空，使用 __hidden__ 标记
+                    val layerName = r.layerName.ifBlank { HIDDEN_MARKER }
+                    var layer = allLayers.find { it.name == layerName }
                     if (layer == null) {
-                        val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = r.layerName))
+                        val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = layerName))
                         layer = layerRepository.getById(newId) ?: continue
                     }
                     val allBoxes = boxRepository.getByLayerId(layer.id)

@@ -3,6 +3,7 @@ package com.labfreezer.export
 import android.content.Context
 import android.net.Uri
 import com.labfreezer.data.db.dao.SampleWithPath
+import com.labfreezer.data.db.isHiddenMarker
 import com.labfreezer.data.repository.SamplePositionRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONObject
@@ -66,10 +67,12 @@ class ExportEngine @Inject constructor(
 
             samples.forEach { s ->
                 val tags = tagsMap[s.sampleId] ?: ""
+                val deviceLabel = s.deviceName.takeIf { !it.isHiddenMarker() } ?: ""
+                val layerLabel = s.layerName.takeIf { !it.isHiddenMarker() } ?: ""
                 val row = listOf(
                     s.name ?: "",
-                    s.deviceName,
-                    s.layerName,
+                    deviceLabel,
+                    layerLabel,
                     s.boxName,
                     "${'A' + s.row}${s.col + 1}",
                     s.date ?: "",
@@ -130,7 +133,9 @@ class ExportEngine @Inject constructor(
             }
             val note = (s.note ?: "").replace("\n", " <br> ")
             val tags = tagsMap[s.sampleId] ?: ""
-            sb.appendLine("| ${s.name ?: ""} | ${s.deviceName} | ${s.layerName} | ${s.boxName} | ${'A' + s.row}${s.col + 1} | ${s.date ?: ""} | $note | $tags | $imageRef |")
+            val mdDevice = s.deviceName.takeIf { !it.isHiddenMarker() } ?: ""
+            val mdLayer = s.layerName.takeIf { !it.isHiddenMarker() } ?: ""
+            sb.appendLine("| ${s.name ?: ""} | $mdDevice | $mdLayer | ${s.boxName} | ${'A' + s.row}${s.col + 1} | ${s.date ?: ""} | $note | $tags | $imageRef |")
         }
 
         mdFile.writeText(sb.toString())
