@@ -3,12 +3,13 @@ package com.labfreezer.ui.screens.devices
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labfreezer.data.db.entity.DeviceTypeEntity
+import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
+import com.labfreezer.data.db.isHidden
 import com.labfreezer.data.repository.DeviceTypeRepository
 import com.labfreezer.data.repository.RecentlyViewedRepository
-import com.labfreezer.data.repository.StorageDeviceRepository
-import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.StorageBoxRepository
+import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.TreeTransformer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,6 +25,7 @@ class DeviceListViewModel @Inject constructor(
     private val repository: StorageDeviceRepository,
     private val deviceTypeRepository: DeviceTypeRepository,
     private val recentBoxRepo: RecentlyViewedRepository,
+    private val boxRepository: StorageBoxRepository,
     private val treeTransformer: TreeTransformer
 ) : ViewModel() {
 
@@ -100,6 +102,10 @@ class DeviceListViewModel @Inject constructor(
     private val _showDeleteConfirm = MutableStateFlow(false)
     val showDeleteConfirm: StateFlow<Boolean> = _showDeleteConfirm
 
+    /** 挂在 hidden device 下的独立盒子 */
+    private val _standaloneBoxes = MutableStateFlow<List<StorageBoxEntity>>(emptyList())
+    val standaloneBoxes: StateFlow<List<StorageBoxEntity>> = _standaloneBoxes
+
     init {
         viewModelScope.launch {
             if (deviceTypeRepository.getAll().isEmpty()) {
@@ -108,6 +114,19 @@ class DeviceListViewModel @Inject constructor(
                     deviceTypeRepository.insert(DeviceTypeEntity(name = name, sortOrder = i))
                 }
             }
+            refreshStandaloneBoxes()
+        }
+    }
+
+    fun refreshStandaloneBoxes() {
+        viewModelScope.launch {
+            val hiddenDevices = repository.getAll().filter { it.isHidden() }
+            val result = mutableListOf<StorageBoxEntity>()
+            for (device in hiddenDevices) {
+                val boxes = boxRepository.getBoxesByDeviceDirect(device.id)
+                result.addAll(boxes)
+            }
+            _standaloneBoxes.value = result
         }
     }
 
@@ -200,6 +219,7 @@ class DeviceListViewModel @Inject constructor(
                     parentLayerId = null
                 )
             }
+            refreshStandaloneBoxes()
         }
     }
 }

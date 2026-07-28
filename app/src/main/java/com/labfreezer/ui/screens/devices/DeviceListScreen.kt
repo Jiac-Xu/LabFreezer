@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -102,6 +103,7 @@ fun DeviceListScreen(
     var expandedTypes by remember { mutableStateOf<Set<String>>(emptySet()) }
     var speedDialExpanded by remember { mutableStateOf(false) }
     var showCreateBoxDialog by remember { mutableStateOf(false) }
+    val standaloneBoxes by viewModel.standaloneBoxes.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -281,6 +283,29 @@ fun DeviceListScreen(
                             onEdit = { viewModel.showEditDialog(device) },
                             onDelete = { viewModel.showDeleteConfirm(device) }
                         )
+                    }
+                }
+                // 独立盒子区块（挂在 hidden device 下的盒子）
+                if (standaloneBoxes.isNotEmpty()) {
+                    item {
+                        Spacer(Modifier.height(4.dp))
+                        Text(stringResource(R.string.tab_boxes), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.primary)
+                        Spacer(Modifier.height(12.dp))
+                    }
+                    items(standaloneBoxes.sortedBy { it.name }, key = { "standalone_box_${it.id}" }) { box ->
+                        Card(
+                            modifier = Modifier.fillMaxWidth().clickable { navController.navigate(Screen.BoxGrid.createRoute(box.id)) },
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                        ) {
+                            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
+                                Spacer(Modifier.width(12.dp))
+                                Text(box.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
+                            }
+                        }
                     }
                 }
             }
