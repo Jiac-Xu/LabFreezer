@@ -235,6 +235,7 @@
     <string name="move_confirm_target">Select This Target</string>
     <string name="move_confirm_move">Confirm Move</string>
     <string name="move_confirm_move_count">Confirm Move (%1$d samples)</string>
+    <string name="move_confirm_to_device">Move to This Device</string>
     <string name="move_filter_all">All Devices</string>
     <string name="move_search_placeholder">Search freezer / layer / box...</string>
     <string name="move_instruction">Tap an empty slot to select target. Selected: %1$d/%2$d</string>
