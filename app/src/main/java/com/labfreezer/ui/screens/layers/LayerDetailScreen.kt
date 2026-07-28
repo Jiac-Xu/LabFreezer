@@ -145,7 +145,7 @@ fun LayerDetailScreen(navController: NavController, layerId: Long, viewModel: La
                     expanded = speedDialExpanded,
                     onToggle = { speedDialExpanded = !speedDialExpanded },
                     onCreateBox = { viewModel.showAddDialog() },
-                    onCreateSecond = { /* 层级下不能创建子层级 */ },
+                    onCreateSecond = { },
                     showSecondButton = false
                 )
             }

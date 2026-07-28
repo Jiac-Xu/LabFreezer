@@ -178,16 +178,28 @@ class DeviceListViewModel @Inject constructor(
 
     fun createBox(name: String, rows: Int, cols: Int, note: String?) {
         viewModelScope.launch {
-            // 依次遍历所有设备，取第一个非 hidden 设备作为父设备
-            val device = repository.getAll().firstOrNull() ?: return@launch
-            treeTransformer.createBoxWithHiddenFill(
-                name = name,
-                rows = rows,
-                cols = cols,
-                note = note,
-                parentDeviceId = device.id,
-                parentLayerId = null
-            )
+            val devices = repository.getAll()
+            if (devices.isNotEmpty()) {
+                // 有设备时，取第一个设备创建盒子（自动填充 hidden layer）
+                treeTransformer.createBoxWithHiddenFill(
+                    name = name,
+                    rows = rows,
+                    cols = cols,
+                    note = note,
+                    parentDeviceId = devices.first().id,
+                    parentLayerId = null
+                )
+            } else {
+                // 无设备时，创建独立盒子（自动填充 hidden device + hidden layer）
+                treeTransformer.createBoxWithHiddenFill(
+                    name = name,
+                    rows = rows,
+                    cols = cols,
+                    note = note,
+                    parentDeviceId = null,
+                    parentLayerId = null
+                )
+            }
         }
     }
 }

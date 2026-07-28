@@ -64,6 +64,23 @@ fun SpeedDialFAB(
     secondButtonIcon: ImageVector = Icons.Default.Layers,
     modifier: Modifier = Modifier
 ) {
+    // 只有一个操作时，降级为普通 FAB
+    if (!showSecondButton) {
+        FloatingActionButton(
+            onClick = onCreateBox,
+            modifier = modifier,
+            shape = CircleShape,
+            containerColor = MaterialTheme.colorScheme.primary,
+            contentColor = MaterialTheme.colorScheme.onPrimary
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = stringResource(R.string.btn_add)
+            )
+        }
+        return
+    }
+
     val rotation = animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
         label = "fab_rotation"

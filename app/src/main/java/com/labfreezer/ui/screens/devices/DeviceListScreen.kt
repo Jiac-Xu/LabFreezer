@@ -513,8 +513,6 @@ private fun CreateBoxDialog(
     var rows by remember { mutableStateOf("9") }
     var cols by remember { mutableStateOf("9") }
     var note by remember { mutableStateOf("") }
-    var selectedDeviceId by remember { mutableStateOf(devices.firstOrNull()?.id ?: 0L) }
-    var showDevicePicker by remember { mutableStateOf(false) }
 
     val fieldShape = RoundedCornerShape(12.dp)
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -522,95 +520,48 @@ private fun CreateBoxDialog(
         unfocusedBorderColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
     )
 
-    if (showDevicePicker) {
-        AlertDialog(
-            onDismissRequest = { showDevicePicker = false },
-            title = { Text(stringResource(R.string.move_title_select_device), fontWeight = FontWeight.SemiBold) },
-            text = {
-                LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp), contentPadding = PaddingValues(vertical = 8.dp)) {
-                    items(devices, key = { it.id }) { device ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth().clickable { selectedDeviceId = device.id; showDevicePicker = false },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = if (device.id == selectedDeviceId) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                        ) {
-                            Row(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 14.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.DeviceHub, contentDescription = null, modifier = Modifier.size(22.dp), tint = if (device.id == selectedDeviceId) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline)
-                                Spacer(Modifier.width(12.dp))
-                                Text(device.name, fontWeight = FontWeight.Medium)
-                            }
-                        }
-                    }
-                }
-            },
-            confirmButton = { TextButton(onClick = { showDevicePicker = false }) { Text(stringResource(R.string.btn_cancel)) } }
-        )
-    } else {
-        AlertDialog(
-            onDismissRequest = onDismiss,
-            title = { Text(stringResource(R.string.box_dialog_title_add), fontWeight = FontWeight.SemiBold) },
-            text = {
-                Column {
-                    // 设备选择器
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth().clickable { showDevicePicker = true }.padding(horizontal = 16.dp, vertical = 14.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(Icons.Default.DeviceHub, contentDescription = null, modifier = Modifier.size(22.dp), tint = MaterialTheme.colorScheme.primary)
-                            Spacer(Modifier.width(12.dp))
-                            Column(modifier = Modifier.weight(1f)) {
-                                Text(stringResource(R.string.device_dialog_label_parent_device), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
-                                Text(devices.find { it.id == selectedDeviceId }?.name ?: "", fontWeight = FontWeight.Medium)
-                            }
-                            Icon(Icons.Default.OpenWith, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
-                        }
-                    }
-                    Spacer(Modifier.height(16.dp))
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.box_dialog_title_add), fontWeight = FontWeight.SemiBold) },
+        text = {
+            Column {
+                OutlinedTextField(
+                    value = name, onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.box_dialog_label_name)) },
+                    singleLine = true, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors
+                )
+                Spacer(Modifier.height(12.dp))
+                Row(modifier = Modifier.fillMaxWidth()) {
                     OutlinedTextField(
-                        value = name, onValueChange = { name = it },
-                        label = { Text(stringResource(R.string.box_dialog_label_name)) },
-                        singleLine = true, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors
+                        value = rows, onValueChange = { rows = it.filter { c -> c.isDigit() } },
+                        label = { Text(stringResource(R.string.box_dialog_label_rows)) },
+                        singleLine = true, modifier = Modifier.weight(1f), shape = fieldShape, colors = fieldColors
                     )
-                    Spacer(Modifier.height(12.dp))
-                    Row(modifier = Modifier.fillMaxWidth()) {
-                        OutlinedTextField(
-                            value = rows, onValueChange = { rows = it.filter { c -> c.isDigit() } },
-                            label = { Text(stringResource(R.string.box_dialog_label_rows)) },
-                            singleLine = true, modifier = Modifier.weight(1f), shape = fieldShape, colors = fieldColors
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        OutlinedTextField(
-                            value = cols, onValueChange = { cols = it.filter { c -> c.isDigit() } },
-                            label = { Text(stringResource(R.string.box_dialog_label_cols)) },
-                            singleLine = true, modifier = Modifier.weight(1f), shape = fieldShape, colors = fieldColors
-                        )
-                    }
-                    Spacer(Modifier.height(12.dp))
+                    Spacer(Modifier.width(12.dp))
                     OutlinedTextField(
-                        value = note, onValueChange = { note = it },
-                        label = { Text(stringResource(R.string.label_note_optional)) },
-                        maxLines = 3, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors
+                        value = cols, onValueChange = { cols = it.filter { c -> c.isDigit() } },
+                        label = { Text(stringResource(R.string.box_dialog_label_cols)) },
+                        singleLine = true, modifier = Modifier.weight(1f), shape = fieldShape, colors = fieldColors
                     )
                 }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        val r = rows.toIntOrNull() ?: return@TextButton
-                        val c = cols.toIntOrNull() ?: return@TextButton
-                        onConfirm(name.trim(), selectedDeviceId, r, c, note.trim().ifEmpty { null })
-                    },
-                    enabled = name.isNotBlank() && rows.toIntOrNull() != null && cols.toIntOrNull() != null
-                ) { Text(stringResource(R.string.btn_add), fontWeight = FontWeight.SemiBold) }
-            },
-            dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) } }
-        )
-    }
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = note, onValueChange = { note = it },
+                    label = { Text(stringResource(R.string.label_note_optional)) },
+                    maxLines = 3, modifier = Modifier.fillMaxWidth(), shape = fieldShape, colors = fieldColors
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = {
+                    val r = rows.toIntOrNull() ?: return@TextButton
+                    val c = cols.toIntOrNull() ?: return@TextButton
+                    onConfirm(name.trim(), 0L, r, c, note.trim().ifEmpty { null })
+                },
+                enabled = name.isNotBlank() && rows.toIntOrNull() != null && cols.toIntOrNull() != null
+            ) { Text(stringResource(R.string.btn_add), fontWeight = FontWeight.SemiBold) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.btn_cancel)) } }
+    )
 }
