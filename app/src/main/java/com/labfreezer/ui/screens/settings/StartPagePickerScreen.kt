@@ -112,6 +112,7 @@ fun StartPagePickerScreen(
     var devices by remember { mutableStateOf<List<StorageDeviceEntity>>(emptyList()) }
     var layers by remember { mutableStateOf<Map<Long, List<StorageLayerEntity>>>(emptyMap()) }
     var boxes by remember { mutableStateOf<Map<Long, List<StorageBoxEntity>>>(emptyMap()) }
+    var directBoxes by remember { mutableStateOf<Map<Long, List<StorageBoxEntity>>>(emptyMap()) }
     var deviceCounts by remember { mutableStateOf<Map<Long, DeviceCounts>>(emptyMap()) }
     var layerCounts by remember { mutableStateOf<Map<Long, LayerCounts>>(emptyMap()) }
     var boxSampleCounts by remember { mutableStateOf<Map<Long, Int>>(emptyMap()) }
@@ -226,6 +227,13 @@ fun StartPagePickerScreen(
             } else {
                 val result = withContext(Dispatchers.IO) { layerRepo.getByDeviceId(deviceId) }
                 layers = layers + (deviceId to result)
+                // 加载直接挂载在设备下的盒子（通过 hidden layer）
+                val direct = withContext(Dispatchers.IO) { boxRepo.getBoxesByDeviceDirect(deviceId) }
+                directBoxes = directBoxes + (deviceId to direct)
+                // 加载直接盒子的样本计数
+                boxSampleCounts = boxSampleCounts + direct.associate { box ->
+                    box.id to withContext(Dispatchers.IO) { sampleRepo.countByBoxId(box.id) }
+                }
                 layerCounts = layerCounts + result.associate { layer ->
                     val bc = boxRepo.countByLayerId(layer.id)
                     val sc = sampleRepo.countByLayerId(layer.id)
@@ -349,6 +357,8 @@ fun StartPagePickerScreen(
 
                 var totalChildItems = 0
                 if (isDeviceExpanded) {
+                    val deviceDirectBoxes = directBoxes[device.id] ?: emptyList()
+                    totalChildItems += deviceDirectBoxes.size
                     deviceLayers.forEach { layer ->
                         totalChildItems++
                         val layerBoxes = boxes[layer.id] ?: emptyList()
@@ -379,6 +389,28 @@ fun StartPagePickerScreen(
 
                 if (isDeviceExpanded) {
                     var childIndex = 0
+                    // 直接挂载在设备下的盒子（通过 hidden layer）
+                    val deviceDirectBoxes = directBoxes[device.id] ?: emptyList()
+                    val filteredDirectBoxes = if (searchQuery.isBlank()) deviceDirectBoxes
+                        else deviceDirectBoxes.filter { it.name.contains(searchQuery, ignoreCase = true) }
+                    filteredDirectBoxes.forEach { box ->
+                        childIndex++
+                        val isLastChild = childIndex == totalChildItems
+                        val sc = boxSampleCounts[box.id] ?: 0
+                        val boxShape = cornerStyleToShape(
+                            if (isLastChild) CornerStyle.BOTTOM else CornerStyle.NONE
+                        )
+                        PickerItem(
+                            icon = Icons.Default.Inventory2,
+                            label = box.name,
+                            subtitle = stringResource(R.string.start_page_picker_format_grid_sample, box.rows, box.cols, sc),
+                            selected = isSelected(StartPageSetting("${device.name} > ${box.name}", Screen.BoxGrid.route, box.id)),
+                            onClick = { select(StartPageSetting("${device.name} > ${box.name}", Screen.BoxGrid.route, box.id)) },
+                            indent = 1,
+                            shape = boxShape
+                        )
+                    }
+                    // 层级
                     deviceLayers.forEach { layer ->
                         childIndex++
                         val isLastLayer = childIndex == totalChildItems

@@ -9,6 +9,7 @@ import com.labfreezer.data.repository.SamplePositionRepository
 import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.StorageLayerRepository
+import com.labfreezer.data.repository.TreeTransformer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -22,7 +23,8 @@ class MoveBrowserViewModel @Inject constructor(
     private val deviceRepository: StorageDeviceRepository,
     private val layerRepository: StorageLayerRepository,
     private val boxRepository: StorageBoxRepository,
-    private val sampleRepository: SamplePositionRepository
+    private val sampleRepository: SamplePositionRepository,
+    private val treeTransformer: TreeTransformer
 ) : ViewModel() {
 
     private val _breadcrumb = MutableStateFlow<List<BreadcrumbItem>>(emptyList())
@@ -281,6 +283,9 @@ class MoveBrowserViewModel @Inject constructor(
                             MoveState.resultGridCol = c
                         }
                     }
+                    MoveTarget.CONTAINER -> {
+                        // CONTAINER 模式在 selectMode 下不应触发
+                    }
                 }
                 MoveState.selectMode = false
                 onCompleted()
@@ -296,10 +301,34 @@ class MoveBrowserViewModel @Inject constructor(
                     }
                 }
                 MoveTarget.LAYER -> {
-                    val targetLayerId = _selectedLayerId.value ?: return@launch
+                    if (_selectedLayerId.value != null) {
+                        // 移动到指定层级
+                        val targetLayerId = _selectedLayerId.value ?: return@launch
+                        for (id in MoveState.selectedItemIds) {
+                            val box = boxRepository.getById(id) ?: continue
+                            boxRepository.update(box.copy(layerId = targetLayerId))
+                        }
+                    } else if (_selectedDeviceId.value != null) {
+                        // 移动到设备：自动创建 hidden layer（CONTAINER 模式）
+                        val targetDeviceId = _selectedDeviceId.value ?: return@launch
+                        for (id in MoveState.selectedItemIds) {
+                            treeTransformer.moveBoxToContainer(
+                                boxId = id,
+                                targetDeviceId = targetDeviceId,
+                                targetLayerId = null
+                            )
+                        }
+                    }
+                }
+                MoveTarget.CONTAINER -> {
+                    // 移动盒子到设备：自动创建 hidden layer
+                    val targetDeviceId = _selectedDeviceId.value ?: return@launch
                     for (id in MoveState.selectedItemIds) {
-                        val box = boxRepository.getById(id) ?: continue
-                        boxRepository.update(box.copy(layerId = targetLayerId))
+                        treeTransformer.moveBoxToContainer(
+                            boxId = id,
+                            targetDeviceId = targetDeviceId,
+                            targetLayerId = null
+                        )
                     }
                 }
                 MoveTarget.BOX -> {
@@ -325,7 +354,8 @@ class MoveBrowserViewModel @Inject constructor(
     fun canConfirm(): Boolean {
         return when (MoveState.moveTarget) {
             MoveTarget.DEVICE -> _selectedDeviceId.value != null
-            MoveTarget.LAYER -> _selectedLayerId.value != null
+            MoveTarget.LAYER -> _selectedLayerId.value != null || _selectedDeviceId.value != null
+            MoveTarget.CONTAINER -> _selectedDeviceId.value != null
             MoveTarget.BOX -> {
                 if (MoveState.selectMode) _selectedBoxId.value != null
                 else _selectedBoxId.value != null &&

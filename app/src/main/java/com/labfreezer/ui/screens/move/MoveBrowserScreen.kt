@@ -54,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.labfreezer.ui.screens.move.MoveBrowserViewModel.SearchResult
+import com.labfreezer.ui.screens.move.MoveState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -85,11 +86,13 @@ fun MoveBrowserScreen(
                                     MoveTarget.DEVICE -> stringResource(R.string.move_title_select_device)
                                     MoveTarget.LAYER -> stringResource(R.string.move_title_select_layer)
                                     MoveTarget.BOX -> stringResource(R.string.move_title_select_box)
+                                    MoveTarget.CONTAINER -> stringResource(R.string.move_title_select_device)
                                 }
                                 else -> when (MoveState.moveTarget) {
                                     MoveTarget.DEVICE -> stringResource(R.string.move_action_layer)
                                     MoveTarget.LAYER -> stringResource(R.string.move_action_box)
                                     MoveTarget.BOX -> stringResource(R.string.move_action_sample)
+                                    MoveTarget.CONTAINER -> stringResource(R.string.move_action_box)
                                 }
                             },
                             fontWeight = FontWeight.SemiBold
@@ -169,6 +172,8 @@ fun MoveBrowserScreen(
                     MoveState.selectMode -> stringResource(R.string.move_confirm_target)
                     MoveState.moveTarget == MoveTarget.BOX && currentLevel == MoveLevel.GRID ->
                         stringResource(R.string.move_confirm_move_count, selectedCount)
+                    MoveState.moveTarget == MoveTarget.LAYER && currentLevel == MoveLevel.DEVICE ->
+                        stringResource(R.string.move_confirm_to_device)
                     else -> stringResource(R.string.move_confirm_move)
                 },
                 onClick = { viewModel.confirmMove(onBack) }

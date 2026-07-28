@@ -1,7 +1,7 @@
 package com.labfreezer.ui.screens.move
 
 enum class MoveTarget {
-    DEVICE, LAYER, BOX
+    DEVICE, LAYER, BOX, CONTAINER
 }
 
 enum class MoveLevel {

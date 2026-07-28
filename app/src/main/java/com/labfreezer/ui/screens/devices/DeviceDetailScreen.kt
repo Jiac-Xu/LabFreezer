@@ -153,8 +153,8 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
                     expanded = speedDialExpanded,
                     onToggle = { speedDialExpanded = !speedDialExpanded },
                     onCreateBox = { viewModel.showCreateBoxDialog() },
-                    onCreateLevel = { viewModel.showCreateLevelDialog() },
-                    showCreateLevel = canCreateLevel
+                    onCreateSecond = { viewModel.showCreateLevelDialog() },
+                    showSecondButton = canCreateLevel
                 )
             }
         }

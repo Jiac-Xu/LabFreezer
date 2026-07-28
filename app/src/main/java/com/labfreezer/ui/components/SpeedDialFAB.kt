@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.labfreezer.R
 
 /**
@@ -42,21 +43,25 @@ import com.labfreezer.R
  *
  * 展开后提供两个选项：
  * - 创建盒子（始终可用）
- * - 创建层级（仅在当前为 Device 或非 hidden Layer 时可用）
+ * - 自定义操作（如创建层级/创建设备，通过 showSecondButton 控制）
  *
  * @param expanded 是否展开
  * @param onToggle 展开/收起回调
  * @param onCreateBox 创建盒子回调
- * @param onCreateLevel 创建层级回调
- * @param showCreateLevel 是否显示"创建层级"选项
+ * @param onCreateSecond 第二个操作回调
+ * @param showSecondButton 是否显示第二个按钮
+ * @param secondButtonLabel 第二个按钮的文本
+ * @param secondButtonIcon 第二个按钮的图标
  */
 @Composable
 fun SpeedDialFAB(
     expanded: Boolean,
     onToggle: () -> Unit,
     onCreateBox: () -> Unit,
-    onCreateLevel: () -> Unit,
-    showCreateLevel: Boolean
+    onCreateSecond: () -> Unit,
+    showSecondButton: Boolean,
+    secondButtonLabel: String = stringResource(R.string.speed_dial_create_level),
+    secondButtonIcon: ImageVector = Icons.Default.Layers
 ) {
     val rotation = animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
@@ -94,13 +99,13 @@ fun SpeedDialFAB(
                     }
                 )
 
-                // 创建层级（条件显示）
-                if (showCreateLevel) {
+                // 第二个操作（条件显示）
+                if (showSecondButton) {
                     SpeedDialItem(
-                        label = stringResource(R.string.speed_dial_create_level),
+                        label = secondButtonLabel,
                         icon = {
                             Icon(
-                                Icons.Default.Layers,
+                                secondButtonIcon,
                                 contentDescription = null,
                                 modifier = Modifier.size(24.dp),
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
@@ -108,7 +113,7 @@ fun SpeedDialFAB(
                         },
                         onClick = {
                             onToggle()
-                            onCreateLevel()
+                            onCreateSecond()
                         }
                     )
                 }

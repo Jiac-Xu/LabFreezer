@@ -7,6 +7,9 @@ import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.repository.DeviceTypeRepository
 import com.labfreezer.data.repository.RecentlyViewedRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
+import com.labfreezer.data.repository.StorageLayerRepository
+import com.labfreezer.data.repository.StorageBoxRepository
+import com.labfreezer.data.repository.TreeTransformer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -21,6 +24,7 @@ class DeviceListViewModel @Inject constructor(
     private val repository: StorageDeviceRepository,
     private val deviceTypeRepository: DeviceTypeRepository,
     private val recentBoxRepo: RecentlyViewedRepository,
+    private val treeTransformer: TreeTransformer
 ) : ViewModel() {
 
     private val _recentBoxes = MutableStateFlow(recentBoxRepo.getRecentBoxes())
@@ -169,6 +173,21 @@ class DeviceListViewModel @Inject constructor(
         viewModelScope.launch {
             repository.delete(device)
             _deletingDevice.value = null
+        }
+    }
+
+    fun createBox(name: String, rows: Int, cols: Int, note: String?) {
+        viewModelScope.launch {
+            // 依次遍历所有设备，取第一个非 hidden 设备作为父设备
+            val device = repository.getAll().firstOrNull() ?: return@launch
+            treeTransformer.createBoxWithHiddenFill(
+                name = name,
+                rows = rows,
+                cols = cols,
+                note = note,
+                parentDeviceId = device.id,
+                parentLayerId = null
+            )
         }
     }
 }
