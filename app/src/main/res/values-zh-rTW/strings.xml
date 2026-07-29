@@ -20,6 +20,10 @@
     <string name="label_note_optional">備註（可選）</string>
     <string name="fallback_unnamed">未命名</string>
     <string name="fallback_unknown">未知</string>
+
+    <!-- ========== Speed Dial FAB ========== -->
+    <string name="speed_dial_create_box">新增盒子</string>
+    <string name="speed_dial_create_level">新增層級</string>
     <string name="tab_boxes">盒子</string>
 
     <!-- ========== Bottom Bar Edit ========== -->

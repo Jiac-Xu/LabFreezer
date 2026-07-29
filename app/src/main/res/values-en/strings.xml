@@ -20,6 +20,10 @@
     <string name="label_note_optional">Note (optional)</string>
     <string name="fallback_unnamed">Unnamed</string>
     <string name="fallback_unknown">Unknown</string>
+
+    <!-- ========== Speed Dial FAB ========== -->
+    <string name="speed_dial_create_box">Create Box</string>
+    <string name="speed_dial_create_level">Create Layer</string>
     <string name="tab_boxes">Boxes</string>
 
     <!-- ========== Bottom Bar Edit ========== -->
