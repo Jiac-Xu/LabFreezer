@@ -5,6 +5,7 @@ import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.isHidden
+import com.labfreezer.data.db.isHiddenMarker
 import com.labfreezer.data.model.NodeType
 import com.labfreezer.data.model.VisiblePath
 import com.labfreezer.data.model.VisibleTreeNode
@@ -264,4 +265,14 @@ class TreeTransformer @Inject constructor(
         }
         deferreds.map { it.await() }.toMap()
     }
+
+    // ==================== 可见名称过滤（用于 SampleWithPath 字符串字段） ====================
+
+    /** 过滤 hidden 设备名，返回可见名称或空字符串 */
+    fun visibleDeviceName(deviceName: String): String =
+        if (deviceName.isHiddenMarker()) "" else deviceName
+
+    /** 过滤 hidden 层名，返回可见名称或空字符串 */
+    fun visibleLayerName(layerName: String): String =
+        if (layerName.isHiddenMarker()) "" else layerName
 }

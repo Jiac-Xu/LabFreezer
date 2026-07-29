@@ -39,8 +39,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.labfreezer.data.db.dao.SampleWithPath
-import com.labfreezer.data.db.visibleDeviceName
-import com.labfreezer.data.db.visibleLayerName
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.sample.BrowseContextStore
 import com.labfreezer.ui.screens.sample.SampleBrowseContext
@@ -103,12 +101,10 @@ private fun SampleItem(result: SampleWithPath, onClick: () -> Unit) {
             Spacer(Modifier.height(4.dp))
             Text(
                 buildString {
-                    val vDevice = result.visibleDeviceName
-                    val vLayer = result.visibleLayerName
-                    if (vDevice.isNotBlank()) append(vDevice)
-                    if (vLayer.isNotBlank()) {
-                        if (vDevice.isNotBlank()) append(" > ")
-                        append(vLayer)
+                    if (result.deviceName.isNotBlank()) append(result.deviceName)
+                    if (result.layerName.isNotBlank()) {
+                        if (result.deviceName.isNotBlank()) append(" > ")
+                        append(result.layerName)
                     }
                     append(" > ${result.boxName} > ${'A' + result.row}${result.col + 1}")
                 },
