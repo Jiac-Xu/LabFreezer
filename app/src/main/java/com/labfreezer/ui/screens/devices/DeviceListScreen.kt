@@ -473,15 +473,14 @@ private fun RecentBoxCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                if (box.deviceName != null || box.layerName != null) {
-                    Text(
-                        listOfNotNull(box.deviceName, box.layerName).joinToString(" > "),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.outline,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                val subtitle = listOfNotNull(box.deviceName, box.layerName).joinToString(" > ")
+                Text(
+                    subtitle.ifEmpty { stringResource(R.string.fallback_unknown) },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (subtitle.isNotEmpty()) MaterialTheme.colorScheme.outline else Color.Transparent,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }

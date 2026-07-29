@@ -123,7 +123,9 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
                         }
                         IconButton(onClick = {
                             MoveState.selectedItemIds = selectedIds
-                            MoveState.moveTarget = MoveTarget.DEVICE
+                            // 根据选中项类型决定移动目标：只有 Layer 时走 DEVICE，有 Box 时走 LAYER
+                            val hasBox = visibleChildren.any { it.id in selectedIds && it.type == NodeType.BOX }
+                            MoveState.moveTarget = if (hasBox) MoveTarget.LAYER else MoveTarget.DEVICE
                             MoveState.sourceDeviceId = device?.id
                             navController.navigate(Screen.MoveBrowser.route)
                         }) {
