@@ -122,10 +122,11 @@ fun DeviceListScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    val inAnySelection = isSelecting || isSelectingRecent
+    val inAnySelection = isSelecting || isSelectingRecent || isSelectingBoxes
     val selectionLabel = when {
         isSelecting -> stringResource(R.string.device_list_selected_count, selectedIds.size)
         isSelectingRecent -> stringResource(R.string.device_list_selected_count, selectedRecentIds.size)
+        isSelectingBoxes -> stringResource(R.string.device_list_selected_count, selectedBoxIds.size)
         else -> stringResource(R.string.app_name)
     }
 
@@ -138,8 +139,11 @@ fun DeviceListScreen(
                 navigationIcon = {
                     if (inAnySelection) {
                         IconButton(onClick = {
-                            if (isSelectingRecent) viewModel.exitRecentSelecting()
-                            else viewModel.exitSelection()
+                            when {
+                                isSelectingRecent -> viewModel.exitRecentSelecting()
+                                isSelectingBoxes -> viewModel.exitBoxSelection()
+                                else -> viewModel.exitSelection()
+                            }
                         }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.btn_cancel))
                         }
@@ -148,18 +152,25 @@ fun DeviceListScreen(
                 actions = {
                     if (inAnySelection) {
                         TextButton(onClick = {
-                            if (isSelectingRecent) viewModel.selectAllRecent()
-                            else viewModel.selectAll()
+                            when {
+                                isSelectingRecent -> viewModel.selectAllRecent()
+                                isSelectingBoxes -> viewModel.selectAllBoxes()
+                                else -> viewModel.selectAll()
+                            }
                         }) {
                             Text(
                                 if ((isSelectingRecent && selectedRecentIds.size == recentBoxes.size) ||
+                                    (isSelectingBoxes && selectedBoxIds.size == standaloneBoxes.size) ||
                                     (isSelecting && selectedIds.size == devices.size)) stringResource(R.string.device_list_deselect_all) else stringResource(R.string.device_list_select_all),
                                 fontWeight = FontWeight.Medium
                             )
                         }
                         IconButton(onClick = {
-                            if (isSelectingRecent) viewModel.deleteSelectedRecent()
-                            else showDeleteBatchConfirm = true
+                            when {
+                                isSelectingRecent -> viewModel.deleteSelectedRecent()
+                                isSelectingBoxes -> viewModel.deleteSelectedBoxes()
+                                else -> showDeleteBatchConfirm = true
+                            }
                         }) {
                             Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error)
                         }

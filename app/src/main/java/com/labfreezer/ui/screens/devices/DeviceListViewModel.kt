@@ -226,6 +226,24 @@ class DeviceListViewModel @Inject constructor(
         _isSelectingBoxes.value = false
     }
 
+    fun selectAllBoxes() {
+        val allIds = _standaloneBoxes.value.map { it.id }.toSet()
+        if (_selectedBoxIds.value == allIds) {
+            _selectedBoxIds.value = emptySet()
+            _isSelectingBoxes.value = false
+        } else {
+            _selectedBoxIds.value = allIds
+        }
+    }
+
+    fun deleteSelectedBoxes() {
+        viewModelScope.launch {
+            _selectedBoxIds.value.forEach { id -> boxRepository.deleteById(id) }
+            exitBoxSelection()
+            refreshStandaloneBoxes()
+        }
+    }
+
     fun showEditBoxDialog(boxId: Long) {
         viewModelScope.launch {
             val box = boxRepository.getById(boxId) ?: return@launch
