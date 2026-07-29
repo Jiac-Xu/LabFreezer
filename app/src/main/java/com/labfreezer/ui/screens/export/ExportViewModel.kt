@@ -226,7 +226,7 @@ class ExportViewModel @Inject constructor(
             val pos = parsePosition(r.posLabel) ?: continue
 
             // Find or create device
-            val allDevices = deviceRepository.getAll()
+            val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
             var device = allDevices.find { it.name == r.deviceName }
             if (device == null) {
                 val newId = deviceRepository.insert(StorageDeviceEntity(name = r.deviceName))
@@ -234,7 +234,7 @@ class ExportViewModel @Inject constructor(
             }
 
             // Find or create layer
-            val allLayers = layerRepository.getByDeviceId(device.id)
+            val allLayers = layerRepository.getByDeviceIdAll(device.id)
             var layer = allLayers.find { it.name == r.layerName }
             if (layer == null) {
                 val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = r.layerName))

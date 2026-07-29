@@ -67,8 +67,8 @@ class ExportEngine @Inject constructor(
 
             samples.forEach { s ->
                 val tags = tagsMap[s.sampleId] ?: ""
-                val deviceLabel = s.deviceName.takeIf { !it.isHiddenMarker() } ?: ""
-                val layerLabel = s.layerName.takeIf { !it.isHiddenMarker() } ?: ""
+                val deviceLabel = s.deviceName
+                val layerLabel = s.layerName
                 val row = listOf(
                     s.name ?: "",
                     deviceLabel,
@@ -133,8 +133,8 @@ class ExportEngine @Inject constructor(
             }
             val note = (s.note ?: "").replace("\n", " <br> ")
             val tags = tagsMap[s.sampleId] ?: ""
-            val mdDevice = s.deviceName.takeIf { !it.isHiddenMarker() } ?: ""
-            val mdLayer = s.layerName.takeIf { !it.isHiddenMarker() } ?: ""
+            val mdDevice = s.deviceName
+            val mdLayer = s.layerName
             sb.appendLine("| ${s.name ?: ""} | $mdDevice | $mdLayer | ${s.boxName} | ${'A' + s.row}${s.col + 1} | ${s.date ?: ""} | $note | $tags | $imageRef |")
         }
 

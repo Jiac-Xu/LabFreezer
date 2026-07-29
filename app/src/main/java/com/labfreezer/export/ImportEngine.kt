@@ -134,7 +134,7 @@ class ImportEngine @Inject constructor(
 
                 for (r in rows) {
                     val pos = parsePosition(r.posLabel) ?: continue
-                    val allDevices = deviceRepository.getAll()
+                    val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
                     // 如果设备名为空，使用 __hidden__ 标记
                     val deviceName = r.deviceName.ifBlank { HIDDEN_MARKER }
                     var device = allDevices.find { it.name == deviceName }
@@ -142,7 +142,7 @@ class ImportEngine @Inject constructor(
                         val newId = deviceRepository.insert(StorageDeviceEntity(name = deviceName))
                         device = deviceRepository.getById(newId) ?: continue
                     }
-                    val allLayers = layerRepository.getByDeviceId(device.id)
+                    val allLayers = layerRepository.getByDeviceIdAll(device.id)
                     // 如果层名为空，使用 __hidden__ 标记
                     val layerName = r.layerName.ifBlank { HIDDEN_MARKER }
                     var layer = allLayers.find { it.name == layerName }

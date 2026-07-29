@@ -28,6 +28,9 @@ class StorageLayerRepository @Inject constructor(
     suspend fun getByDeviceId(deviceId: Long): List<StorageLayerEntity> =
         layerDao.getByDeviceId(deviceId)
 
+    suspend fun getByDeviceIdAll(deviceId: Long): List<StorageLayerEntity> =
+        layerDao.getByDeviceIdAll(deviceId)
+
     suspend fun getById(id: Long): StorageLayerEntity? = layerDao.getById(id)
 
     suspend fun countByDeviceId(deviceId: Long): Int = layerDao.countByDeviceId(deviceId)
