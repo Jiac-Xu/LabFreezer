@@ -134,22 +134,33 @@ class ImportEngine @Inject constructor(
 
                 for (r in rows) {
                     val pos = parsePosition(r.posLabel) ?: continue
-                    val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
                     // 如果设备名为空，使用 __hidden__ 标记
                     val deviceName = r.deviceName.ifBlank { HIDDEN_MARKER }
-                    var device = allDevices.find { it.name == deviceName }
-                    if (device == null) {
-                        val newId = deviceRepository.insert(StorageDeviceEntity(name = deviceName))
-                        device = deviceRepository.getById(newId) ?: continue
-                    }
-                    val allLayers = layerRepository.getByDeviceIdAll(device.id)
+                    var device = if (deviceName == HIDDEN_MARKER) {
+                        deviceRepository.getOrCreateHiddenDevice()
+                    } else {
+                        val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
+                        var dev = allDevices.find { it.name == deviceName }
+                        if (dev == null) {
+                            val newId = deviceRepository.insert(StorageDeviceEntity(name = deviceName))
+                            dev = deviceRepository.getById(newId)
+                        }
+                        dev
+                    } ?: continue
+
                     // 如果层名为空，使用 __hidden__ 标记
                     val layerName = r.layerName.ifBlank { HIDDEN_MARKER }
-                    var layer = allLayers.find { it.name == layerName }
-                    if (layer == null) {
-                        val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = layerName))
-                        layer = layerRepository.getById(newId) ?: continue
-                    }
+                    var layer = if (layerName == HIDDEN_MARKER) {
+                        layerRepository.getOrCreateHiddenLayer(device.id)
+                    } else {
+                        val allLayers = layerRepository.getByDeviceIdAll(device.id)
+                        var lay = allLayers.find { it.name == layerName }
+                        if (lay == null) {
+                            val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = layerName))
+                            lay = layerRepository.getById(newId)
+                        }
+                        lay
+                    } ?: continue
                     val allBoxes = boxRepository.getByLayerId(layer.id)
                     var box = allBoxes.find { it.name == r.boxName }
                     if (box == null) {

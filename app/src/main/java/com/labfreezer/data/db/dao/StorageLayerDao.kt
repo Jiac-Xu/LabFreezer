@@ -27,11 +27,17 @@ interface StorageLayerDao {
     @Query("SELECT * FROM storage_layer WHERE device_id = :deviceId ORDER BY sort_order ASC, name ASC")
     suspend fun getByDeviceIdAll(deviceId: Long): List<StorageLayerEntity>
 
+    @Query("SELECT * FROM storage_layer WHERE device_id = :deviceId AND name = '__hidden__' ORDER BY id ASC LIMIT 1")
+    suspend fun getHiddenLayerByDeviceId(deviceId: Long): StorageLayerEntity?
+
     @Query("SELECT * FROM storage_layer WHERE id = :id")
     suspend fun getById(id: Long): StorageLayerEntity?
 
     @Query("SELECT COUNT(*) FROM storage_layer WHERE device_id = :deviceId AND name != '__hidden__'")
     suspend fun countByDeviceId(deviceId: Long): Int
+
+    @Query("UPDATE storage_layer SET device_id = :targetDeviceId WHERE device_id = :sourceDeviceId")
+    suspend fun relinkLayers(sourceDeviceId: Long, targetDeviceId: Long)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(layer: StorageLayerEntity): Long

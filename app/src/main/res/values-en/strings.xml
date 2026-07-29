@@ -98,6 +98,13 @@
     <string name="device_type_manage_dialog_title">Add Device Group</string>
     <string name="device_type_manage_dialog_label">Type Name</string>
     <string name="device_type_manage_delete_confirm">Delete device type \"%1$s\"?</string>
+    <string-array name="default_device_types">
+        <item>4°C Refrigerator</item>
+        <item>-20°C Freezer</item>
+        <item>-80°C Ultra-Low Freezer</item>
+        <item>Room Temperature</item>
+        <item>Liquid Nitrogen</item>
+    </string-array>
 
     <!-- ========== Settings Screen ========== -->
     <string name="settings_title">Settings</string>

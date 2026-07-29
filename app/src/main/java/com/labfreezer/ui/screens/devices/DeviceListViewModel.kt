@@ -2,6 +2,8 @@ package com.labfreezer.ui.screens.devices
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import android.content.Context
+import com.labfreezer.R
 import com.labfreezer.data.db.entity.DeviceTypeEntity
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
@@ -11,6 +13,7 @@ import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
 import com.labfreezer.data.repository.TreeTransformer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -21,6 +24,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class DeviceListViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
     private val repository: StorageDeviceRepository,
     private val deviceTypeRepository: DeviceTypeRepository,
     private val recentBoxRepo: RecentlyViewedRepository,
@@ -121,11 +125,12 @@ class DeviceListViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             if (deviceTypeRepository.getAll().isEmpty()) {
-                val defaults = listOf("4\u2103\u51b0\u7bb1", "-20\u2103\u51b0\u7bb1", "-80\u2103\u51b0\u7bb1", "\u5e38\u6e29", "\u6db2\u6c2e")
+                val defaults = context.resources.getStringArray(R.array.default_device_types)
                 defaults.forEachIndexed { i, name ->
                     deviceTypeRepository.insert(DeviceTypeEntity(name = name, sortOrder = i))
                 }
             }
+            treeTransformer.consolidateHiddenEntities()
             refreshStandaloneBoxes()
         }
     }

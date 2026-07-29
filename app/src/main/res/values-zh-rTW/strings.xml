@@ -87,6 +87,13 @@
     <string name="device_type_manage_dialog_title">新增設備組</string>
     <string name="device_type_manage_dialog_label">類型名稱</string>
     <string name="device_type_manage_delete_confirm">確認刪除設備類型「%1$s」？</string>
+    <string-array name="default_device_types">
+        <item>4℃冰箱</item>
+        <item>-20℃冰箱</item>
+        <item>-80℃冰箱</item>
+        <item>常溫</item>
+        <item>液氮</item>
+    </string-array>
 
     <!-- ========== Settings Screen ========== -->
     <string name="settings_title">設定</string>

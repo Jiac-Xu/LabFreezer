@@ -1,5 +1,6 @@
 package com.labfreezer.data.repository
 
+import com.labfreezer.data.db.HIDDEN_MARKER
 import com.labfreezer.data.db.dao.StorageBoxDao
 import com.labfreezer.data.db.dao.StorageLayerDao
 import com.labfreezer.data.db.entity.StorageBoxEntity
@@ -30,6 +31,24 @@ class StorageLayerRepository @Inject constructor(
 
     suspend fun getByDeviceIdAll(deviceId: Long): List<StorageLayerEntity> =
         layerDao.getByDeviceIdAll(deviceId)
+
+    /**
+     * 获取或创建指定设备下的 hidden 层级（每个设备只保留一个 hidden 层级）。
+     */
+    suspend fun getOrCreateHiddenLayer(deviceId: Long): StorageLayerEntity {
+        val existing = layerDao.getHiddenLayerByDeviceId(deviceId)
+        if (existing != null) return existing
+        val id = layerDao.insert(StorageLayerEntity(deviceId = deviceId, name = HIDDEN_MARKER))
+        return layerDao.getById(id)!!
+    }
+
+    suspend fun relinkLayers(sourceDeviceId: Long, targetDeviceId: Long) {
+        layerDao.relinkLayers(sourceDeviceId, targetDeviceId)
+    }
+
+    suspend fun relinkBoxes(sourceLayerId: Long, targetLayerId: Long) {
+        boxDao.relinkBoxes(sourceLayerId, targetLayerId)
+    }
 
     suspend fun getById(id: Long): StorageLayerEntity? = layerDao.getById(id)
 

@@ -1,5 +1,6 @@
 package com.labfreezer.data.repository
 
+import com.labfreezer.data.db.HIDDEN_MARKER
 import com.labfreezer.data.db.dao.StorageDeviceDao
 import com.labfreezer.data.db.dao.StorageBoxDao
 import com.labfreezer.data.db.entity.StorageDeviceEntity
@@ -36,6 +37,16 @@ class StorageDeviceRepository @Inject constructor(
     suspend fun getAll(): List<StorageDeviceEntity> = deviceDao.getAll()
 
     suspend fun getAllHidden(): List<StorageDeviceEntity> = deviceDao.getAllHidden()
+
+    /**
+     * 获取或创建第一层的全局 hidden 设备（只保留一个 hidden 设备）。
+     */
+    suspend fun getOrCreateHiddenDevice(): StorageDeviceEntity {
+        val existing = deviceDao.getHiddenDevice()
+        if (existing != null) return existing
+        val id = deviceDao.insert(StorageDeviceEntity(name = HIDDEN_MARKER))
+        return deviceDao.getById(id)!!
+    }
 
     suspend fun getById(id: Long): StorageDeviceEntity? = deviceDao.getById(id)
 

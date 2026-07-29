@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.labfreezer.data.db.HIDDEN_MARKER
 import com.labfreezer.data.db.entity.SamplePositionEntity
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
@@ -226,20 +227,32 @@ class ExportViewModel @Inject constructor(
             val pos = parsePosition(r.posLabel) ?: continue
 
             // Find or create device
-            val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
-            var device = allDevices.find { it.name == r.deviceName }
-            if (device == null) {
-                val newId = deviceRepository.insert(StorageDeviceEntity(name = r.deviceName))
-                device = deviceRepository.getById(newId) ?: continue
-            }
+            val deviceName = r.deviceName.ifBlank { HIDDEN_MARKER }
+            var device = if (deviceName == HIDDEN_MARKER) {
+                deviceRepository.getOrCreateHiddenDevice()
+            } else {
+                val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
+                var dev = allDevices.find { it.name == deviceName }
+                if (dev == null) {
+                    val newId = deviceRepository.insert(StorageDeviceEntity(name = deviceName))
+                    dev = deviceRepository.getById(newId)
+                }
+                dev
+            } ?: continue
 
             // Find or create layer
-            val allLayers = layerRepository.getByDeviceIdAll(device.id)
-            var layer = allLayers.find { it.name == r.layerName }
-            if (layer == null) {
-                val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = r.layerName))
-                layer = layerRepository.getById(newId) ?: continue
-            }
+            val layerName = r.layerName.ifBlank { HIDDEN_MARKER }
+            var layer = if (layerName == HIDDEN_MARKER) {
+                layerRepository.getOrCreateHiddenLayer(device.id)
+            } else {
+                val allLayers = layerRepository.getByDeviceIdAll(device.id)
+                var lay = allLayers.find { it.name == layerName }
+                if (lay == null) {
+                    val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = layerName))
+                    lay = layerRepository.getById(newId)
+                }
+                lay
+            } ?: continue
 
             // Find or create box with proper dimensions
             val allBoxes = boxRepository.getByLayerId(layer.id)

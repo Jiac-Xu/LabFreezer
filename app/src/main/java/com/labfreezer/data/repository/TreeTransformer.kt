@@ -181,28 +181,57 @@ class TreeTransformer @Inject constructor(
             }
         }
 
-        // 场景 B：有父 Device，但无父 Layer → 创建 hidden Layer → 创建盒子
+        // 场景 B：有父 Device，但无父 Layer → 复用/创建 hidden Layer → 创建盒子
         if (parentDeviceId != null) {
-            val hiddenLayerId = layerRepository.insert(
-                StorageLayerEntity(deviceId = parentDeviceId, name = HIDDEN_MARKER)
-            )
+            val hiddenLayer = layerRepository.getOrCreateHiddenLayer(parentDeviceId)
             val boxId = boxRepository.insert(
-                StorageBoxEntity(layerId = hiddenLayerId, name = name, rows = rows, cols = cols, note = note)
+                StorageBoxEntity(layerId = hiddenLayer.id, name = name, rows = rows, cols = cols, note = note)
             )
             return boxRepository.getById(boxId)!!
         }
 
-        // 场景 C：无父 Device → 创建 hidden Device → 创建 hidden Layer → 创建盒子（独立盒子）
-        val hiddenDeviceId = deviceRepository.insert(
-            StorageDeviceEntity(name = HIDDEN_MARKER)
-        )
-        val hiddenLayerId = layerRepository.insert(
-            StorageLayerEntity(deviceId = hiddenDeviceId, name = HIDDEN_MARKER)
-        )
+        // 场景 C：无父 Device → 复用/创建 第一层 hidden Device → 复用/创建 hidden Layer → 创建盒子（独立盒子）
+        val hiddenDevice = deviceRepository.getOrCreateHiddenDevice()
+        val hiddenLayer = layerRepository.getOrCreateHiddenLayer(hiddenDevice.id)
         val boxId = boxRepository.insert(
-            StorageBoxEntity(layerId = hiddenLayerId, name = name, rows = rows, cols = cols, note = note)
+            StorageBoxEntity(layerId = hiddenLayer.id, name = name, rows = rows, cols = cols, note = note)
         )
         return boxRepository.getById(boxId)!!
+    }
+
+    // ==================== 数据整理：合并多余 hidden 实体 ====================
+
+    /**
+     * 清理并合并冗余的 __hidden__ 实体。
+     * - 第一层只保留一个 __hidden__ 设备，并将多余 __hidden__ 设备下的层级/盒子统一迁移过去。
+     * - 每个设备下只保留一个 __hidden__ 层级，并将多余 __hidden__ 层级下的盒子统一迁移过去。
+     */
+    suspend fun consolidateHiddenEntities() {
+        // 1. 统一第一层 __hidden__ 设备
+        val hiddenDevices = deviceRepository.getAllHidden()
+        if (hiddenDevices.size > 1) {
+            val primaryDevice = hiddenDevices.first()
+            val redundantDevices = hiddenDevices.drop(1)
+            for (extraDev in redundantDevices) {
+                layerRepository.relinkLayers(extraDev.id, primaryDevice.id)
+                deviceRepository.delete(extraDev)
+            }
+        }
+
+        // 2. 统一所有设备下的 __hidden__ 层级
+        val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
+        for (device in allDevices) {
+            val layers = layerRepository.getByDeviceIdAll(device.id)
+            val hiddenLayers = layers.filter { it.isHidden() }
+            if (hiddenLayers.size > 1) {
+                val primaryLayer = hiddenLayers.first()
+                val redundantLayers = hiddenLayers.drop(1)
+                for (extraLayer in redundantLayers) {
+                    layerRepository.relinkBoxes(extraLayer.id, primaryLayer.id)
+                    layerRepository.delete(extraLayer)
+                }
+            }
+        }
     }
 
     // ==================== 创建层级 ====================
@@ -226,7 +255,7 @@ class TreeTransformer @Inject constructor(
 
     /**
      * 将盒子移动到指定父节点下。
-     * 如果目标父节点是 Device，自动创建 hidden Layer 作为中间层。
+     * 如果目标父节点是 Device，自动复用/创建 hidden Layer 作为中间层。
      *
      * @param boxId 要移动的盒子 ID
      * @param targetDeviceId 目标设备 ID（可选）
@@ -243,12 +272,12 @@ class TreeTransformer @Inject constructor(
             // 直接挂到指定层级下
             targetLayerId
         } else if (targetDeviceId != null) {
-            // 挂到设备下 → 创建 hidden layer
-            layerRepository.insert(
-                StorageLayerEntity(deviceId = targetDeviceId, name = HIDDEN_MARKER)
-            )
+            // 挂到设备下 → 复用/创建 hidden layer
+            layerRepository.getOrCreateHiddenLayer(targetDeviceId).id
         } else {
-            return
+            // 挂到第一层独立盒子 → 复用/创建 第一层 hidden device 的 hidden layer
+            val hiddenDevice = deviceRepository.getOrCreateHiddenDevice()
+            layerRepository.getOrCreateHiddenLayer(hiddenDevice.id).id
         }
 
         boxRepository.update(box.copy(layerId = newLayerId))

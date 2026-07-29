@@ -48,6 +48,9 @@ interface StorageBoxDao {
     )
     suspend fun getBoxesByDeviceDirect(deviceId: Long): List<StorageBoxEntity>
 
+    @Query("UPDATE storage_box SET layer_id = :targetLayerId WHERE layer_id = :sourceLayerId")
+    suspend fun relinkBoxes(sourceLayerId: Long, targetLayerId: Long)
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(box: StorageBoxEntity): Long
 
