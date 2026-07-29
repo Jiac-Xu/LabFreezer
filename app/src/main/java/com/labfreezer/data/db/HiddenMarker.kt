@@ -1,5 +1,6 @@
 package com.labfreezer.data.db
 
+import com.labfreezer.data.db.dao.SampleWithPath
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.entity.StorageBoxEntity
@@ -43,3 +44,11 @@ fun StorageBoxEntity?.isUnderHiddenLayer(allLayers: List<StorageLayerEntity>): B
  * （deviceName / layerName 是普通 String，无法调用实体扩展函数）。
  */
 fun String.isHiddenMarker(): Boolean = this == HIDDEN_MARKER
+
+// ==================== SampleWithPath 扩展 ====================
+
+/** 过滤 hidden 后的可见设备名 */
+val SampleWithPath.visibleDeviceName: String get() = if (deviceName.isHiddenMarker()) "" else deviceName
+
+/** 过滤 hidden 后的可见层名 */
+val SampleWithPath.visibleLayerName: String get() = if (layerName.isHiddenMarker()) "" else layerName

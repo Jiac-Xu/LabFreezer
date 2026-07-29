@@ -104,6 +104,10 @@ fun DeviceListScreen(
     var speedDialExpanded by remember { mutableStateOf(false) }
     var showCreateBoxDialog by remember { mutableStateOf(false) }
     val standaloneBoxes by viewModel.standaloneBoxes.collectAsStateWithLifecycle()
+    val isSelectingBoxes by viewModel.isSelectingBoxes.collectAsStateWithLifecycle()
+    val selectedBoxIds by viewModel.selectedBoxIds.collectAsStateWithLifecycle()
+    val editingBox by viewModel.editingBox.collectAsStateWithLifecycle()
+    val deletingBox by viewModel.deletingBox.collectAsStateWithLifecycle()
 
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -294,20 +298,47 @@ fun DeviceListScreen(
                         Spacer(Modifier.height(12.dp))
                     }
                     items(standaloneBoxes.sortedBy { it.name }, key = { "standalone_box_${it.id}" }) { box ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth().clickable { navController.navigate(Screen.BoxGrid.createRoute(box.id)) },
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                        ) {
-                            Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
-                                Spacer(Modifier.width(12.dp))
-                                Text(box.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                                Icon(Icons.Default.ChevronRight, contentDescription = null, tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
+                            val isBoxSelected = box.id in selectedBoxIds
+                            Card(
+                                modifier = Modifier.fillMaxWidth().combinedClickable(
+                                    onClick = {
+                                        if (isSelectingBoxes) viewModel.toggleBoxSelection(box.id)
+                                        else navController.navigate(Screen.BoxGrid.createRoute(box.id))
+                                    },
+                                    onLongClick = { viewModel.startBoxSelection(box.id) }
+                                ),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (isBoxSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow
+                                ),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                            ) {
+                                Row(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    if (isSelectingBoxes) {
+                                        Box(
+                                            modifier = Modifier.size(24.dp).clip(CircleShape)
+                                                .background(if (isBoxSelected) MaterialTheme.colorScheme.primary else Color.Transparent),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            if (isBoxSelected) Icon(Icons.Default.Check, contentDescription = null, tint = Color.White, modifier = Modifier.size(16.dp))
+                                        }
+                                        Spacer(Modifier.width(12.dp))
+                                    }
+                                    Icon(Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
+                                    Spacer(Modifier.width(12.dp))
+                                    Text(box.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                                    if (!isSelectingBoxes) {
+                                        Spacer(Modifier.width(8.dp))
+                                        IconButton(onClick = { viewModel.showEditBoxDialog(box.id) }) {
+                                            Icon(Icons.Default.Edit, contentDescription = stringResource(R.string.device_list_edit), tint = MaterialTheme.colorScheme.outline, modifier = Modifier.size(20.dp))
+                                        }
+                                        IconButton(onClick = { viewModel.showDeleteBoxConfirm(box.id) }) {
+                                            Icon(Icons.Default.Delete, contentDescription = stringResource(R.string.btn_delete), tint = MaterialTheme.colorScheme.error.copy(alpha = 0.7f), modifier = Modifier.size(20.dp))
+                                        }
+                                    }
+                                }
                             }
                         }
-                    }
                 }
             }
         }
@@ -333,6 +364,21 @@ fun DeviceListScreen(
             message = stringResource(R.string.device_list_delete_confirm, device.name),
             onDismiss = { viewModel.hideDeleteConfirm() },
             onConfirm = { viewModel.deleteDevice(device) }
+        )
+    }
+    editingBox?.let { box ->
+        BoxDialog(
+            existing = box,
+            navController = null,
+            onDismiss = { viewModel.hideEditBoxDialog() },
+            onConfirm = { name, _, rows, cols, note -> viewModel.updateBox(box.id, name, rows, cols, note) }
+        )
+    }
+    deletingBox?.let { box ->
+        DeleteConfirmDialog(
+            message = stringResource(R.string.device_list_delete_confirm, box.name),
+            onDismiss = { viewModel.hideDeleteBoxConfirm() },
+            onConfirm = { viewModel.deleteBox(box) }
         )
     }
     if (showDeleteBatchConfirm) {

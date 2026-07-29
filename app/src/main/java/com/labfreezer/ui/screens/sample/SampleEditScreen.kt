@@ -380,8 +380,11 @@ fun SampleEditScreen(
                         Text(stringResource(R.string.sample_edit_label_location), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                         val pos = state.sample?.let { SampleEditViewModel.positionToLabel(it.row, it.col) } ?: ""
                         val location = buildString {
-                            append(state.deviceName)
-                            if (state.layerName.isNotBlank()) append(" > ${state.layerName}")
+                            if (state.deviceName.isNotBlank()) append(state.deviceName)
+                            if (state.layerName.isNotBlank()) {
+                                if (state.deviceName.isNotBlank()) append(" > ")
+                                append(state.layerName)
+                            }
                             append(" > ${state.boxName} > $pos")
                         }
                         Text(location, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)

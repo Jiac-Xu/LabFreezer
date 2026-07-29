@@ -105,6 +105,19 @@ class DeviceListViewModel @Inject constructor(
     private val _standaloneBoxes = MutableStateFlow<List<StorageBoxEntity>>(emptyList())
     val standaloneBoxes: StateFlow<List<StorageBoxEntity>> = _standaloneBoxes
 
+    /** 独立盒子多选 */
+    private val _isSelectingBoxes = MutableStateFlow(false)
+    val isSelectingBoxes: StateFlow<Boolean> = _isSelectingBoxes
+
+    private val _selectedBoxIds = MutableStateFlow<Set<Long>>(emptySet())
+    val selectedBoxIds: StateFlow<Set<Long>> = _selectedBoxIds
+
+    private val _editingBox = MutableStateFlow<StorageBoxEntity?>(null)
+    val editingBox: StateFlow<StorageBoxEntity?> = _editingBox
+
+    private val _deletingBox = MutableStateFlow<StorageBoxEntity?>(null)
+    val deletingBox: StateFlow<StorageBoxEntity?> = _deletingBox
+
     init {
         viewModelScope.launch {
             if (deviceTypeRepository.getAll().isEmpty()) {
@@ -191,6 +204,58 @@ class DeviceListViewModel @Inject constructor(
         viewModelScope.launch {
             repository.delete(device)
             _deletingDevice.value = null
+        }
+    }
+
+    // ==================== 独立盒子选择/编辑/删除 ====================
+
+    fun toggleBoxSelection(boxId: Long) {
+        val current = _selectedBoxIds.value.toMutableSet()
+        if (current.contains(boxId)) current.remove(boxId) else current.add(boxId)
+        _selectedBoxIds.value = current
+        if (current.isEmpty()) _isSelectingBoxes.value = false
+    }
+
+    fun startBoxSelection(boxId: Long) {
+        _isSelectingBoxes.value = true
+        _selectedBoxIds.value = setOf(boxId)
+    }
+
+    fun exitBoxSelection() {
+        _selectedBoxIds.value = emptySet()
+        _isSelectingBoxes.value = false
+    }
+
+    fun showEditBoxDialog(boxId: Long) {
+        viewModelScope.launch {
+            val box = boxRepository.getById(boxId) ?: return@launch
+            _editingBox.value = box
+        }
+    }
+    fun hideEditBoxDialog() { _editingBox.value = null }
+
+    fun showDeleteBoxConfirm(boxId: Long) {
+        viewModelScope.launch {
+            val box = boxRepository.getById(boxId) ?: return@launch
+            _deletingBox.value = box
+        }
+    }
+    fun hideDeleteBoxConfirm() { _deletingBox.value = null }
+
+    fun updateBox(id: Long, name: String, rows: Int, cols: Int, note: String?) {
+        viewModelScope.launch {
+            val existing = boxRepository.getById(id) ?: return@launch
+            boxRepository.update(existing.copy(name = name, rows = rows, cols = cols, note = note))
+            _editingBox.value = null
+            refreshStandaloneBoxes()
+        }
+    }
+
+    fun deleteBox(box: StorageBoxEntity) {
+        viewModelScope.launch {
+            boxRepository.delete(box)
+            _deletingBox.value = null
+            refreshStandaloneBoxes()
         }
     }
 

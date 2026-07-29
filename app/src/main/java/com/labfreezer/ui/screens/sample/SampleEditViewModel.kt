@@ -141,7 +141,7 @@ class SampleEditViewModel @Inject constructor(
                 photoPath = sample.photoPath,
                 ocrEnabled = ocrPreferences.isEnabled(),
                 assignedTagIds = tags.map { it.id }.toSet(),
-                deviceName = device?.name ?: "",
+                deviceName = if (device?.isHidden() == true) "" else (device?.name ?: ""),
                 layerName = if (layer?.isHidden() == true) "" else (layer?.name ?: ""),
                 boxName = box?.name ?: "",
                 currentIndex = idx,
@@ -230,7 +230,7 @@ class SampleEditViewModel @Inject constructor(
             val device = deviceRepository.getById(layer.deviceId) ?: return@launch
             _state.update {
                 it.copy(
-                    deviceName = device.name,
+                    deviceName = if (device.isHidden()) "" else device.name,
                     layerName = if (layer.isHidden()) "" else layer.name,
                     boxName = box.name
                 )
