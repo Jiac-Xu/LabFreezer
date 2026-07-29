@@ -29,6 +29,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -81,10 +82,10 @@ fun SpeedDialFAB(
         return
     }
 
-    val rotation = animateFloatAsState(
+    val rotation by animateFloatAsState(
         targetValue = if (expanded) 45f else 0f,
         label = "fab_rotation"
-    ).value
+    )
 
     Column(
         modifier = modifier,
@@ -136,10 +137,11 @@ fun SpeedDialFAB(
                         }
                     )
                 }
+
+                // 间距放 AnimatedVisibility 内部，收起时一并隐藏，避免闪烁
+                Spacer(Modifier.height(12.dp))
             }
         }
-
-        Spacer(Modifier.height(12.dp))
 
         // 主 FAB 按钮
         FloatingActionButton(
