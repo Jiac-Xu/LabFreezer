@@ -34,6 +34,7 @@ class MoveBrowserViewModel @Inject constructor(
     val currentLevel: StateFlow<MoveLevel> = _currentLevel
 
     private val _selectedDeviceId = MutableStateFlow<Long?>(null)
+    val selectedDeviceId: StateFlow<Long?> = _selectedDeviceId
     private val _selectedLayerId = MutableStateFlow<Long?>(null)
     private val _selectedBoxId = MutableStateFlow<Long?>(null)
 
@@ -300,17 +301,17 @@ class MoveBrowserViewModel @Inject constructor(
                         layerRepository.update(layer.copy(deviceId = targetDeviceId))
                     }
                 }
-                MoveTarget.LAYER -> {
+                MoveTarget.LAYER, MoveTarget.CONTAINER -> {
                     if (_selectedLayerId.value != null) {
                         // 移动到指定层级
-                        val targetLayerId = _selectedLayerId.value ?: return@launch
+                        val targetLayerId = _selectedLayerId.value!!
                         for (id in MoveState.selectedItemIds) {
                             val box = boxRepository.getById(id) ?: continue
                             boxRepository.update(box.copy(layerId = targetLayerId))
                         }
-                    } else if (_selectedDeviceId.value != null) {
-                        // 移动到设备：自动创建 hidden layer（CONTAINER 模式）
-                        val targetDeviceId = _selectedDeviceId.value ?: return@launch
+                    } else {
+                        // 移动到指定设备（_selectedDeviceId != null）或第一层独立盒子（_selectedDeviceId == null）
+                        val targetDeviceId = _selectedDeviceId.value
                         for (id in MoveState.selectedItemIds) {
                             treeTransformer.moveBoxToContainer(
                                 boxId = id,
@@ -318,17 +319,6 @@ class MoveBrowserViewModel @Inject constructor(
                                 targetLayerId = null
                             )
                         }
-                    }
-                }
-                MoveTarget.CONTAINER -> {
-                    // 移动盒子到设备：自动创建 hidden layer
-                    val targetDeviceId = _selectedDeviceId.value ?: return@launch
-                    for (id in MoveState.selectedItemIds) {
-                        treeTransformer.moveBoxToContainer(
-                            boxId = id,
-                            targetDeviceId = targetDeviceId,
-                            targetLayerId = null
-                        )
                     }
                 }
                 MoveTarget.BOX -> {
@@ -354,8 +344,7 @@ class MoveBrowserViewModel @Inject constructor(
     fun canConfirm(): Boolean {
         return when (MoveState.moveTarget) {
             MoveTarget.DEVICE -> _selectedDeviceId.value != null
-            MoveTarget.LAYER -> _selectedLayerId.value != null || _selectedDeviceId.value != null
-            MoveTarget.CONTAINER -> _selectedDeviceId.value != null
+            MoveTarget.LAYER, MoveTarget.CONTAINER -> true
             MoveTarget.BOX -> {
                 if (MoveState.selectMode) _selectedBoxId.value != null
                 else _selectedBoxId.value != null &&

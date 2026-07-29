@@ -36,6 +36,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -43,9 +44,16 @@ import androidx.navigation.NavController
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
+import com.labfreezer.data.db.isHidden
+import com.labfreezer.data.repository.StorageDeviceRepository
+import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.move.MoveState
 import com.labfreezer.ui.screens.move.MoveTarget
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
 
 @Composable
 fun LayerDialog(
@@ -103,6 +111,13 @@ fun LayerDialog(
     )
 }
 
+@EntryPoint
+@InstallIn(SingletonComponent::class)
+interface BoxDialogEntryPoint {
+    fun layerRepository(): StorageLayerRepository
+    fun deviceRepository(): StorageDeviceRepository
+}
+
 @Composable
 fun BoxDialog(
     existing: StorageBoxEntity? = null,
@@ -117,8 +132,31 @@ fun BoxDialog(
     var rows by remember { mutableStateOf(existing?.rows?.toString() ?: "9") }
     var cols by remember { mutableStateOf(existing?.cols?.toString() ?: "9") }
     var note by remember { mutableStateOf(existing?.note ?: "") }
-    var selectedLayerId by remember { mutableStateOf(currentLayerId) }
+    var selectedLayerId by remember { mutableStateOf(existing?.layerId ?: currentLayerId) }
     var showLocationPicker by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val entryPoint = remember(context) {
+        EntryPointAccessors.fromApplication(context.applicationContext, BoxDialogEntryPoint::class.java)
+    }
+    var locationText by remember { mutableStateOf("") }
+
+    LaunchedEffect(selectedLayerId) {
+        if (selectedLayerId > 0) {
+            val layer = entryPoint.layerRepository().getById(selectedLayerId)
+            if (layer != null) {
+                val device = entryPoint.deviceRepository().getById(layer.deviceId)
+                val devName = if (device == null || device.isHidden()) null else device.name
+                val layName = if (layer.isHidden()) null else layer.name
+                val parts = listOfNotNull(devName, layName)
+                locationText = if (parts.isEmpty()) context.getString(R.string.location_root_level) else parts.joinToString(" > ")
+            } else {
+                locationText = context.getString(R.string.location_root_level)
+            }
+        } else {
+            locationText = context.getString(R.string.location_root_level)
+        }
+    }
 
     LaunchedEffect(MoveState.resultLayerId) {
         MoveState.resultLayerId?.let { id ->
@@ -126,9 +164,6 @@ fun BoxDialog(
             MoveState.resultLayerId = null
         }
     }
-
-    val selectedLayer = layersByDevice.values.flatten().find { it.id == selectedLayerId }
-    val selectedDevice = availableDevices.find { d -> layersByDevice[d.id]?.any { it.id == selectedLayerId } == true }
 
     val title = if (existing != null) stringResource(R.string.box_dialog_title_edit) else stringResource(R.string.box_dialog_title_add)
     val confirmLabel = if (existing != null) stringResource(R.string.btn_save) else stringResource(R.string.btn_add)
@@ -144,7 +179,7 @@ fun BoxDialog(
         title = { Text(title, fontWeight = FontWeight.SemiBold) },
         text = {
             Column {
-                if (existing != null && availableDevices.isNotEmpty()) {
+                if (existing != null) {
                     Card(
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(12.dp),
@@ -169,8 +204,7 @@ fun BoxDialog(
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(stringResource(R.string.layer_dialog_label_location), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
                                 Text(
-                                    if (selectedDevice != null && selectedLayer != null) "${selectedDevice.name} > ${selectedLayer.name}"
-                                    else stringResource(R.string.layer_dialog_placeholder_select_location),
+                                    locationText.ifEmpty { stringResource(R.string.layer_dialog_placeholder_select_location) },
                                     fontWeight = FontWeight.Medium
                                 )
                             }

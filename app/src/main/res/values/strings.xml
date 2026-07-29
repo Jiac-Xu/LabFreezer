@@ -248,6 +248,8 @@
     <string name="move_confirm_move">确定移动</string>
     <string name="move_confirm_move_count">确定移动（%1$d 个样本）</string>
     <string name="move_confirm_to_device">移动到该设备</string>
+    <string name="move_confirm_to_root">移动到第一层（独立盒子）</string>
+    <string name="location_root_level">第一层（独立盒子）</string>
     <string name="move_filter_all">全部设备</string>
     <string name="move_search_placeholder">搜索冰箱 / 层 / 盒子…</string>
     <string name="move_instruction">点击空白位置选择目标，已选 %1$d/%2$d</string>

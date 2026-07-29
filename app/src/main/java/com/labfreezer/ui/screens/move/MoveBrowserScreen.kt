@@ -73,6 +73,7 @@ fun MoveBrowserScreen(
     val searchResults by viewModel.searchResults.collectAsState()
     val isSearching by viewModel.isSearching.collectAsState()
     val moveCompleted by viewModel.moveCompleted.collectAsState()
+    val selectedDeviceId by viewModel.selectedDeviceId.collectAsState()
     val selectedCount = MoveState.selectedItemIds.size
 
     Scaffold(
@@ -172,8 +173,10 @@ fun MoveBrowserScreen(
                     MoveState.selectMode -> stringResource(R.string.move_confirm_target)
                     MoveState.moveTarget == MoveTarget.BOX && currentLevel == MoveLevel.GRID ->
                         stringResource(R.string.move_confirm_move_count, selectedCount)
-                    MoveState.moveTarget == MoveTarget.LAYER && currentLevel == MoveLevel.DEVICE ->
-                        stringResource(R.string.move_confirm_to_device)
+                    (MoveState.moveTarget == MoveTarget.LAYER || MoveState.moveTarget == MoveTarget.CONTAINER) && currentLevel == MoveLevel.DEVICE -> {
+                        if (selectedDeviceId != null) stringResource(R.string.move_confirm_to_device)
+                        else stringResource(R.string.move_confirm_to_root)
+                    }
                     else -> stringResource(R.string.move_confirm_move)
                 },
                 onClick = { viewModel.confirmMove(onBack) }

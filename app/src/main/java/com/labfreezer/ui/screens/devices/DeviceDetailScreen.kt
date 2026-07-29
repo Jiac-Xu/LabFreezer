@@ -268,9 +268,9 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
     editingBox?.let { box ->
         BoxDialog(
             existing = box,
-            navController = null,
+            navController = navController,
             onDismiss = { viewModel.hideEditBoxDialog() },
-            onConfirm = { name, _, rows, cols, note -> viewModel.updateBox(box.id, name, box.layerId, rows, cols, note) }
+            onConfirm = { name, layerId, rows, cols, note -> viewModel.updateBox(box.id, name, layerId, rows, cols, note) }
         )
     }
     deletingBox?.let { box ->

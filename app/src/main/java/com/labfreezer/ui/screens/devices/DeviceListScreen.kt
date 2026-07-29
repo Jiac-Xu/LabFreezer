@@ -78,6 +78,8 @@ import androidx.navigation.NavController
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.repository.RecentBox
 import com.labfreezer.data.search.ScopeType
+import com.labfreezer.ui.screens.move.MoveState
+import com.labfreezer.ui.screens.move.MoveTarget
 import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.layers.BoxDialog
@@ -164,6 +166,16 @@ fun DeviceListScreen(
                                     (isSelecting && selectedIds.size == devices.size)) stringResource(R.string.device_list_deselect_all) else stringResource(R.string.device_list_select_all),
                                 fontWeight = FontWeight.Medium
                             )
+                        }
+                        if (isSelectingBoxes) {
+                            IconButton(onClick = {
+                                MoveState.selectedItemIds = selectedBoxIds
+                                MoveState.moveTarget = MoveTarget.LAYER
+                                MoveState.sourceDeviceId = null
+                                navController.navigate(Screen.MoveBrowser.route)
+                            }) {
+                                Icon(Icons.Default.OpenWith, contentDescription = stringResource(R.string.btn_save), tint = MaterialTheme.colorScheme.primary)
+                            }
                         }
                         IconButton(onClick = {
                             when {
@@ -380,9 +392,9 @@ fun DeviceListScreen(
     editingBox?.let { box ->
         BoxDialog(
             existing = box,
-            navController = null,
+            navController = navController,
             onDismiss = { viewModel.hideEditBoxDialog() },
-            onConfirm = { name, _, rows, cols, note -> viewModel.updateBox(box.id, name, rows, cols, note) }
+            onConfirm = { name, layerId, rows, cols, note -> viewModel.updateBox(box.id, name, layerId, rows, cols, note) }
         )
     }
     deletingBox?.let { box ->

@@ -230,9 +230,11 @@
     <string name="move_action_box">移動盒子</string>
     <string name="move_action_sample">移動樣本</string>
     <string name="move_confirm_target">選擇此目標</string>
-    <string name="move_confirm_move">確認移動</string>
-    <string name="move_confirm_move_count">確認移動（%1$d 個樣本）</string>
-    <string name="move_confirm_to_device">移動到此設備</string>
+    <string name="move_confirm_move">確定移動</string>
+    <string name="move_confirm_move_count">確定移動（%1$d 個樣本）</string>
+    <string name="move_confirm_to_device">移動到該設備</string>
+    <string name="move_confirm_to_root">移動到第一層（獨立盒子）</string>
+    <string name="location_root_level">第一層（獨立盒子）</string>
     <string name="move_filter_all">全部設備</string>
     <string name="move_search_placeholder">搜尋冰箱 / 層 / 盒子…</string>
     <string name="move_instruction">點擊空白位置選擇目標，已選 %1$d/%2$d</string>

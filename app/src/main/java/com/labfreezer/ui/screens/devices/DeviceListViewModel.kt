@@ -265,10 +265,10 @@ class DeviceListViewModel @Inject constructor(
     }
     fun hideDeleteBoxConfirm() { _deletingBox.value = null }
 
-    fun updateBox(id: Long, name: String, rows: Int, cols: Int, note: String?) {
+    fun updateBox(id: Long, name: String, layerId: Long, rows: Int, cols: Int, note: String?) {
         viewModelScope.launch {
             val existing = boxRepository.getById(id) ?: return@launch
-            boxRepository.update(existing.copy(name = name, rows = rows, cols = cols, note = note))
+            boxRepository.update(existing.copy(name = name, layerId = layerId, rows = rows, cols = cols, note = note))
             _editingBox.value = null
             refreshStandaloneBoxes()
         }
