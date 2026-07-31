@@ -265,9 +265,10 @@ class SampleEditViewModel @Inject constructor(
             val newIds = if (tagId in st.assignedTagIds) st.assignedTagIds - tagId else st.assignedTagIds + tagId
             st.copy(assignedTagIds = newIds)
         }
+        save(showToast = false)
     }
 
-    fun save() {
+    fun save(showToast: Boolean = true) {
         val sample = _state.value.sample ?: return
         viewModelScope.launch {
             val oldPhotoPath = sample.photoPath
@@ -287,7 +288,9 @@ class SampleEditViewModel @Inject constructor(
             )
             sampleRepository.update(updatedSample)
             tagRepository.setSampleTags(sampleId, _state.value.assignedTagIds.toList())
-            _toastEvent.emit(context.getString(R.string.sample_edit_saved))
+            if (showToast) {
+                _toastEvent.emit(context.getString(R.string.sample_edit_saved))
+            }
         }
     }
 
