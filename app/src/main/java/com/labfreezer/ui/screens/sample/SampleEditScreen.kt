@@ -43,6 +43,7 @@ import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
@@ -296,8 +297,21 @@ fun SampleEditScreen(
             Spacer(Modifier.height(8.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                val whiteButtonColors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.primary,
+                    disabledContainerColor = Color.White,
+                    disabledContentColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                )
+                val whiteDeleteButtonColors = ButtonDefaults.buttonColors(
+                    containerColor = Color.White,
+                    contentColor = MaterialTheme.colorScheme.error,
+                    disabledContainerColor = Color.White,
+                    disabledContentColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
+                )
+
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    TextButton(
+                    Button(
                         onClick = {
                             if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                                 cameraLauncher.launch(viewModel.createPhotoUri())
@@ -305,17 +319,19 @@ fun SampleEditScreen(
                                 cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
                             }
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = whiteButtonColors
                     ) {
                         Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(if (state.photoPath != null) stringResource(R.string.sample_edit_retake_photo) else stringResource(R.string.sample_edit_take_photo))
                     }
-                    TextButton(
+                    Button(
                         onClick = {
                             galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = whiteButtonColors
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
@@ -324,31 +340,22 @@ fun SampleEditScreen(
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     val ocrEnabled = state.ocrEnabled && state.photoPath != null
-                    TextButton(
+                    Button(
                         onClick = { if (state.ocrEnabled) viewModel.runOcrNow() },
                         enabled = ocrEnabled,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(1f),
+                        colors = whiteButtonColors
                     ) {
-                        Icon(
-                            Icons.Default.DocumentScanner,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = if (ocrEnabled) MaterialTheme.colorScheme.primary
-                                   else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                        )
+                        Icon(Icons.Default.DocumentScanner, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
-                        Text(
-                            stringResource(R.string.sample_edit_ocr_button),
-                            color = if (ocrEnabled) MaterialTheme.colorScheme.primary
-                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                        )
+                        Text(stringResource(R.string.sample_edit_ocr_button))
                     }
                     val deletePhotoEnabled = state.photoPath != null
-                    TextButton(
+                    Button(
                         onClick = { viewModel.deletePhoto() },
                         enabled = deletePhotoEnabled,
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        colors = whiteDeleteButtonColors
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
