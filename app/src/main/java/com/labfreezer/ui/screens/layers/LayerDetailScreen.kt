@@ -176,8 +176,8 @@ fun LayerDetailScreen(navController: NavController, layerId: Long, viewModel: La
                             else navController.navigate(Screen.BoxGrid.createRoute(node.id))
                         },
                         onLongClick = { viewModel.startSelection(node.id) },
-                        onEdit = { viewModel.showEditDialog(com.labfreezer.data.db.entity.StorageBoxEntity(id = node.id, layerId = layerId, name = node.name, rows = 9, cols = 9)) },
-                        onDelete = { viewModel.showDeleteConfirm(com.labfreezer.data.db.entity.StorageBoxEntity(id = node.id, layerId = layerId, name = node.name, rows = 9, cols = 9)) }
+                        onEdit = { viewModel.showEditBoxDialog(node.id) },
+                        onDelete = { viewModel.showDeleteBoxConfirm(node.id) }
                     )
                 }
             }

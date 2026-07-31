@@ -122,10 +122,20 @@ class LayerDetailViewModel @Inject constructor(
     fun showAddDialog() { _showAddDialog.value = true }
     fun hideAddDialog() { _showAddDialog.value = false }
 
-    fun showEditDialog(box: StorageBoxEntity) { _editingBox.value = box }
+    fun showEditBoxDialog(boxId: Long) {
+        viewModelScope.launch {
+            val box = boxRepository.getById(boxId) ?: return@launch
+            _editingBox.value = box
+        }
+    }
     fun hideEditDialog() { _editingBox.value = null }
 
-    fun showDeleteConfirm(box: StorageBoxEntity) { _deletingBox.value = box }
+    fun showDeleteBoxConfirm(boxId: Long) {
+        viewModelScope.launch {
+            val box = boxRepository.getById(boxId) ?: return@launch
+            _deletingBox.value = box
+        }
+    }
     fun hideDeleteConfirm() { _deletingBox.value = null }
 
     fun addBox(name: String, rows: Int, cols: Int, note: String?) {
