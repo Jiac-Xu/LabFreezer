@@ -52,7 +52,8 @@ class TreeTransformer @Inject constructor(
                         id = layer.id,
                         name = layer.name,
                         type = NodeType.LEVEL,
-                        parentId = deviceId
+                        parentId = deviceId,
+                        note = layer.note
                     )
                 )
             }
@@ -63,7 +64,8 @@ class TreeTransformer @Inject constructor(
                         id = box.id,
                         name = box.name,
                         type = NodeType.BOX,
-                        parentId = deviceId
+                        parentId = deviceId,
+                        note = box.note
                     )
                 )
             }
@@ -85,7 +87,8 @@ class TreeTransformer @Inject constructor(
                 id = box.id,
                 name = box.name,
                 type = NodeType.BOX,
-                parentId = layerId
+                parentId = layerId,
+                note = box.note
             )
         }
     }
@@ -105,7 +108,7 @@ class TreeTransformer @Inject constructor(
 
         // 1. Box
         segments.add(
-            VisibleTreeNode(id = box.id, name = box.name, type = NodeType.BOX)
+            VisibleTreeNode(id = box.id, name = box.name, type = NodeType.BOX, note = box.note)
         )
 
         // 2. 向上遍历：Layer → Device（跳过 hidden）

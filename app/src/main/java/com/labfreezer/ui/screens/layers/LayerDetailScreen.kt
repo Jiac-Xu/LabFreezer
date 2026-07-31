@@ -255,6 +255,12 @@ private fun BoxCard(
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(node.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                node.note?.let { note ->
+                    if (note.isNotBlank()) {
+                        Spacer(Modifier.height(2.dp))
+                        Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    }
+                }
             }
             if (!isSelecting) {
                 Spacer(Modifier.width(8.dp))

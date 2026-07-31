@@ -166,8 +166,22 @@ class DeviceDetailViewModel @Inject constructor(
     fun showEditDialog(layer: StorageLayerEntity) { _editingLayer.value = layer }
     fun hideEditDialog() { _editingLayer.value = null }
 
+    fun showEditLayerDialog(layerId: Long) {
+        viewModelScope.launch {
+            val layer = layerRepository.getById(layerId) ?: return@launch
+            _editingLayer.value = layer
+        }
+    }
+
     fun showDeleteConfirm(layer: StorageLayerEntity) { _deletingLayer.value = layer }
     fun hideDeleteConfirm() { _deletingLayer.value = null }
+
+    fun showDeleteLayerConfirm(layerId: Long) {
+        viewModelScope.launch {
+            val layer = layerRepository.getById(layerId) ?: return@launch
+            _deletingLayer.value = layer
+        }
+    }
 
     fun showEditBoxDialog(boxId: Long) {
         viewModelScope.launch {

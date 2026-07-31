@@ -196,14 +196,7 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
                         onLongClick = { viewModel.startSelection(node.id) },
                         onEdit = {
                             when (node.type) {
-                                NodeType.LEVEL -> {
-                                    val layer = com.labfreezer.data.db.entity.StorageLayerEntity(
-                                        id = node.id,
-                                        deviceId = device?.id ?: 0,
-                                        name = node.name
-                                    )
-                                    viewModel.showEditDialog(layer)
-                                }
+                                NodeType.LEVEL -> viewModel.showEditLayerDialog(node.id)
                                 NodeType.BOX -> {
                                     viewModel.showEditBoxDialog(node.id)
                                 }
@@ -212,14 +205,7 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
                         },
                         onDelete = {
                             when (node.type) {
-                                NodeType.LEVEL -> {
-                                    val layer = com.labfreezer.data.db.entity.StorageLayerEntity(
-                                        id = node.id,
-                                        deviceId = device?.id ?: 0,
-                                        name = node.name
-                                    )
-                                    viewModel.showDeleteConfirm(layer)
-                                }
+                                NodeType.LEVEL -> viewModel.showDeleteLayerConfirm(node.id)
                                 NodeType.BOX -> {
                                     viewModel.showDeleteBoxConfirm(node.id)
                                 }
@@ -338,6 +324,14 @@ private fun VisibleChildCard(
 
             Column(modifier = Modifier.weight(1f)) {
                 Text(node.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (node.type == NodeType.LEVEL || node.type == NodeType.BOX) {
+                    node.note?.let { note ->
+                        if (note.isNotBlank()) {
+                            Spacer(Modifier.height(2.dp))
+                            Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
             }
             if (!isSelecting) {
                 Spacer(Modifier.width(8.dp))

@@ -20,7 +20,10 @@ data class VisibleTreeNode(
     val parentId: Long? = null,
 
     /** 样本数量（叶子节点有效） */
-    val sampleCount: Int = 0
+    val sampleCount: Int = 0,
+
+    /** 备注（盒子/层级可选） */
+    val note: String? = null
 )
 
 /**

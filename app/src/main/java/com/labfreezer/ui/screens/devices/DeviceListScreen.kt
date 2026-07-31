@@ -349,7 +349,15 @@ fun DeviceListScreen(
                                     }
                                     Icon(Icons.Default.Inventory2, contentDescription = null, tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(24.dp))
                                     Spacer(Modifier.width(12.dp))
-                                    Text(box.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                                    Column(modifier = Modifier.weight(1f)) {
+                                        Text(box.name, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        box.note?.let { note ->
+                                            if (note.isNotBlank()) {
+                                                Spacer(Modifier.height(2.dp))
+                                                Text(note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                            }
+                                        }
+                                    }
                                     if (!isSelectingBoxes) {
                                         Spacer(Modifier.width(8.dp))
                                         IconButton(onClick = { viewModel.showEditBoxDialog(box.id) }) {
