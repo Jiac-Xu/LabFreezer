@@ -295,9 +295,9 @@ fun SampleEditScreen(
             }
             Spacer(Modifier.height(8.dp))
 
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
+                    TextButton(
                         onClick = {
                             if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                                 cameraLauncher.launch(viewModel.createPhotoUri())
@@ -307,49 +307,51 @@ fun SampleEditScreen(
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
+                        Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(4.dp))
                         Text(if (state.photoPath != null) stringResource(R.string.sample_edit_retake_photo) else stringResource(R.string.sample_edit_take_photo))
                     }
-                    OutlinedButton(
+                    TextButton(
                         onClick = {
                             galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
                         modifier = Modifier.weight(1f)
                     ) {
-                        Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
+                        Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(4.dp))
                         Text(stringResource(R.string.sample_edit_gallery))
                     }
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
+                    val ocrEnabled = state.ocrEnabled && state.photoPath != null
+                    TextButton(
                         onClick = { if (state.ocrEnabled) viewModel.runOcrNow() },
-                        enabled = state.ocrEnabled && state.photoPath != null,
+                        enabled = ocrEnabled,
                         modifier = Modifier.weight(1f)
                     ) {
                         Icon(
                             Icons.Default.DocumentScanner,
                             contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = if (state.ocrEnabled) MaterialTheme.colorScheme.primary
+                            modifier = Modifier.size(20.dp),
+                            tint = if (ocrEnabled) MaterialTheme.colorScheme.primary
                                    else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                         )
-                        Spacer(Modifier.width(6.dp))
+                        Spacer(Modifier.width(4.dp))
                         Text(
                             stringResource(R.string.sample_edit_ocr_button),
-                            color = if (state.ocrEnabled) MaterialTheme.colorScheme.primary
+                            color = if (ocrEnabled) MaterialTheme.colorScheme.primary
                                     else MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                         )
                     }
-                    OutlinedButton(
+                    val deletePhotoEnabled = state.photoPath != null
+                    TextButton(
                         onClick = { viewModel.deletePhoto() },
-                        enabled = state.photoPath != null,
+                        enabled = deletePhotoEnabled,
                         modifier = Modifier.weight(1f),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)
+                        colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)
                     ) {
-                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
-                        Spacer(Modifier.width(6.dp))
+                        Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp))
+                        Spacer(Modifier.width(4.dp))
                         Text(stringResource(R.string.sample_edit_delete_photo))
                     }
                 }
