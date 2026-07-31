@@ -297,16 +297,16 @@ fun SampleEditScreen(
             Spacer(Modifier.height(8.dp))
 
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                val whiteButtonColors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
+                val surfaceButtonColors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     contentColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = Color.White,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     disabledContentColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                 )
-                val whiteDeleteButtonColors = ButtonDefaults.buttonColors(
-                    containerColor = Color.White,
+                val surfaceDeleteButtonColors = ButtonDefaults.buttonColors(
+                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     contentColor = MaterialTheme.colorScheme.error,
-                    disabledContainerColor = Color.White,
+                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
                     disabledContentColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
                 )
 
@@ -320,7 +320,7 @@ fun SampleEditScreen(
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        colors = whiteButtonColors
+                        colors = surfaceButtonColors
                     ) {
                         Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
@@ -331,7 +331,7 @@ fun SampleEditScreen(
                             galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
                         modifier = Modifier.weight(1f),
-                        colors = whiteButtonColors
+                        colors = surfaceButtonColors
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
@@ -344,7 +344,7 @@ fun SampleEditScreen(
                         onClick = { if (state.ocrEnabled) viewModel.runOcrNow() },
                         enabled = ocrEnabled,
                         modifier = Modifier.weight(1f),
-                        colors = whiteButtonColors
+                        colors = surfaceButtonColors
                     ) {
                         Icon(Icons.Default.DocumentScanner, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
@@ -355,7 +355,7 @@ fun SampleEditScreen(
                         onClick = { viewModel.deletePhoto() },
                         enabled = deletePhotoEnabled,
                         modifier = Modifier.weight(1f),
-                        colors = whiteDeleteButtonColors
+                        colors = surfaceDeleteButtonColors
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
