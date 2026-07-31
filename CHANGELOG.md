@@ -1,5 +1,41 @@
 # 更新日志
 
+## v1.3.0 (2026-08-01)
+
+### 视觉树架构重构
+- **引入 `TreeTransformer` 统一视觉树处理** — 移除 `SampleWithPath` 扩展属性，所有页面统一走 TreeTransformer 构建 `VisualTree`
+- **数据层统一处理 hidden 过滤** — `__hidden__` 占位节点改为单例复用模式，并支持默认设备组 i18n
+- 搜索/导出/导入全面适配 hidden：导出不再过滤 `__hidden__`，导入查找包含 hidden 条目
+- 修复多项视觉树适配问题（TagDetail 过滤 `__hidden__` 层名显示、DeviceList 独立盒子 DAO 过滤等）
+
+### 设备列表与盒子
+- **DeviceList 支持直接盒子** — 显示设备下直接挂载的盒子，新增独立盒子区块（hidden device 下的盒子）
+- **统一 BoxDialog** — DeviceList 创建盒子改为独立盒子，BoxGrid 移除 FAB，简化创建流程
+- SpeedDialFAB 单操作自动降级为普通 FAB，并修复展开闪烁（Spacer 移入 AnimatedVisibility 内部）
+- DeviceListScreen FAB 底部导航栏遮挡修复，BoxGridScreen 新增 FAB
+- DeviceListScreen 独立盒子长按选中 TopAppBar 适配
+- 最近浏览卡片高度统一，DeviceDetail 移动目标按类型适配
+
+### 移动与编辑修复
+- 修复第一层/第二层盒子移动至第一层、第一层长按移动按钮及编辑弹窗位置选择功能
+- 修复层详情页编辑/删除盒子时构造假实体导致备注丢失的问题，改为按 ID 加载真实实体
+- 恢复盒子/层级卡片备注副标题显示（VisibleTreeNode 携带 note），修复设备详情编辑层丢失备注
+- StorageBoxEntity 构造缺少 rows/cols 参数，改为 ViewModel 异步获取实体
+
+### 样本编辑
+- **标签即时保存** — 样本编辑页点击标签立即保存到数据库，无需手动保存
+- 照片操作按钮配色调整（最终确定为 primary 图标文字、禁用灰色的 TextButton 风格）
+
+### 系统适配
+- **开启 predictive back 支持** — 保留 Android 16 侧滑预览效果
+
+### i18n
+- 补充 SpeedDialFAB 按钮在英文与繁体中文下的多语言资源
+- 同步 `move_confirm_to_device` 到 values-en 和 values-zh-rTW
+
+### 技术调整
+- 版本号升级至 **1.3.0**（versionCode = 13）
+
 ## v1.2.9 (2026-07-28)
 
 ### 个性化设置
