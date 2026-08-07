@@ -143,6 +143,8 @@
     <string name="settings_csv_import_subtitle">從 CSV 檔案合併匯入</string>
     <string name="settings_csv_export">CSV 匯出</string>
     <string name="settings_csv_export_subtitle">匯出為試算表格式</string>
+    <string name="export_success">匯出成功。</string>
+    <string name="export_failed">匯出失敗：%1$s</string>
     <string name="settings_markdown_export">Markdown 匯出</string>
     <string name="settings_markdown_export_subtitle">含圖片的表格，可外部修改</string>
     <string name="settings_markdown_import">Markdown 匯入</string>
@@ -182,6 +184,9 @@
     <string name="import_overwrite_confirm">確認覆蓋</string>
     <string name="import_current_count_label">目前樣本數：</string>
     <string name="import_import_count_label">匯入樣本數：</string>
+    <string name="import_operation_failed">匯入失敗，請檢查檔案後重試。</string>
+    <string name="import_success">匯入成功。</string>
+    <string name="import_success_restart">匯入成功，重新啟動後生效。</string>
 
     <!-- ========== OCR / Auto-fill Settings ========== -->
     <string name="ocr_settings_title">自動辨識填入</string>

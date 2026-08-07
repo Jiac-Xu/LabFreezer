@@ -9,10 +9,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.labfreezer.data.db.entity.SamplePositionEntity
 import com.labfreezer.data.db.entity.StorageBoxEntity
-import com.labfreezer.data.db.entity.StorageDeviceEntity
-import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.isHiddenMarker
 import com.labfreezer.data.file.PhotoManager
+import com.labfreezer.data.model.Position
 import com.labfreezer.data.ocr.OcrEngine
 import com.labfreezer.data.ocr.OcrPreferences
 import com.labfreezer.data.repository.RecentlyViewedRepository
@@ -103,15 +102,6 @@ class BoxGridViewModel @Inject constructor(
     private val _selectedIds = MutableStateFlow<Set<Long>>(emptySet())
     val selectedIds: StateFlow<Set<Long>> = _selectedIds
 
-    private val _allDevices = MutableStateFlow<List<StorageDeviceEntity>>(emptyList())
-    val allDevices: StateFlow<List<StorageDeviceEntity>> = _allDevices
-
-    private val _layersByDevice = MutableStateFlow<Map<Long, List<StorageLayerEntity>>>(emptyMap())
-    val layersByDevice: StateFlow<Map<Long, List<StorageLayerEntity>>> = _layersByDevice
-
-    private val _boxesByLayer = MutableStateFlow<Map<Long, List<StorageBoxEntity>>>(emptyMap())
-    val boxesByLayer: StateFlow<Map<Long, List<StorageBoxEntity>>> = _boxesByLayer
-
     private var pendingRow = 0
     private var pendingCol = 0
     private var currentPhotoUri: Uri? = null
@@ -131,33 +121,8 @@ class BoxGridViewModel @Inject constructor(
                     )
                 }
                 refreshGrid(b)
-
-                launch(Dispatchers.IO) {
-                    kotlinx.coroutines.delay(600)
-                    preloadHierarchyData()
-                }
             }
         }
-    }
-
-    private suspend fun preloadHierarchyData() {
-        val devices = deviceRepository.getAll()
-        _allDevices.value = devices
-
-        val allLayers = mutableMapOf<Long, MutableList<StorageLayerEntity>>()
-        val allBoxes = mutableMapOf<Long, MutableList<StorageBoxEntity>>()
-
-        for (device in devices) {
-            val layers = layerRepository.getByDeviceId(device.id)
-            allLayers[device.id] = layers.toMutableList()
-
-            for (layer in layers) {
-                allBoxes[layer.id] = boxRepository.getByLayerId(layer.id).toMutableList()
-            }
-        }
-
-        _layersByDevice.value = allLayers
-        _boxesByLayer.value = allBoxes
     }
 
     private suspend fun refreshGrid(box: StorageBoxEntity) {
@@ -370,7 +335,7 @@ class BoxGridViewModel @Inject constructor(
 
         // If auto-date is enabled, set date to today (preserve any OCR results)
         if (ocrPreferences.isAutoDateEnabled()) {
-            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+            val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
             val currentSample = withContext(Dispatchers.IO) { sampleRepository.getById(sample.id) } ?: sample
             sampleRepository.update(currentSample.copy(date = today))
             shouldRefresh = true
@@ -390,6 +355,6 @@ class BoxGridViewModel @Inject constructor(
 
     companion object {
         private const val TAG = "BoxGridViewModel"
-        fun positionToLabel(row: Int, col: Int): String = "${'A' + row}${col + 1}"
+        fun positionToLabel(row: Int, col: Int): String = Position.toLabel(row, col)
     }
 }

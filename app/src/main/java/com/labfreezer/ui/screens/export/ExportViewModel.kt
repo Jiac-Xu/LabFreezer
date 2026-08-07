@@ -6,11 +6,7 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.labfreezer.data.db.HIDDEN_MARKER
-import com.labfreezer.data.db.entity.SamplePositionEntity
-import com.labfreezer.data.db.entity.StorageBoxEntity
-import com.labfreezer.data.db.entity.StorageDeviceEntity
-import com.labfreezer.data.db.entity.StorageLayerEntity
+import com.labfreezer.R
 import com.labfreezer.data.repository.SamplePositionRepository
 import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
@@ -18,9 +14,11 @@ import com.labfreezer.data.repository.StorageLayerRepository
 import com.labfreezer.data.repository.TagRepository
 import com.labfreezer.export.ExportEngine
 import com.labfreezer.export.ImportEngine
+import com.labfreezer.export.ImportSampleRow
 import com.labfreezer.export.ZipAnalysis
 import com.labfreezer.export.ZipInspector
 import com.labfreezer.export.ZipType
+import com.labfreezer.util.Csv
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -67,7 +65,7 @@ class ExportViewModel @Inject constructor(
                     val tagNames = tagRepository.getTagsBySampleId(sample.sampleId).joinToString(";") { it.name }
                     sample.sampleId to tagNames
                 }
-                val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+                val ts = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
                 val fileName = "labfreezer_$ts"
                 val file = when (format) {
                     ExportFormat.CSV -> exportEngine.exportCsv(allSamples, fileName, tagsMap)
@@ -80,7 +78,7 @@ class ExportViewModel @Inject constructor(
                 }
                 _result.value = ExportResult(uri, mime)
             } catch (e: Exception) {
-                Toast.makeText(context, "\u5bfc\u51fa\u5931\u8d25: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.export_failed, e.message), Toast.LENGTH_LONG).show()
             } finally {
                 _isLoading.value = false
             }
@@ -95,7 +93,7 @@ class ExportViewModel @Inject constructor(
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
                 _result.value = ExportResult(uri, "application/zip")
             } catch (e: Exception) {
-                Toast.makeText(context, "\u5bfc\u51fa\u5931\u8d25: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.export_failed, e.message), Toast.LENGTH_LONG).show()
             } finally {
                 _isLoading.value = false
             }
@@ -112,31 +110,21 @@ class ExportViewModel @Inject constructor(
                         input.copyTo(output)
                     }
                 }
-                Toast.makeText(context, "\u5bfc\u51fa\u6210\u529f", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.export_success), Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
-                Toast.makeText(context, "\u5bfc\u51fa\u5931\u8d25: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.export_failed, e.message), Toast.LENGTH_LONG).show()
             } finally {
                 _isLoading.value = false
             }
         }
     }
 
-    fun importDatabase(uri: Uri) {
-        _isLoading.value = true
-        viewModelScope.launch {
-            try {
-                val success = importEngine.importDatabase(uri)
-                if (success) {
-                    Toast.makeText(context, "\u5bfc\u5165\u6210\u529f\uff0c\u8bf7\u91cd\u542f\u5e94\u7528", Toast.LENGTH_LONG).show()
-                } else {
-                    Toast.makeText(context, "\u5bfc\u5165\u5931\u8d25", Toast.LENGTH_LONG).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(context, "\u5bfc\u5165\u5931\u8d25: ${e.message}", Toast.LENGTH_LONG).show()
-            } finally {
-                _isLoading.value = false
-            }
-        }
+    /**
+     * 用备份包整体替换数据库。
+     * @return true 表示替换成功；失败返回 false（可由 UI 展示错误）。
+     */
+    suspend fun importDatabase(uri: Uri): Boolean = withContext(Dispatchers.IO) {
+        runCatching { importEngine.importDatabase(uri) }.getOrDefault(false)
     }
 
     fun inspectImportPackage(uri: Uri, onResult: (ZipAnalysis, Int) -> Unit) {
@@ -149,20 +137,12 @@ class ExportViewModel @Inject constructor(
         }
     }
 
-    fun importMarkdown(uri: Uri) {
-        _isLoading.value = true
-        viewModelScope.launch {
-            try {
-                withContext(Dispatchers.IO) {
-                    importEngine.importMarkdown(uri)
-                }
-                Toast.makeText(context, "\u5bfc\u5165\u6210\u529f", Toast.LENGTH_LONG).show()
-            } catch (e: Exception) {
-                Toast.makeText(context, "\u5bfc\u5165\u5931\u8d25: ${e.message}", Toast.LENGTH_LONG).show()
-            } finally {
-                _isLoading.value = false
-            }
-        }
+    /**
+     * 合并导入 Markdown 导出包。
+     * @return true 表示导入流程完成（无论合并了几条数据）；失败返回 false。
+     */
+    suspend fun importMarkdown(uri: Uri): Boolean = withContext(Dispatchers.IO) {
+        runCatching { importEngine.importMarkdown(uri) }.getOrDefault(false)
     }
 
     fun importCsv(uri: Uri) {
@@ -172,9 +152,9 @@ class ExportViewModel @Inject constructor(
                 withContext(Dispatchers.IO) {
                     importCsvInternal(uri)
                 }
-                Toast.makeText(context, "\u5bfc\u5165\u6210\u529f", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.import_success), Toast.LENGTH_LONG).show()
             } catch (e: Exception) {
-                Toast.makeText(context, "\u5bfc\u5165\u5931\u8d25: ${e.message}", Toast.LENGTH_LONG).show()
+                Toast.makeText(context, context.getString(R.string.import_operation_failed), Toast.LENGTH_LONG).show()
             } finally {
                 _isLoading.value = false
             }
@@ -182,22 +162,17 @@ class ExportViewModel @Inject constructor(
     }
 
     private suspend fun importCsvInternal(uri: Uri) {
-        data class Row(
-            val deviceName: String, val layerName: String, val boxName: String,
-            val posLabel: String, val sampleName: String?, val date: String?, val note: String?,
-            val tags: String
-        )
-
-        val rows = mutableListOf<Row>()
+        val rows = mutableListOf<ImportSampleRow>()
 
         context.contentResolver.openInputStream(uri)?.use { input ->
             BufferedReader(InputStreamReader(input, Charsets.UTF_8)).use { reader ->
-                val header = reader.readLine() ?: return
+                reader.readLine() // header
                 var line = reader.readLine()
                 while (line != null) {
-                    val cols = line.split(",", limit = 8)
+                    // 使用标准 CSV 解码（支持引号包裹/转义），替换原先的朴素 split(",")
+                    val cols = Csv.decodeLine(line)
                     if (cols.size >= 5) {
-                        rows.add(Row(
+                        rows.add(ImportSampleRow(
                             deviceName = cols.getOrElse(1) { "" }.trim(),
                             layerName = cols.getOrElse(2) { "" }.trim(),
                             boxName = cols.getOrElse(3) { "" }.trim(),
@@ -213,95 +188,8 @@ class ExportViewModel @Inject constructor(
             }
         }
 
-        // First pass: determine box dimensions from position data
-        data class BoxKey(val device: String, val layer: String, val box: String)
-        val boxPositions = mutableMapOf<BoxKey, MutableSet<Pair<Int, Int>>>()
-        for (r in rows) {
-            val pos = parsePosition(r.posLabel) ?: continue
-            val key = BoxKey(r.deviceName, r.layerName, r.boxName)
-            boxPositions.getOrPut(key) { mutableSetOf() }.add(pos)
-        }
-
-        // Second pass: find or create hierarchy, insert samples
-        for (r in rows) {
-            val pos = parsePosition(r.posLabel) ?: continue
-
-            // Find or create device
-            val deviceName = r.deviceName.ifBlank { HIDDEN_MARKER }
-            var device = if (deviceName == HIDDEN_MARKER) {
-                deviceRepository.getOrCreateHiddenDevice()
-            } else {
-                val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
-                var dev = allDevices.find { it.name == deviceName }
-                if (dev == null) {
-                    val newId = deviceRepository.insert(StorageDeviceEntity(name = deviceName))
-                    dev = deviceRepository.getById(newId)
-                }
-                dev
-            } ?: continue
-
-            // Find or create layer
-            val layerName = r.layerName.ifBlank { HIDDEN_MARKER }
-            var layer = if (layerName == HIDDEN_MARKER) {
-                layerRepository.getOrCreateHiddenLayer(device.id)
-            } else {
-                val allLayers = layerRepository.getByDeviceIdAll(device.id)
-                var lay = allLayers.find { it.name == layerName }
-                if (lay == null) {
-                    val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = layerName))
-                    lay = layerRepository.getById(newId)
-                }
-                lay
-            } ?: continue
-
-            // Find or create box with proper dimensions
-            val allBoxes = boxRepository.getByLayerId(layer.id)
-            var box = allBoxes.find { it.name == r.boxName }
-            if (box == null) {
-                val key = BoxKey(r.deviceName, r.layerName, r.boxName)
-                val positions = boxPositions[key] ?: emptySet()
-                val maxRow = (positions.maxOfOrNull { it.first } ?: pos.first) + 1
-                val maxCol = (positions.maxOfOrNull { it.second } ?: pos.second) + 1
-                val newId = boxRepository.insert(StorageBoxEntity(
-                    layerId = layer.id, name = r.boxName,
-                    rows = maxRow.coerceAtLeast(1), cols = maxCol.coerceAtLeast(1)
-                ))
-                box = boxRepository.getById(newId) ?: continue
-            }
-
-            // Check if sample already exists at this position (merge: skip if exists)
-            val existing = sampleRepository.getByPosition(box.id, pos.first, pos.second)
-            if (existing != null) continue
-
-            // Insert new sample
-            val sampleId = sampleRepository.insert(SamplePositionEntity(
-                boxId = box.id, row = pos.first, col = pos.second,
-                name = r.sampleName, date = r.date, note = r.note
-            ))
-
-            if (r.tags.isNotBlank()) {
-                val tagNames = r.tags.split(";").map { it.trim() }.filter { it.isNotBlank() }
-                val tagIds = tagNames.map { tagName ->
-                    var tag = tagRepository.getByName(tagName)
-                    if (tag == null) {
-                        val newTagId = tagRepository.insert(com.labfreezer.data.db.entity.TagEntity(name = tagName, color = "#007AFF"))
-                        tag = tagRepository.getById(newTagId)
-                    }
-                    tag!!.id
-                }
-                tagRepository.setSampleTags(sampleId, tagIds)
-            }
-        }
-    }
-
-    private fun parsePosition(label: String): Pair<Int, Int>? {
-        if (label.length < 2) return null
-        val rowChar = label[0]
-        val colStr = label.substring(1)
-        val row = rowChar.uppercaseChar() - 'A'
-        val col = colStr.toIntOrNull()?.minus(1) ?: return null
-        if (row < 0 || col < 0) return null
-        return row to col
+        // 解析完成后交给共享的 importSamples：find-or-create 层级、跳过已存在样本（合并模式）
+        importEngine.importSamples(rows, overwriteExisting = false)
     }
 
     fun clearResult() { _result.value = null }

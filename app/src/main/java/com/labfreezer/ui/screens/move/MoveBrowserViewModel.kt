@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.labfreezer.data.db.entity.StorageBoxEntity
 import com.labfreezer.data.db.entity.StorageDeviceEntity
 import com.labfreezer.data.db.entity.StorageLayerEntity
+import com.labfreezer.data.model.Position
 import com.labfreezer.data.repository.SamplePositionRepository
 import com.labfreezer.data.repository.StorageBoxRepository
 import com.labfreezer.data.repository.StorageDeviceRepository
@@ -16,7 +17,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private fun positionToLabel(row: Int, col: Int): String = "${'A' + row}${col + 1}"
+private fun positionToLabel(row: Int, col: Int): String = Position.toLabel(row, col)
 
 @HiltViewModel
 class MoveBrowserViewModel @Inject constructor(

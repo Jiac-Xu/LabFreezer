@@ -660,10 +660,16 @@ private fun ImportPreviewDialog(
                         isImporting = true
                         showSecondConfirm = false
                         errorMessage = null
-                        exportViewModel.importDatabase(uri)
                         scope.launch {
-                            delay(1500)
-                            onDismiss()
+                            val ok = exportViewModel.importDatabase(uri)
+                            if (ok) {
+                                Toast.makeText(context, context.getString(R.string.import_success_restart), Toast.LENGTH_LONG).show()
+                                delay(600)
+                                onDismiss()
+                            } else {
+                                isImporting = false
+                                errorMessage = context.getString(R.string.import_operation_failed)
+                            }
                         }
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
@@ -754,10 +760,16 @@ private fun ImportPreviewDialog(
                         ZipType.MARKDOWN_EXPORT -> {
                             isImporting = true
                             errorMessage = null
-                            exportViewModel.importMarkdown(uri)
                             scope.launch {
-                                delay(1500)
-                                onDismiss()
+                                val ok = exportViewModel.importMarkdown(uri)
+                                if (ok) {
+                                    Toast.makeText(context, context.getString(R.string.import_success), Toast.LENGTH_LONG).show()
+                                    delay(600)
+                                    onDismiss()
+                                } else {
+                                    isImporting = false
+                                    errorMessage = context.getString(R.string.import_operation_failed)
+                                }
                             }
                         }
                         ZipType.DATABASE_BACKUP -> showSecondConfirm = true

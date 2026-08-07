@@ -2,18 +2,18 @@ package com.labfreezer.export
 
 import android.content.Context
 import android.net.Uri
+import com.labfreezer.data.db.AppDatabase
 import com.labfreezer.data.db.dao.SampleWithPath
 import com.labfreezer.data.db.isHiddenMarker
+import com.labfreezer.data.model.Position
 import com.labfreezer.data.repository.SamplePositionRepository
+import com.labfreezer.util.Csv
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONObject
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.OutputStreamWriter
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import java.util.zip.ZipEntry
 import java.util.zip.ZipOutputStream
 import javax.inject.Inject
@@ -22,10 +22,25 @@ import javax.inject.Singleton
 @Singleton
 class ExportEngine @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val database: AppDatabase,
     private val sampleRepository: SamplePositionRepository
 ) {
     init {
         cleanupOldExports()
+    }
+
+    /**
+     * 导出前执行 WAL checkpoint，把未落盘的更改刷入主库文件。
+     * 这样即使 zip 里不包含 -wal/-shm，恢复出的库也是完整一致的。
+     */
+    private fun checkpointDatabase() {
+        try {
+            database.openHelper.writableDatabase
+                .query("PRAGMA wal_checkpoint(TRUNCATE)")
+                .use { cursor -> cursor.moveToFirst() }
+        } catch (e: Exception) {
+            android.util.Log.w(TAG, "WAL checkpoint failed, exporting raw files", e)
+        }
     }
 
     private fun cleanupOldExports() {
@@ -67,19 +82,19 @@ class ExportEngine @Inject constructor(
 
             samples.forEach { s ->
                 val tags = tagsMap[s.sampleId] ?: ""
-                val deviceLabel = s.deviceName
-                val layerLabel = s.layerName
+                // 备注里的换行统一转成空格，保证每条样本固定为一行 CSV
+                val note = (s.note ?: "").replace("\n", " ").replace("\r", " ")
                 val row = listOf(
                     s.name ?: "",
-                    deviceLabel,
-                    layerLabel,
+                    s.deviceName,
+                    s.layerName,
                     s.boxName,
-                    "${'A' + s.row}${s.col + 1}",
+                    Position.toLabel(s.row, s.col),
                     s.date ?: "",
-                    s.note ?: "",
+                    note,
                     tags
                 )
-                writer.write(row.joinToString(","))
+                writer.write(Csv.encodeLine(row))
                 writer.write("\n")
             }
         }
@@ -131,11 +146,14 @@ class ExportEngine @Inject constructor(
                     }
                 } catch (_: Exception) {}
             }
-            val note = (s.note ?: "").replace("\n", " <br> ")
+            // 备注/名称中含 | 会破坏表格结构，统一转义为 HTML 实体
+            val note = (s.note ?: "").replace("\n", " <br> ").replace("|", "\\|")
+            val mdName = (s.name ?: "").replace("|", "\\|")
+            val mdDevice = s.deviceName.replace("|", "\\|")
+            val mdLayer = s.layerName.replace("|", "\\|")
+            val mdBox = s.boxName.replace("|", "\\|")
             val tags = tagsMap[s.sampleId] ?: ""
-            val mdDevice = s.deviceName
-            val mdLayer = s.layerName
-            sb.appendLine("| ${s.name ?: ""} | $mdDevice | $mdLayer | ${s.boxName} | ${'A' + s.row}${s.col + 1} | ${s.date ?: ""} | $note | $tags | $imageRef |")
+            sb.appendLine("| $mdName | $mdDevice | $mdLayer | $mdBox | ${Position.toLabel(s.row, s.col)} | ${s.date ?: ""} | $note | $tags | $imageRef |")
         }
 
         mdFile.writeText(sb.toString())
@@ -166,6 +184,8 @@ class ExportEngine @Inject constructor(
 
     suspend fun exportDatabase(): File {
         cleanupOldExports()
+        // 先把 WAL 未落盘数据刷入主库，保证恢复时无需依赖 WAL 文件
+        checkpointDatabase()
         val dir = File(context.filesDir, "exports")
         dir.mkdirs()
         val file = File(dir, "labfreezer_backup.zip")
@@ -213,5 +233,9 @@ class ExportEngine @Inject constructor(
             }
         }
         return file
+    }
+
+    companion object {
+        private const val TAG = "ExportEngine"
     }
 }

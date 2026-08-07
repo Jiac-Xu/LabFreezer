@@ -11,7 +11,7 @@ import android.os.HandlerThread
 import android.os.IBinder
 import android.os.Parcel
 import android.util.Log
-import coil.ImageLoader
+import coil.imageLoader
 import dagger.hilt.android.qualifiers.ApplicationContext
 import org.json.JSONObject
 import javax.inject.Inject
@@ -104,8 +104,8 @@ class FairMemoryReceiver @Inject constructor(
 
     private fun releaseMemory() {
         try {
-            // 清理 Coil 图片缓存（AsyncImage 的默认 ImageLoader）
-            ImageLoader(context).memoryCache?.clear()
+            // 清理应用全局默认 ImageLoader 的图片缓存（与 AsyncImage 共享同一实例）
+            context.imageLoader.memoryCache?.clear()
             Log.i(TAG, "Coil memory cache cleared")
         } catch (e: Exception) {
             Log.w(TAG, "releaseMemory failed", e)

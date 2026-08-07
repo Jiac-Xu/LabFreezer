@@ -5,6 +5,7 @@ import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Transaction
 import com.labfreezer.data.db.entity.SampleTagEntity
 import com.labfreezer.data.db.entity.TagEntity
 import kotlinx.coroutines.flow.Flow
@@ -42,6 +43,18 @@ interface SampleTagDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(sampleTag: SampleTagEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(sampleTags: List<SampleTagEntity>)
+
+    /** 原子的整体替换某样本的标签集合：先删除再写入，任一步失败都会整体回滚。 */
+    @Transaction
+    suspend fun replaceTagsForSample(sampleId: Long, tagIds: List<Long>) {
+        deleteAllBySampleId(sampleId)
+        if (tagIds.isNotEmpty()) {
+            insertAll(tagIds.distinct().map { SampleTagEntity(sampleId = sampleId, tagId = it) })
+        }
+    }
 
     @Query("DELETE FROM sample_tag WHERE sample_id = :sampleId AND tag_id = :tagId")
     suspend fun deleteBySampleAndTag(sampleId: Long, tagId: Long)

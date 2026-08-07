@@ -8,21 +8,24 @@ plugins {
 
 android {
     namespace = "com.labfreezer"
-    compileSdk = 36
+    compileSdk = 37
+    // 本机仅安装 build-tools 36.0.0，AGP 默认版本需联网下载，显式指定本机版本离线可用
+    buildToolsVersion = "36.0.0"
 
     defaultConfig {
         applicationId = "com.labfreezer"
         minSdk = 26
-        targetSdk = 36
-        versionCode = 13
-        versionName = "1.3.0"
+        targetSdk = 37
+        versionCode = 14
+        versionName = "1.3.1"
     }
 
     signingConfigs {
         create("nosig") {
             storeFile = rootProject.file("debug.keystore")
             storePassword = "android"
-            keyAlias = "debug"
+            // debug.keystore 内实际别名是 androiddebugkey，而非 debug
+            keyAlias = "androiddebugkey"
             keyPassword = "android"
             enableV3Signing = false
             enableV4Signing = false

@@ -1,6 +1,8 @@
 package com.labfreezer.ui.screens.settings
 import com.labfreezer.R
 
+import com.labfreezer.data.model.Position
+
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -356,7 +358,7 @@ private fun SamplePhotoGrid(
                     }
                     Column(modifier = Modifier.align(Alignment.BottomStart).padding(4.dp)) {
                         sample.name?.let { Text(it, style = MaterialTheme.typography.labelSmall, color = Color.White, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-                        Text("${'A' + sample.row}${sample.col + 1}", style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
+                        Text(Position.toLabel(sample.row, sample.col), style = MaterialTheme.typography.labelSmall, color = Color.White.copy(alpha = 0.8f))
                     }
                 }
             }

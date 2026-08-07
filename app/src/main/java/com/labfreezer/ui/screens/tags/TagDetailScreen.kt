@@ -1,6 +1,8 @@
 package com.labfreezer.ui.screens.tags
 import com.labfreezer.R
 
+import com.labfreezer.data.model.Position
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -106,7 +108,7 @@ private fun SampleItem(result: SampleWithPath, onClick: () -> Unit) {
                         if (result.deviceName.isNotBlank()) append(" > ")
                         append(result.layerName)
                     }
-                    append(" > ${result.boxName} > ${'A' + result.row}${result.col + 1}")
+                    append(" > ${result.boxName} > ${Position.toLabel(result.row, result.col)}")
                 },
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.outline,

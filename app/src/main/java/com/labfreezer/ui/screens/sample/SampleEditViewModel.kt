@@ -13,6 +13,7 @@ import com.labfreezer.data.db.entity.StorageLayerEntity
 import com.labfreezer.data.db.entity.TagEntity
 import com.labfreezer.data.db.isHidden
 import com.labfreezer.data.file.PhotoManager
+import com.labfreezer.data.model.Position
 import com.labfreezer.data.ocr.OcrEngine
 import com.labfreezer.data.ocr.OcrPreferences
 import com.labfreezer.data.repository.SamplePositionRepository
@@ -30,8 +31,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -90,11 +93,7 @@ class SampleEditViewModel @Inject constructor(
     val state: StateFlow<SampleEditState> = _state
 
     val allTags: StateFlow<List<TagEntity>> = tagRepository.getAllFlow()
-        .let { flow ->
-            val ms = MutableStateFlow<List<TagEntity>>(emptyList())
-            viewModelScope.launch { flow.collect { ms.value = it } }
-            ms
-        }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
     private val _allDevices = MutableStateFlow<List<StorageDeviceEntity>>(emptyList())
     val allDevices: StateFlow<List<StorageDeviceEntity>> = _allDevices
@@ -317,7 +316,7 @@ class SampleEditViewModel @Inject constructor(
                     }
                     // Apply auto-date after taking photo
                     if (ocrPreferences.isAutoDateEnabled()) {
-                        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+                        val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
                         _state.update { it.copy(date = today) }
                     }
                 }
@@ -341,7 +340,7 @@ class SampleEditViewModel @Inject constructor(
                 }
                 // Apply auto-date after taking photo
                 if (ocrPreferences.isAutoDateEnabled()) {
-                    val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(java.util.Date())
+                    val today = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date())
                     _state.update { it.copy(date = today) }
                 }
             }
@@ -407,6 +406,6 @@ class SampleEditViewModel @Inject constructor(
     }
 
     companion object {
-        fun positionToLabel(row: Int, col: Int): String = "${'A' + row}${col + 1}"
+        fun positionToLabel(row: Int, col: Int): String = Position.toLabel(row, col)
     }
 }

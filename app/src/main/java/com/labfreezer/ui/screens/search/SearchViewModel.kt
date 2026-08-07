@@ -217,13 +217,15 @@ class SearchViewModel @Inject constructor(
         parsed: ParsedQuery
     ): SearchResults {
         val deviceResults = deviceRepository.searchByName(trimmed).map { SearchResultItem.Device(it) }
+        // 一次性批量加载 layer/device 到内存，避免每个结果各查一次库（N+1）
+        val layersById = layerRepository.getAll().associateBy { it.id }
+        val devicesById = deviceRepository.getAll().associateBy { it.id }
         val layerResults = layerRepository.searchByName(trimmed).map { layer ->
-            val device = deviceRepository.getById(layer.deviceId)
-            SearchResultItem.Layer(layer, device?.name ?: "")
+            SearchResultItem.Layer(layer, devicesById[layer.deviceId]?.name ?: "")
         }
         val boxResults = boxRepository.searchByName(trimmed).map { box ->
-            val layer = layerRepository.getById(box.layerId)
-            val device = layer?.let { deviceRepository.getById(it.deviceId) }
+            val layer = layersById[box.layerId]
+            val device = layer?.let { devicesById[it.deviceId] }
             SearchResultItem.Box(box, device?.name ?: "", layer?.name ?: "")
         }
         val sampleResults = searchSamples(parsed, emptyList()) { query, tagIds ->
@@ -243,14 +245,14 @@ class SearchViewModel @Inject constructor(
     ): SearchResults {
         // 不搜索设备实体（已在设备内）
         // 不搜索层级实体（已在设备内）
-        val boxResults = boxRepository.searchByName(trimmed).filter { box ->
-            val layer = layerRepository.getById(box.layerId)
-            layer?.deviceId == deviceId
-        }.map { box ->
-            val layer = layerRepository.getById(box.layerId)
-            val device = deviceRepository.getById(deviceId)
-            SearchResultItem.Box(box, device?.name ?: "", layer?.name ?: "")
-        }
+        val layersById = layerRepository.getAll().associateBy { it.id }
+        val device = deviceRepository.getById(deviceId)
+        val boxResults = boxRepository.searchByName(trimmed)
+            .filter { layersById[it.layerId]?.deviceId == deviceId }
+            .map { box ->
+                val layer = layersById[box.layerId]
+                SearchResultItem.Box(box, device?.name ?: "", layer?.name ?: "")
+            }
 
         val sampleResults = searchSamples(parsed, emptyList()) { query, tagIds ->
             if (tagIds.isEmpty()) sampleRepository.searchWithPathByDevice(query, deviceId)
@@ -267,10 +269,11 @@ class SearchViewModel @Inject constructor(
         parsed: ParsedQuery,
         layerId: Long
     ): SearchResults {
+        val layersById = layerRepository.getAll().associateBy { it.id }
+        val layer = layersById[layerId]
+        val device = layer?.let { deviceRepository.getById(it.deviceId) }
         val boxResults = boxRepository.searchByName(trimmed).filter { it.layerId == layerId }
             .map { box ->
-                val layer = layerRepository.getById(layerId)
-                val device = layer?.let { deviceRepository.getById(it.deviceId) }
                 SearchResultItem.Box(box, device?.name ?: "", layer?.name ?: "")
             }
 

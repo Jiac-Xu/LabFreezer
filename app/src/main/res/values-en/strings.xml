@@ -154,6 +154,8 @@
     <string name="settings_csv_import_subtitle">Import by merging CSV files</string>
     <string name="settings_csv_export">CSV Export</string>
     <string name="settings_csv_export_subtitle">Export as spreadsheet format</string>
+    <string name="export_success">Exported successfully.</string>
+    <string name="export_failed">Export failed: %1$s</string>
     <string name="settings_markdown_export">Markdown Export</string>
     <string name="settings_markdown_export_subtitle">Table with images, editable externally</string>
     <string name="settings_markdown_import">Markdown Import</string>
@@ -193,6 +195,9 @@
     <string name="import_overwrite_confirm">Overwrite</string>
     <string name="import_current_count_label">Current samples: </string>
     <string name="import_import_count_label">Import samples: </string>
+    <string name="import_operation_failed">Import failed. Please check the file and try again.</string>
+    <string name="import_success">Imported successfully.</string>
+    <string name="import_success_restart">Import succeeded. Restart the app to apply the changes.</string>
 
     <!-- ========== OCR / Auto-fill Settings ========== -->
     <string name="ocr_settings_title">Auto-fill</string>

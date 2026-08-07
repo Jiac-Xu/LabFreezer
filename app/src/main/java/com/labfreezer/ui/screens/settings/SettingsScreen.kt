@@ -203,7 +203,7 @@ fun SettingsScreen(
                 title = stringResource(R.string.settings_export_db_save_as),
                 subtitle = stringResource(R.string.settings_export_db_save_as_subtitle),
                 onClick = {
-                    val ts = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.getDefault()).format(java.util.Date())
+                    val ts = java.text.SimpleDateFormat("yyyyMMdd_HHmmss", java.util.Locale.US).format(java.util.Date())
                     dbExportSaveAsLauncher.launch("labfreezer_$ts.zip")
                 },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }

@@ -1,5 +1,15 @@
 # 更新日志
 
+## v1.3.1 (2026-08-08)
+
+### 系统适配
+- **适配 Android 17 (API 37)** — compileSdk、targetSdk 升级至 37，版本号升级至 **1.3.1**（versionCode = 14）
+- predictive back 已开启，符合 Android 17 对返回手势的强制要求
+
+### 构建与工程
+- 修复 `gradlew` 脚本缺失 APP_HOME 解析段落导致的启动失败
+- 显式指定 build-tools 36.0.0，避免 AGP 默认版本触发联网下载
+
 ## v1.3.0 (2026-08-01)
 
 ### 视觉树架构重构

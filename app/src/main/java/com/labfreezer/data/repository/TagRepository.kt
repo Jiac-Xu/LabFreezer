@@ -48,9 +48,6 @@ class TagRepository @Inject constructor(
     }
 
     suspend fun setSampleTags(sampleId: Long, tagIds: List<Long>) {
-        sampleTagDao.deleteAllBySampleId(sampleId)
-        tagIds.forEach { tagId ->
-            sampleTagDao.insert(SampleTagEntity(sampleId = sampleId, tagId = tagId))
-        }
+        sampleTagDao.replaceTagsForSample(sampleId, tagIds)
     }
 }
