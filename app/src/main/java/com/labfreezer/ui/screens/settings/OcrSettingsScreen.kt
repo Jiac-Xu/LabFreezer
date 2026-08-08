@@ -31,6 +31,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -45,7 +46,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.labfreezer.ui.glass.GlassSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -118,7 +118,7 @@ fun OcrSettingsScreen(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    GlassSwitch(
+                    Switch(
                         checked = state.ocrEnabled,
                         onCheckedChange = { viewModel.setOcrEnabled(it) }
                     )
@@ -156,7 +156,7 @@ fun OcrSettingsScreen(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    GlassSwitch(
+                    Switch(
                         checked = state.autoOcrEnabled,
                         onCheckedChange = { viewModel.setAutoOcrEnabled(it) },
                         enabled = state.ocrEnabled
@@ -195,7 +195,7 @@ fun OcrSettingsScreen(
                             overflow = TextOverflow.Ellipsis
                         )
                     }
-                    GlassSwitch(
+                    Switch(
                         checked = state.autoDateEnabled,
                         onCheckedChange = { viewModel.setAutoDateEnabled(it) }
                     )

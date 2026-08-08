@@ -36,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -55,7 +56,6 @@ import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.labfreezer.ui.glass.GlassSwitch
 import com.labfreezer.ui.theme.LocalThemeMode
 import com.labfreezer.ui.theme.ThemeMode
 
@@ -333,7 +333,7 @@ private fun SettingsSwitchCard(
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             Spacer(Modifier.width(12.dp))
-            GlassSwitch(
+            Switch(
                 checked = checked,
                 onCheckedChange = onCheckedChange
             )

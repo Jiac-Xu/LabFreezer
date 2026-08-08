@@ -31,6 +31,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -50,7 +51,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labfreezer.data.db.entity.DeviceTypeEntity
 import com.labfreezer.ui.components.SpeedDialFAB
-import com.labfreezer.ui.glass.GlassSwitch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -115,7 +115,7 @@ fun DeviceTypeManageScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(stringResource(R.string.device_type_manage_group_toggle), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
-                            GlassSwitch(
+                            Switch(
                                 checked = groupByType,
                                 onCheckedChange = {
                                     groupByType = it
