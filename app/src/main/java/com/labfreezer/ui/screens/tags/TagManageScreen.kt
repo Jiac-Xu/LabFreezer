@@ -33,7 +33,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -61,6 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.labfreezer.R
 import com.labfreezer.data.db.entity.TagEntity
+import com.labfreezer.ui.glass.LiquidFAB
 import com.labfreezer.ui.navigation.Screen
 
 private val TAG_COLORS = listOf("#1565C0","#2E7D32","#E65100","#6A1B9A","#AD1457","#00838F","#4E342E","#37474F","#C62828","#283593","#00695C","#EF6C00","#7B1FA2","#0277BD","#558B2F","#D84315")
@@ -96,12 +96,9 @@ fun TagManageScreen(
             )
         },
         floatingActionButton = {
-            FloatingActionButton(
+            LiquidFAB(
                 onClick = { viewModel.showAddDialog() },
-                modifier = if (showFabPadding) Modifier.padding(bottom = 88.dp) else Modifier,
-                shape = CircleShape,
-                containerColor = MaterialTheme.colorScheme.primary,
-                contentColor = MaterialTheme.colorScheme.onPrimary
+                modifier = if (showFabPadding) Modifier.padding(bottom = 88.dp) else Modifier
             ) {
                 Icon(Icons.Default.Add, contentDescription = stringResource(R.string.tag_manage_add_tag))
             }

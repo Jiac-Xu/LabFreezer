@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -23,10 +22,8 @@ import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SmallFloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.labfreezer.R
+import com.labfreezer.ui.glass.LiquidFAB
 
 /**
  * 动态层级 Speed Dial FAB。
@@ -67,12 +65,9 @@ fun SpeedDialFAB(
 ) {
     // 只有一个操作时，降级为普通 FAB
     if (!showSecondButton) {
-        FloatingActionButton(
+        LiquidFAB(
             onClick = onCreateBox,
-            modifier = modifier,
-            shape = CircleShape,
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+            modifier = modifier
         ) {
             Icon(
                 Icons.Default.Add,
@@ -144,11 +139,8 @@ fun SpeedDialFAB(
         }
 
         // 主 FAB 按钮
-        FloatingActionButton(
-            onClick = onToggle,
-            shape = CircleShape,
-            containerColor = MaterialTheme.colorScheme.primary,
-            contentColor = MaterialTheme.colorScheme.onPrimary
+        LiquidFAB(
+            onClick = onToggle
         ) {
             Icon(
                 Icons.Default.Add,
@@ -195,10 +187,10 @@ private fun SpeedDialItem(
         Spacer(Modifier.width(8.dp))
 
         // 图标按钮
-        SmallFloatingActionButton(
+        LiquidFAB(
             onClick = onClick,
-            shape = CircleShape,
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+            size = 40.dp,
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.75f),
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ) {
             icon()
