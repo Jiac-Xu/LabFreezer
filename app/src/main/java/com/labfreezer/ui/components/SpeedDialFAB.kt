@@ -38,40 +38,43 @@ import com.labfreezer.R
 import com.labfreezer.ui.glass.LiquidFAB
 
 /**
- * 动态层级 Speed Dial FAB。
+ * 全程序统一 FAB 入口。
  *
- * 展开后提供两个选项：
- * - 创建盒子（始终可用）
- * - 自定义操作（如创建层级/创建设备，通过 showSecondButton 控制）
+ * - 有 ≥2 个操作：展开式 Speed Dial（主按钮 + 展开选项）
+ * - 只有 1 个操作：自动降级为普通液态 FAB（图标/语义可自定义）
  *
  * @param expanded 是否展开
  * @param onToggle 展开/收起回调
- * @param onCreateBox 创建盒子回调
+ * @param onCreatePrimary 主操作回调
  * @param onCreateSecond 第二个操作回调
  * @param showSecondButton 是否显示第二个按钮
  * @param secondButtonLabel 第二个按钮的文本
  * @param secondButtonIcon 第二个按钮的图标
+ * @param primaryIcon 主按钮图标（降级态同样生效）
+ * @param primaryButtonContentDescription 主按钮的语义描述
  */
 @Composable
 fun SpeedDialFAB(
-    expanded: Boolean,
-    onToggle: () -> Unit,
-    onCreateBox: () -> Unit,
-    onCreateSecond: () -> Unit,
+    expanded: Boolean = false,
+    onToggle: () -> Unit = {},
+    onCreatePrimary: () -> Unit,
+    onCreateSecond: () -> Unit = {},
     showSecondButton: Boolean,
     secondButtonLabel: String = stringResource(R.string.speed_dial_create_level),
     secondButtonIcon: ImageVector = Icons.Default.Layers,
+    primaryIcon: ImageVector = Icons.Default.Add,
+    primaryButtonContentDescription: String = stringResource(R.string.btn_add),
     modifier: Modifier = Modifier
 ) {
-    // 只有一个操作时，降级为普通 FAB
+    // 只有一个操作时，降级为普通液态 FAB
     if (!showSecondButton) {
         LiquidFAB(
-            onClick = onCreateBox,
+            onClick = onCreatePrimary,
             modifier = modifier
         ) {
             Icon(
-                Icons.Default.Add,
-                contentDescription = stringResource(R.string.btn_add)
+                primaryIcon,
+                contentDescription = primaryButtonContentDescription
             )
         }
         return
@@ -110,7 +113,7 @@ fun SpeedDialFAB(
                     },
                     onClick = {
                         onToggle()
-                        onCreateBox()
+                        onCreatePrimary()
                     }
                 )
 
@@ -143,11 +146,11 @@ fun SpeedDialFAB(
             onClick = onToggle
         ) {
             Icon(
-                Icons.Default.Add,
+                primaryIcon,
                 contentDescription = if (expanded)
                     stringResource(R.string.content_description_collapse)
                 else
-                    stringResource(R.string.btn_add),
+                    primaryButtonContentDescription,
                 modifier = Modifier.rotate(rotation)
             )
         }

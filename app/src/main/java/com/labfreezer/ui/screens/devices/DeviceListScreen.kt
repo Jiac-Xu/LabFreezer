@@ -203,7 +203,7 @@ fun DeviceListScreen(
                 SpeedDialFAB(
                     expanded = speedDialExpanded,
                     onToggle = { speedDialExpanded = !speedDialExpanded },
-                    onCreateBox = { showCreateBoxDialog = true; speedDialExpanded = false },
+                    onCreatePrimary = { showCreateBoxDialog = true; speedDialExpanded = false },
                     onCreateSecond = { viewModel.showAddDialog() },
                     showSecondButton = true,
                     secondButtonLabel = stringResource(R.string.device_list_add_device),

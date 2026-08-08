@@ -60,7 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.labfreezer.R
 import com.labfreezer.data.db.entity.TagEntity
-import com.labfreezer.ui.glass.LiquidFAB
+import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.navigation.Screen
 
 private val TAG_COLORS = listOf("#1565C0","#2E7D32","#E65100","#6A1B9A","#AD1457","#00838F","#4E342E","#37474F","#C62828","#283593","#00695C","#EF6C00","#7B1FA2","#0277BD","#558B2F","#D84315")
@@ -96,12 +96,11 @@ fun TagManageScreen(
             )
         },
         floatingActionButton = {
-            LiquidFAB(
-                onClick = { viewModel.showAddDialog() },
+            SpeedDialFAB(
+                onCreatePrimary = { viewModel.showAddDialog() },
+                showSecondButton = false,
                 modifier = if (showFabPadding) Modifier.padding(bottom = 88.dp) else Modifier
-            ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.tag_manage_add_tag))
-            }
+            )
         }
     ) { padding ->
         LazyColumn(

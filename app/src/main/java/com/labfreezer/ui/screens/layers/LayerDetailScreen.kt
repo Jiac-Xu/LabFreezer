@@ -144,7 +144,7 @@ fun LayerDetailScreen(navController: NavController, layerId: Long, viewModel: La
                 SpeedDialFAB(
                     expanded = speedDialExpanded,
                     onToggle = { speedDialExpanded = !speedDialExpanded },
-                    onCreateBox = { viewModel.showAddDialog() },
+                    onCreatePrimary = { viewModel.showAddDialog() },
                     onCreateSecond = { },
                     showSecondButton = false
                 )

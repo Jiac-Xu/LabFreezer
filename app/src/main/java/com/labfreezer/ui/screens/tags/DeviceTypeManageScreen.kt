@@ -49,8 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labfreezer.data.db.entity.DeviceTypeEntity
+import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.glass.GlassSwitch
-import com.labfreezer.ui.glass.LiquidFAB
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,11 +78,10 @@ fun DeviceTypeManageScreen(
             )
         },
         floatingActionButton = {
-            LiquidFAB(
-                onClick = { viewModel.showAddTypeDialog() }
-            ) {
-                Icon(Icons.Default.Add, contentDescription = stringResource(R.string.device_type_manage_add_type))
-            }
+            SpeedDialFAB(
+                onCreatePrimary = { viewModel.showAddTypeDialog() },
+                showSecondButton = false
+            )
         }
     ) { padding ->
         if (deviceTypes.isEmpty()) {
