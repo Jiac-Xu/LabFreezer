@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
@@ -93,10 +94,12 @@ fun LiquidBottomTabs(
 
         val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val animationScope = rememberCoroutineScope()
-        // 注意：selectedTabIndex 是调用方每次重组都新建的 lambda 实例，
-        // 不能拿它当 remember/LaunchedEffect 的 key —— 否则外部切换 tab 时
-        // currentIndex 状态会被销毁重建，指示器动画的 snapshotFlow 订阅到旧
-        // 状态对象，永远收不到新值，导致页面切换但指示器不动。
+        // selectedTabIndex 是调用方每次重组都新建的 lambda 实例：状态与动画
+        // 流的 key 必须稳定（否则状态被销毁重建/动画流订阅到旧状态对象），
+        // 协程侧用 rememberUpdatedState 保证每次读取的都是最新 lambda，
+        // 否则 LaunchedEffect(Unit) 的闭包会一直绑定首次组合时的旧 lambda，
+        // 外部切换 tab 的值永远传不进来，指示器纹丝不动。
+        val latestSelectedTab by rememberUpdatedState(selectedTabIndex)
         var currentIndex by remember {
             mutableIntStateOf(selectedTabIndex())
         }
@@ -132,7 +135,7 @@ fun LiquidBottomTabs(
             )
         }
         LaunchedEffect(Unit) {
-            snapshotFlow { selectedTabIndex() }
+            snapshotFlow { latestSelectedTab() }
                 .collectLatest { index ->
                     if (currentIndex != index) {
                         currentIndex = index
