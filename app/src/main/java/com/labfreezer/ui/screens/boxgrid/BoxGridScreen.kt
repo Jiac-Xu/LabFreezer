@@ -295,12 +295,12 @@ fun BoxGridScreen(
 
             val gridBackdrop = rememberLayerBackdrop()
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .horizontalScroll(rememberScrollState())
-                        .layerBackdrop(gridBackdrop)
-                ) {
+Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .layerBackdrop(gridBackdrop)
+                    .horizontalScroll(rememberScrollState())
+            ) {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(cols),
                         modifier = Modifier.width(totalGridWidth).padding(horizontal = 4.dp),
