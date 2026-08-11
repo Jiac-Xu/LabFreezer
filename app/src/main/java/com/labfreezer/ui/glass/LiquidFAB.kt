@@ -35,7 +35,10 @@ import com.kyant.shapes.Capsule
  *
  * 按钮处于页面内容层内部（非记录层兄弟），沿用官方对行内控件的处理：
  * 用 CanvasBackdrop 还原页面底色 + 微渐变，让玻璃本体获得磨砂/折射层次。
+ * 底色为半透明（[backdropAlpha]），背后真实内容可透出，形成半透明磨砂质感。
  * 按压时缩小 + 内阴影加深，松手回弹。
+ *
+ * @param backdropAlpha 底色不透明度（0~1）：越低越透，0 时完全透出背后内容
  */
 @Composable
 fun LiquidFAB(
@@ -45,14 +48,16 @@ fun LiquidFAB(
     containerColor: Color = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f),
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     backdropColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    backdropAlpha: Float = 0.3f,
     content: @Composable BoxScope.() -> Unit
 ) {
     val backdrop = rememberCanvasBackdrop {
-        drawRect(backdropColor)
+        // 底色半透明：保留磨砂层次的同时让背后内容透出，上深下浅
+        drawRect(backdropColor.copy(alpha = backdropAlpha))
         drawRect(
             Brush.verticalGradient(
-                0f to backdropColor.copy(alpha = 0.98f),
-                1f to backdropColor.copy(alpha = 0.7f)
+                0f to backdropColor.copy(alpha = (backdropAlpha + 0.15f).coerceIn(0f, 1f)),
+                1f to backdropColor.copy(alpha = (backdropAlpha - 0.05f).coerceIn(0f, 1f))
             )
         )
     }
