@@ -79,14 +79,13 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.labfreezer.ui.NavAnimState
 import com.labfreezer.ui.components.SpeedDialFAB
+import com.labfreezer.ui.components.ZoomableImageViewer
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.move.MoveState
 import com.labfreezer.ui.screens.move.MoveTarget
@@ -472,22 +471,10 @@ fun SampleEditScreen(
     }
 
     if (showFullImage && state.photoPath != null) {
-        Dialog(
-            onDismissRequest = { showFullImage = false },
-            properties = DialogProperties(usePlatformDefaultWidth = false)
-        ) {
-            Box(
-                modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.9f)).clickable { showFullImage = false },
-                contentAlignment = Alignment.Center
-            ) {
-                AsyncImage(
-                    model = Uri.parse(state.photoPath),
-                    contentDescription = null,
-                    modifier = Modifier.fillMaxWidth(),
-                    contentScale = ContentScale.Fit
-                )
-            }
-        }
+        ZoomableImageViewer(
+            model = imageModel,
+            onDismiss = { showFullImage = false }
+        )
     }
 
     if (showDeleteDialog) {
