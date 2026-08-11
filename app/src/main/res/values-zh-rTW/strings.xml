@@ -288,6 +288,9 @@
     <string name="sample_edit_last_sample">已經是目前凍存盒的最後一個樣本</string>
     <string name="sample_edit_first_sample">已經是目前凍存盒的第一個樣本</string>
     <string name="sample_edit_saved">已儲存</string>
+    <string name="save_photo_to_gallery_success">已儲存至相簿</string>
+    <string name="save_photo_to_gallery_failed">儲存至相簿失敗</string>
+    <string name="save_photo_to_gallery_permission">需要儲存權限才能儲存至相簿</string>
     <string name="sample_edit_photo_rotated">照片已旋轉</string>
 
     <!-- ========== Tag Detail ========== -->

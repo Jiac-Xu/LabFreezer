@@ -1,11 +1,16 @@
 package com.labfreezer.data.file
 
+import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.media.ExifInterface
+import android.media.MediaScannerConnection
 import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.provider.MediaStore
 import androidx.core.content.FileProvider
 import dagger.hilt.android.qualifiers.ApplicationContext
 import java.io.File
@@ -120,5 +125,56 @@ class PhotoManager @Inject constructor(
             val file = File(photoPath)
             if (file.exists()) file.delete()
         } catch (_: Exception) {}
+    }
+
+    /**
+     * 将样本照片复制到系统相册（Pictures/LabFreezer）。
+     * Android 10+ 走 MediaStore（无需权限）；9 及以下直接写公共目录，需要 WRITE_EXTERNAL_STORAGE。
+     *
+     * @param displayName 相册中的显示名；为空时沿用原文件名，自动补 .jpg 后缀
+     * @return 是否保存成功
+     */
+    fun savePhotoToGallery(photoPath: String, displayName: String? = null): Boolean {
+        return try {
+            val uri = Uri.parse(photoPath)
+            if (uri.scheme != "file") return false
+            val file = File(uri.path!!)
+            if (!file.exists()) return false
+
+            val base = if (displayName.isNullOrBlank()) file.nameWithoutExtension else displayName
+            val name = if (base.endsWith(".jpg", ignoreCase = true)) base else "$base.jpg"
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                val values = ContentValues().apply {
+                    put(MediaStore.Images.Media.DISPLAY_NAME, name)
+                    put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg")
+                    put(MediaStore.Images.Media.RELATIVE_PATH, "${Environment.DIRECTORY_PICTURES}/LabFreezer")
+                    put(MediaStore.Images.Media.IS_PENDING, 1)
+                }
+                val collection = MediaStore.Images.Media.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+                val itemUri = context.contentResolver.insert(collection, values) ?: return false
+                val output = context.contentResolver.openOutputStream(itemUri)
+                    ?: run {
+                        context.contentResolver.delete(itemUri, null, null)
+                        return false
+                    }
+                output.use { out -> file.inputStream().use { it.copyTo(out) } }
+                values.clear()
+                values.put(MediaStore.Images.Media.IS_PENDING, 0)
+                context.contentResolver.update(itemUri, values, null, null)
+                true
+            } else {
+                val dir = File(
+                    Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                    "LabFreezer"
+                ).apply { mkdirs() }
+                val dest = File(dir, name)
+                FileOutputStream(dest).use { out -> file.inputStream().use { it.copyTo(out) } }
+                MediaScannerConnection.scanFile(context, arrayOf(dest.absolutePath), arrayOf("image/jpeg"), null)
+                true
+            }
+        } catch (e: Exception) {
+            false
+        }
     }
 }

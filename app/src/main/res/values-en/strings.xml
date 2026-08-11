@@ -299,6 +299,9 @@
     <string name="sample_edit_last_sample">Already at the last sample in this box</string>
     <string name="sample_edit_first_sample">Already at the first sample in this box</string>
     <string name="sample_edit_saved">Saved</string>
+    <string name="save_photo_to_gallery_success">Saved to Gallery</string>
+    <string name="save_photo_to_gallery_failed">Failed to save to Gallery</string>
+    <string name="save_photo_to_gallery_permission">Storage permission needed to save to Gallery</string>
     <string name="sample_edit_photo_rotated">Photo rotated</string>
 
     <!-- ========== Tag Detail ========== -->

@@ -4,7 +4,18 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -21,10 +32,14 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
+import com.labfreezer.R
+import com.labfreezer.ui.glass.LiquidFAB
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import kotlin.math.max
@@ -38,12 +53,15 @@ private const val DOUBLE_TAP_SCALE = 3f
 /**
  * 全屏图片查看 Dialog：双指缩放（1x~5x）、缩放时单指平移、双击放大/还原、单击关闭。
  * 平移会被限制在图片边界内，图片边缘不会离开屏幕。
+ *
+ * @param onSave 非空时在右下角显示液态玻璃「保存」按钮，点击回调（如保存到相册）
  */
 @Composable
 fun ZoomableImageViewer(
     model: Any?,
     onDismiss: () -> Unit,
-    contentDescription: String? = null
+    contentDescription: String? = null,
+    onSave: (() -> Unit)? = null
 ) {
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
@@ -124,6 +142,36 @@ fun ZoomableImageViewer(
                     }
                 }
             )
+
+            // 右下角保存按钮（液态玻璃），fixed 尺寸外层优先，构成胶囊形按钮
+            onSave?.let { save ->
+                LiquidFAB(
+                    onClick = save,
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(16.dp)
+                        .width(108.dp)
+                        .height(48.dp),
+                    backdropColor = Color.Black,
+                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 16.dp)
+                    ) {
+                        Icon(
+                            Icons.Default.Save,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            stringResource(R.string.btn_save),
+                            style = MaterialTheme.typography.labelLarge
+                        )
+                    }
+                }
+            }
         }
     }
 }

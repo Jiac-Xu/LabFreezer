@@ -355,6 +355,20 @@ class SampleEditViewModel @Inject constructor(
         }
     }
 
+    /** 将当前样本照片保存到系统相册，结果通过 toast 提示 */
+    fun savePhotoToGallery() {
+        val path = _state.value.photoPath ?: return
+        val displayName = _state.value.sample?.name
+        viewModelScope.launch {
+            val ok = withContext(Dispatchers.IO) {
+                photoManager.savePhotoToGallery(path, displayName)
+            }
+            val msg = if (ok) context.getString(R.string.save_photo_to_gallery_success)
+                      else context.getString(R.string.save_photo_to_gallery_failed)
+            _toastEvent.emit(msg)
+        }
+    }
+
     private suspend fun runOcrAndUpdate(sample: SamplePositionEntity) {
         if (!ocrPreferences.isEnabled()) return
         val photoPath = sample.photoPath ?: return

@@ -5,6 +5,7 @@ import android.Manifest
 import android.app.DatePickerDialog
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.widget.Toast
 import java.io.File
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -141,6 +142,27 @@ fun SampleEditScreen(
         contract = ActivityResultContracts.PickVisualMedia()
     ) { uri ->
         viewModel.onGalleryResult(uri)
+    }
+
+    // Android 9 及以下保存到相册需要存储权限（10+ 走 MediaStore 无需权限）
+    val storagePermissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            viewModel.savePhotoToGallery()
+        } else {
+            Toast.makeText(context, context.getString(R.string.save_photo_to_gallery_permission), Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    val saveToGallery: () -> Unit = {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q &&
+            androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED
+        ) {
+            storagePermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        } else {
+            viewModel.savePhotoToGallery()
+        }
     }
 
     // 导航事件：携带 browseCtxKey 以保持上下文
@@ -473,7 +495,8 @@ fun SampleEditScreen(
     if (showFullImage && state.photoPath != null) {
         ZoomableImageViewer(
             model = imageModel,
-            onDismiss = { showFullImage = false }
+            onDismiss = { showFullImage = false },
+            onSave = saveToGallery
         )
     }
 
