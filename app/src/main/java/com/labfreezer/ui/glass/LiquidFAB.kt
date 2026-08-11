@@ -1,5 +1,9 @@
 package com.labfreezer.ui.glass
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.EaseOut
+import androidx.compose.animation.core.VectorConverter
+import androidx.compose.animation.core.VisibilityThreshold
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
@@ -12,16 +16,21 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.util.fastCoerceIn
 import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
@@ -31,6 +40,9 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
+import kotlin.math.abs
+import kotlin.math.sign
+import kotlinx.coroutines.launch
 
 /**
  * 液态玻璃 FAB（Floating Action Button）。
@@ -38,9 +50,11 @@ import com.kyant.shapes.Capsule
  * 按钮处于页面内容层内部（非记录层兄弟），沿用官方对行内控件的处理：
  * 用 CanvasBackdrop 还原页面底色 + 微渐变，让玻璃本体获得磨砂/折射层次。
  * 底色为半透明（[backdropAlpha]），背后真实内容可透出，形成半透明磨砂质感。
- * 触按时：跟手白色光斑（InteractiveHighlight，移植自 AndroidLiquidGlass）+ 弹簧缩放回弹 + 内阴影加深，松手回弹。
+ * 触按时：跟手白色光斑（InteractiveHighlight，移植自 AndroidLiquidGlass）+ 弹簧缩放回弹 +
+ * 轻微拖动移位（跟随手指，EaseOut 钳制在 [maxDragDisplacement]，松手弹簧归位）。
  *
  * @param backdropAlpha 底色不透明度（0~1）：越低越透，0 时完全透出背后内容
+ * @param maxDragDisplacement 拖动位移上限
  */
 @Composable
 fun LiquidFAB(
@@ -51,6 +65,7 @@ fun LiquidFAB(
     contentColor: Color = MaterialTheme.colorScheme.onPrimary,
     backdropColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     backdropAlpha: Float = 0.3f,
+    maxDragDisplacement: Dp = 4.dp,
     content: @Composable BoxScope.() -> Unit
 ) {
     val backdrop = rememberCanvasBackdrop {
@@ -80,12 +95,30 @@ fun LiquidFAB(
         label = "liquid_fab_scale"
     )
 
+    // 拖动移位：累积手指拖动量，EaseOut 钳制在 maxDragDisplacement 内（同底栏 panelOffset 逻辑）
+    val density = LocalDensity.current
+    val maxDisplacementPx = with(density) { maxDragDisplacement.toPx() }
+    val maxDragPx = with(density) { 120.dp.toPx() }
+    val dragOffsetAnimation = remember { Animatable(Offset.Zero, Offset.VectorConverter, Offset.VisibilityThreshold) }
+    val dragDisplacement by remember(density) {
+        derivedStateOf {
+            Offset(
+                maxDisplacementPx * sign(dragOffsetAnimation.value.x) *
+                    EaseOut.transform(abs(dragOffsetAnimation.value.x / maxDragPx).fastCoerceIn(0f, 1f)),
+                maxDisplacementPx * sign(dragOffsetAnimation.value.y) *
+                    EaseOut.transform(abs(dragOffsetAnimation.value.y / maxDragPx).fastCoerceIn(0f, 1f))
+            )
+        }
+    }
+
     Box(
         modifier = modifier
             .size(size)
             .graphicsLayer {
                 scaleX = pressScale
                 scaleY = pressScale
+                translationX = dragDisplacement.x
+                translationY = dragDisplacement.y
             }
             .drawBackdrop(
                 backdrop = backdrop,
@@ -110,6 +143,28 @@ fun LiquidFAB(
             )
             .then(interactiveHighlight.modifier)
             .then(interactiveHighlight.gestureModifier)
+            .pointerInput(animationScope) {
+                // 与光斑检测并行：只跟踪拖动量，不消费事件（同底栏双检测器模式）
+                inspectDragGestures(
+                    onDragStart = {
+                        animationScope.launch { dragOffsetAnimation.snapTo(Offset.Zero) }
+                    },
+                    onDragEnd = {
+                        animationScope.launch {
+                            dragOffsetAnimation.animateTo(Offset.Zero, spring(1f, 300f, Offset.VisibilityThreshold))
+                        }
+                    },
+                    onDragCancel = {
+                        animationScope.launch {
+                            dragOffsetAnimation.animateTo(Offset.Zero, spring(1f, 300f, Offset.VisibilityThreshold))
+                        }
+                    }
+                ) { _, dragAmount ->
+                    animationScope.launch {
+                        dragOffsetAnimation.snapTo(dragOffsetAnimation.value + dragAmount)
+                    }
+                }
+            }
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
