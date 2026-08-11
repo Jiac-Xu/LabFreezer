@@ -1,6 +1,7 @@
 package com.labfreezer.ui.glass
 
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
@@ -13,6 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -36,7 +38,7 @@ import com.kyant.shapes.Capsule
  * 按钮处于页面内容层内部（非记录层兄弟），沿用官方对行内控件的处理：
  * 用 CanvasBackdrop 还原页面底色 + 微渐变，让玻璃本体获得磨砂/折射层次。
  * 底色为半透明（[backdropAlpha]），背后真实内容可透出，形成半透明磨砂质感。
- * 按压时缩小 + 内阴影加深，松手回弹。
+ * 触按时：跟手白色光斑（InteractiveHighlight，移植自 AndroidLiquidGlass）+ 弹簧缩放回弹 + 内阴影加深，松手回弹。
  *
  * @param backdropAlpha 底色不透明度（0~1）：越低越透，0 时完全透出背后内容
  */
@@ -64,8 +66,17 @@ fun LiquidFAB(
 
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
+
+    // 跟手光影：手指触按处产生白色光斑，弹簧动画随手指移动
+    val animationScope = rememberCoroutineScope()
+    val interactiveHighlight = remember(animationScope) {
+        InteractiveHighlight(animationScope)
+    }
+
+    // 弹簧缩放：与高光同款阻尼/劲度，按下回弹带轻微过冲
     val pressScale by animateFloatAsState(
         targetValue = if (pressed) 0.85f else 1f,
+        animationSpec = spring(0.5f, 300f),
         label = "liquid_fab_scale"
     )
 
@@ -97,6 +108,8 @@ fun LiquidFAB(
                     }
                 }
             )
+            .then(interactiveHighlight.modifier)
+            .then(interactiveHighlight.gestureModifier)
             .clickable(
                 interactionSource = interactionSource,
                 indication = null,
