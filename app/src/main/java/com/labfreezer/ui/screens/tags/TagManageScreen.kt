@@ -59,9 +59,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.labfreezer.R
-import com.kyant.backdrop.backdrops.layerBackdrop
-import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.labfreezer.data.db.entity.TagEntity
+import com.labfreezer.ui.components.GlassFabScaffold
 import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.navigation.Screen
 
@@ -80,10 +79,7 @@ fun TagManageScreen(
     val editingTag by viewModel.editingTag.collectAsStateWithLifecycle()
     val deletingTag by viewModel.deletingTag.collectAsStateWithLifecycle()
 
-    // FAB 玻璃采样层：记录屏幕内容，让 FAB 磨砂出真实内容（与底栏一致）
-    val fabBackdrop = rememberLayerBackdrop()
-
-    Scaffold(
+    GlassFabScaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.tag_manage_title), fontWeight = FontWeight.SemiBold) },
@@ -104,14 +100,11 @@ fun TagManageScreen(
             SpeedDialFAB(
                 onCreatePrimary = { viewModel.showAddDialog() },
                 showSecondButton = false,
-                backdrop = fabBackdrop,
                 // 底栏胶囊高 64dp，FAB 高 56dp，底部对齐时中心差 (64-56)/2=4dp，抬高使其垂直居中
                 modifier = if (alignFabWithBar) Modifier.padding(bottom = 4.dp) else Modifier
             )
         }
     ) { padding ->
-        // 记录屏幕内容层，供 FAB 玻璃采样磨砂
-        Box(modifier = Modifier.fillMaxSize().layerBackdrop(fabBackdrop)) {
         LazyColumn(
             modifier = Modifier.fillMaxSize().padding(padding),
             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -152,7 +145,6 @@ fun TagManageScreen(
                 }
                 Spacer(Modifier.height(80.dp))
             }
-        }
         }
     }
 

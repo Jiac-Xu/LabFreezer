@@ -64,6 +64,7 @@ import com.labfreezer.R
 import com.labfreezer.data.model.NodeType
 import com.labfreezer.data.model.VisibleTreeNode
 import com.labfreezer.data.search.ScopeType
+import com.labfreezer.ui.components.GlassFabScaffold
 import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.layers.BoxDialog
@@ -91,7 +92,7 @@ fun DeviceDetailScreen(navController: NavController, deviceId: Long, viewModel: 
     var showDeleteBatchConfirm by remember { mutableStateOf(false) }
     var speedDialExpanded by remember { mutableStateOf(false) }
 
-    Scaffold(
+    GlassFabScaffold(
         topBar = {
             TopAppBar(
                 title = {

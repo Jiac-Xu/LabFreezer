@@ -85,6 +85,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.labfreezer.ui.NavAnimState
+import com.labfreezer.ui.components.GlassFabScaffold
 import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.components.ZoomableImageViewer
 import com.labfreezer.ui.navigation.Screen
@@ -202,7 +203,7 @@ fun SampleEditScreen(
         }
     }
 
-    Scaffold(
+    GlassFabScaffold(
         containerColor = MaterialTheme.colorScheme.background,
         modifier = Modifier.pointerInput(Unit) {
             detectHorizontalDragGestures(

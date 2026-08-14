@@ -50,6 +50,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.labfreezer.data.db.entity.DeviceTypeEntity
+import com.labfreezer.ui.components.GlassFabScaffold
 import com.labfreezer.ui.components.SpeedDialFAB
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -62,7 +63,7 @@ fun DeviceTypeManageScreen(
     val showAddTypeDialog by viewModel.showAddTypeDialog.collectAsStateWithLifecycle()
     val deletingType by viewModel.deletingType.collectAsStateWithLifecycle()
 
-    Scaffold(
+    GlassFabScaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.device_type_manage_title), fontWeight = FontWeight.SemiBold) },

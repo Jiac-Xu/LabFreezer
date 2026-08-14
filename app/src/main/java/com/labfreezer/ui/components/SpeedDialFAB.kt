@@ -34,7 +34,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.vector.ImageVector
-import com.kyant.backdrop.Backdrop
 import com.labfreezer.R
 import com.labfreezer.ui.glass.LiquidFAB
 
@@ -65,14 +64,12 @@ fun SpeedDialFAB(
     secondButtonIcon: ImageVector = Icons.Default.Layers,
     primaryIcon: ImageVector = Icons.Default.Add,
     primaryButtonContentDescription: String = stringResource(R.string.btn_add),
-    backdrop: Backdrop? = null,
     modifier: Modifier = Modifier
 ) {
     // 只有一个操作时，降级为普通液态 FAB
     if (!showSecondButton) {
         LiquidFAB(
             onClick = onCreatePrimary,
-            backdrop = backdrop,
             modifier = modifier
         ) {
             Icon(
@@ -114,7 +111,6 @@ fun SpeedDialFAB(
                             tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     },
-                    backdrop = backdrop,
                     onClick = {
                         onToggle()
                         onCreatePrimary()
@@ -133,7 +129,6 @@ fun SpeedDialFAB(
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         },
-                        backdrop = backdrop,
                         onClick = {
                             onToggle()
                             onCreateSecond()
@@ -148,8 +143,7 @@ fun SpeedDialFAB(
 
         // 主 FAB 按钮
         LiquidFAB(
-            onClick = onToggle,
-            backdrop = backdrop
+            onClick = onToggle
         ) {
             Icon(
                 primaryIcon,
@@ -170,7 +164,6 @@ fun SpeedDialFAB(
 private fun SpeedDialItem(
     label: String,
     icon: @Composable () -> Unit,
-    backdrop: Backdrop? = null,
     onClick: () -> Unit
 ) {
     Row(
@@ -200,7 +193,6 @@ private fun SpeedDialItem(
         LiquidFAB(
             onClick = onClick,
             size = 40.dp,
-            backdrop = backdrop,
             containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.75f),
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant
         ) {
