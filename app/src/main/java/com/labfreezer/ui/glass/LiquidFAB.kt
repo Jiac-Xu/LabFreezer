@@ -31,6 +31,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastCoerceIn
+import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.drawBackdrop
 import com.kyant.backdrop.effects.blur
@@ -55,6 +56,8 @@ import kotlinx.coroutines.launch
  *
  * @param backdropAlpha 底色不透明度（0~1）：越低越透，0 时完全透出背后内容
  * @param maxDragDisplacement 拖动位移上限
+ * @param backdrop 可选的真实内容层（LayerBackdrop）。传入后玻璃本体对真实内容采样磨砂，
+ *   与底栏效果一致；不传则退化为画布底色（半透明纯色 + 渐变）
  */
 @Composable
 fun LiquidFAB(
@@ -66,9 +69,11 @@ fun LiquidFAB(
     backdropColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     backdropAlpha: Float = 0.3f,
     maxDragDisplacement: Dp = 4.dp,
+    backdrop: Backdrop? = null,
     content: @Composable BoxScope.() -> Unit
 ) {
-    val backdrop = rememberCanvasBackdrop {
+    // 无真实层时退化为画布底色（半透明纯色 + 微渐变）
+    val canvasBackdrop = rememberCanvasBackdrop {
         // 底色半透明：保留磨砂层次的同时让背后内容透出，上深下浅
         drawRect(backdropColor.copy(alpha = backdropAlpha))
         drawRect(
@@ -78,6 +83,7 @@ fun LiquidFAB(
             )
         )
     }
+    val effectiveBackdrop = backdrop ?: canvasBackdrop
 
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()
@@ -121,7 +127,7 @@ fun LiquidFAB(
                 translationY = dragDisplacement.y
             }
             .drawBackdrop(
-                backdrop = backdrop,
+                backdrop = effectiveBackdrop,
                 shape = { Capsule() },
                 effects = {
                     vibrancy()

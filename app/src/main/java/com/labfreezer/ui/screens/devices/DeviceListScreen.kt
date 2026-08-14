@@ -1,5 +1,7 @@
 package com.labfreezer.ui.screens.devices
 import com.labfreezer.R
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
@@ -123,6 +125,9 @@ fun DeviceListScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+    // FAB 玻璃采样层：记录屏幕内容，让 FAB 磨砂出真实内容（与底栏一致）
+    val fabBackdrop = rememberLayerBackdrop()
+
     val inAnySelection = isSelecting || isSelectingRecent || isSelectingBoxes
     val selectionLabel = when {
         isSelecting -> stringResource(R.string.device_list_selected_count, selectedIds.size)
@@ -207,12 +212,15 @@ fun DeviceListScreen(
                     showSecondButton = true,
                     secondButtonLabel = stringResource(R.string.device_list_add_device),
                     secondButtonIcon = Icons.Default.DeviceHub,
+                    backdrop = fabBackdrop,
                     // 底栏胶囊高 64dp，FAB 高 56dp，底部对齐时中心差 (64-56)/2=4dp，抬高使其垂直居中
                     modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
         }
     ) { padding ->
+        // 记录屏幕内容层，供 FAB 玻璃采样磨砂
+        Box(modifier = Modifier.fillMaxSize().layerBackdrop(fabBackdrop)) {
         if (devices.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -372,6 +380,7 @@ fun DeviceListScreen(
                         }
                 }
             }
+        }
         }
     }
 
