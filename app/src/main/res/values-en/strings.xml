@@ -143,6 +143,8 @@
     <string name="personalization_zoom_slider_subtitle">Show/hide the zoom slider on the box page</string>
     <string name="personalization_search_history">Search History</string>
     <string name="personalization_search_history_subtitle">Save search history for quick access</string>
+    <string name="personalization_auto_keyboard_bottom_bar">Auto-open Keyboard from Bottom Bar</string>
+    <string name="personalization_auto_keyboard_bottom_bar_subtitle">Show keyboard automatically when opening the search tab</string>
 
     <string name="settings_section_management">Management</string>
     <string name="settings_image_cleanup">Image Cleanup</string>

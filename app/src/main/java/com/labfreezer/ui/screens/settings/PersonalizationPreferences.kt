@@ -35,4 +35,19 @@ class PersonalizationPreferences @Inject constructor(
     fun setSearchHistoryEnabled(enabled: Boolean) {
         prefs.edit().putBoolean("search_history_enabled", enabled).apply()
     }
+
+    fun isAutoKeyboardFromBottomBar(): Boolean =
+        prefs.getBoolean(KEY_AUTO_KEYBOARD_BOTTOM_BAR, false)
+    fun setAutoKeyboardFromBottomBar(enabled: Boolean) {
+        prefs.edit().putBoolean(KEY_AUTO_KEYBOARD_BOTTOM_BAR, enabled).apply()
+    }
+
+    companion object {
+        private const val PREFS = "personalization_prefs"
+        private const val KEY_AUTO_KEYBOARD_BOTTOM_BAR = "auto_keyboard_bottom_bar"
+
+        fun getAutoKeyboardFromBottomBar(context: Context): Boolean =
+            context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+                .getBoolean(KEY_AUTO_KEYBOARD_BOTTOM_BAR, false)
+    }
 }

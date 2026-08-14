@@ -132,6 +132,8 @@
     <string name="personalization_zoom_slider_subtitle">控制盒子頁面底部縮放工具欄是否顯示</string>
     <string name="personalization_search_history">歷史搜尋記錄</string>
     <string name="personalization_search_history_subtitle">控制是否儲存使用者搜尋歷史</string>
+    <string name="personalization_auto_keyboard_bottom_bar">從底欄進入搜尋時自動開啟鍵盤</string>
+    <string name="personalization_auto_keyboard_bottom_bar_subtitle">進入底欄搜尋頁時自動彈出鍵盤</string>
 
     <string name="settings_section_management">管理</string>
     <string name="settings_image_cleanup">圖片清理</string>

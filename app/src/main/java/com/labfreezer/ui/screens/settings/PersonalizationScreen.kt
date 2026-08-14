@@ -271,6 +271,14 @@ fun PersonalizationScreen(
                 onCheckedChange = { viewModel.setSearchHistoryEnabled(it) }
             )
 
+            SettingsSwitchCard(
+                icon = Icons.Filled.Search,
+                title = stringResource(R.string.personalization_auto_keyboard_bottom_bar),
+                subtitle = stringResource(R.string.personalization_auto_keyboard_bottom_bar_subtitle),
+                checked = state.autoKeyboardFromBottomBar,
+                onCheckedChange = { viewModel.setAutoKeyboardFromBottomBar(it) }
+            )
+
             Spacer(Modifier.height(100.dp))
         }
     }

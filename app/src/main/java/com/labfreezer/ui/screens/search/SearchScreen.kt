@@ -100,6 +100,7 @@ fun SearchScreen(
     navController: NavController,
     showBackButton: Boolean = true,
     scope: SearchScope = SearchScope(ScopeType.ALL),
+    autoOpenKeyboard: Boolean = true,
     viewModel: SearchViewModel = hiltViewModel()
 ) {
     val query by viewModel.query.collectAsStateWithLifecycle()
@@ -116,7 +117,7 @@ fun SearchScreen(
         viewModel.setScope(scope)
     }
 
-    LaunchedEffect(Unit) { if (query.isEmpty()) focusRequester.requestFocus() }
+    LaunchedEffect(Unit) { if (autoOpenKeyboard && query.isEmpty()) focusRequester.requestFocus() }
     DisposableEffect(Unit) { onDispose { viewModel.saveCurrentQuery() } }
 
     // 结果列表滚动状态

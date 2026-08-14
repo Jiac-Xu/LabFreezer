@@ -143,6 +143,8 @@
     <string name="personalization_zoom_slider_subtitle">控制盒子页面底部缩放工具栏是否显示</string>
     <string name="personalization_search_history">历史搜索记录</string>
     <string name="personalization_search_history_subtitle">控制是否保存用户搜索历史</string>
+    <string name="personalization_auto_keyboard_bottom_bar">从底栏进入搜索时自动打开键盘</string>
+    <string name="personalization_auto_keyboard_bottom_bar_subtitle">进入底栏搜索页时自动弹出键盘</string>
 
     <string name="settings_section_management">管理</string>
     <string name="settings_image_cleanup">图片清理</string>

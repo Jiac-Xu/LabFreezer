@@ -13,7 +13,8 @@ data class PersonalizationState(
     val tempModeAllowed: Boolean = false,
     val autoSaveEnabled: Boolean = false,
     val zoomSliderEnabled: Boolean = true,
-    val searchHistoryEnabled: Boolean = true
+    val searchHistoryEnabled: Boolean = true,
+    val autoKeyboardFromBottomBar: Boolean = false
 )
 
 @HiltViewModel
@@ -28,7 +29,8 @@ class PersonalizationViewModel @Inject constructor(
             tempModeAllowed = preferences.isTempModeAllowed(),
             autoSaveEnabled = preferences.isAutoSaveEnabled(),
             zoomSliderEnabled = preferences.isZoomSliderEnabled(),
-            searchHistoryEnabled = preferences.isSearchHistoryEnabled()
+            searchHistoryEnabled = preferences.isSearchHistoryEnabled(),
+            autoKeyboardFromBottomBar = preferences.isAutoKeyboardFromBottomBar()
         )
     )
     val state: StateFlow<PersonalizationState> = _state
@@ -58,5 +60,10 @@ class PersonalizationViewModel @Inject constructor(
     fun setSearchHistoryEnabled(enabled: Boolean) {
         preferences.setSearchHistoryEnabled(enabled)
         _state.value = _state.value.copy(searchHistoryEnabled = enabled)
+    }
+
+    fun setAutoKeyboardFromBottomBar(enabled: Boolean) {
+        preferences.setAutoKeyboardFromBottomBar(enabled)
+        _state.value = _state.value.copy(autoKeyboardFromBottomBar = enabled)
     }
 }

@@ -92,6 +92,7 @@ import com.labfreezer.ui.screens.settings.AboutScreen
 import com.labfreezer.ui.screens.settings.BottomBarEditScreen
 import com.labfreezer.ui.screens.settings.BottomTab
 import com.labfreezer.ui.screens.settings.BottomTabPreference
+import com.labfreezer.ui.screens.settings.PersonalizationPreferences
 import com.labfreezer.ui.screens.settings.StartPagePreference
 import com.labfreezer.FairMemoryReceiver
 import com.labfreezer.ui.theme.LabFreezerTheme
@@ -473,6 +474,7 @@ private fun MainTabPager(
     onImportFileSelected: (Uri) -> Unit = {},
 ) {
     // 🎯 使用 AnimatedContent 彻底重构，零预加载，完美复刻 MomentLog 动效
+    val context = LocalContext.current
     val colorScheme = MaterialTheme.colorScheme
     AnimatedContent(
         targetState = currentTabIndex,
@@ -516,7 +518,12 @@ private fun MainTabPager(
         when (tabConfig.getOrNull(targetPage)) {
             BottomTab.DEVICE_LIST -> DeviceListScreen(navController)
             BottomTab.TAG_MANAGE -> TagManageScreen(navController, showBackButton = false)
-            BottomTab.SEARCH -> SearchScreen(navController, showBackButton = false, scope = SearchScope(ScopeType.ALL))
+            BottomTab.SEARCH -> SearchScreen(
+                navController,
+                showBackButton = false,
+                scope = SearchScope(ScopeType.ALL),
+                autoOpenKeyboard = PersonalizationPreferences.getAutoKeyboardFromBottomBar(context)
+            )
             BottomTab.SETTINGS -> SettingsScreen(
                 onNavigateToPersonalization = onNavigateToPersonalization,
                 onNavigateToCheckUpdate = onNavigateToCheckUpdate,
