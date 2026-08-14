@@ -47,12 +47,12 @@ import kotlin.math.sign
 import kotlinx.coroutines.launch
 
 /**
- * FAB 玻璃采样层（CompositionLocal）。
- * 由 [com.labfreezer.ui.components.GlassFabScaffold] 提供：它把屏幕内容记录成真实图层，
- * FAB 作为兄弟节点采样该层即可磨砂出真实内容（与底栏一致）。
+ * 玻璃采样层（CompositionLocal）。
+ * 由 [com.labfreezer.ui.components.GlassFabScaffold]（屏幕内容层）或 MainScreen（全局内容层，
+ * 供悬浮底栏）提供：把内容记录成真实图层，玻璃组件作为兄弟节点采样该层即可磨砂出真实内容。
  * 不提供时 LiquidFAB 自动退化为画布底色。
  */
-val LocalFabGlassBackdrop = staticCompositionLocalOf<Backdrop?> { null }
+val LocalGlassBackdrop = staticCompositionLocalOf<Backdrop?> { null }
 
 /**
  * 液态玻璃 FAB（Floating Action Button）。
@@ -92,8 +92,8 @@ fun LiquidFAB(
             )
         )
     }
-    // 优先显式传入的层，其次由 GlassFabScaffold 提供的真实内容层，最后退化画布底色
-    val effectiveBackdrop = backdrop ?: LocalFabGlassBackdrop.current ?: canvasBackdrop
+    // 优先显式传入的层，其次由 GlassFabScaffold / MainScreen 提供的真实内容层，最后退化画布底色
+    val effectiveBackdrop = backdrop ?: LocalGlassBackdrop.current ?: canvasBackdrop
 
     val interactionSource = remember { MutableInteractionSource() }
     val pressed by interactionSource.collectIsPressedAsState()

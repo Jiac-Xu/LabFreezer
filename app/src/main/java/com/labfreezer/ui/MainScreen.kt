@@ -59,8 +59,8 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.labfreezer.R
 import com.labfreezer.export.ZipAnalysis
@@ -69,6 +69,7 @@ import com.labfreezer.data.search.ScopeType
 import com.labfreezer.data.search.SearchScope
 import com.labfreezer.ui.glass.LiquidBottomTab
 import com.labfreezer.ui.glass.LiquidBottomTabs
+import com.labfreezer.ui.glass.LocalGlassBackdrop
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.boxgrid.BoxGridScreen
 import com.labfreezer.ui.screens.devices.DeviceDetailScreen
@@ -229,6 +230,8 @@ fun MainScreen(
             // 液态玻璃：记录 NavHost 内容层，悬浮底栏作为兄弟节点从中采样折射
             val appBackdrop = rememberLayerBackdrop()
 
+            // 全局玻璃采样层：NavHost 内容 + 悬浮底栏（非屏幕内，取不到屏幕的 GlassFabScaffold 层）
+            CompositionLocalProvider(LocalGlassBackdrop provides appBackdrop) {
             NavHost(
                 navController = navController,
                 startDestination = Screen.MainTabs.route,
@@ -381,7 +384,6 @@ fun MainScreen(
                     currentIndex = currentTabIndex,
                     tabList = tabConfig,
                     onTabSelected = { currentTabIndex = it },
-                    backdrop = appBackdrop,
                     hasFab = hasFab,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
@@ -391,6 +393,7 @@ fun MainScreen(
                     uri = uri,
                     onDismiss = { pendingImportUri.value = null }
                 )
+            }
             }
         }
         }
@@ -403,11 +406,17 @@ private fun FloatingBottomNav(
     tabList: List<BottomTab>,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    backdrop: Backdrop,
     hasFab: Boolean = false
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val context = LocalContext.current
+
+    // 玻璃采样层：MainScreen 提供全局内容层，无则退化画布底色
+    val ambientBackdrop = LocalGlassBackdrop.current
+    val fallbackBackdrop = rememberCanvasBackdrop {
+        drawRect(colorScheme.surface.copy(alpha = 0.4f))
+    }
+    val backdrop = ambientBackdrop ?: fallbackBackdrop
 
     // 有 FAB 时底栏向右避让，给右侧 FAB（56dp + 边距 16dp + 间距 16dp）留出 88dp
     val endPadding by animateDpAsState(

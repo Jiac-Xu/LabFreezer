@@ -15,12 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
-import com.labfreezer.ui.glass.LocalFabGlassBackdrop
+import com.labfreezer.ui.glass.LocalGlassBackdrop
 
 /**
  * 支持真实玻璃磨砂的 Scaffold。
  *
- * 与 [Scaffold] 完全同参，额外把屏幕内容记录成真实图层，并通过 [LocalFabGlassBackdrop]
+ * 与 [Scaffold] 完全同参，额外把屏幕内容记录成真实图层，并通过 [LocalGlassBackdrop]
  * 提供给其中的 LiquidFAB 采样——FAB 会自动磨砂出背后的真实内容（与底栏效果一致），
  * 无需在调用方逐个传 backdrop。
  *
@@ -41,7 +41,7 @@ fun GlassFabScaffold(
 ) {
     val fabBackdrop = rememberLayerBackdrop()
 
-    CompositionLocalProvider(LocalFabGlassBackdrop provides fabBackdrop) {
+    CompositionLocalProvider(LocalGlassBackdrop provides fabBackdrop) {
         Scaffold(
             modifier = modifier,
             topBar = topBar,
