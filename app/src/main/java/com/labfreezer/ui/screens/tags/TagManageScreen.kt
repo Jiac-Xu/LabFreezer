@@ -70,7 +70,6 @@ private val TAG_COLORS = listOf("#1565C0","#2E7D32","#E65100","#6A1B9A","#AD1457
 fun TagManageScreen(
     navController: NavController,
     showBackButton: Boolean = true,
-    showFabPadding: Boolean = true,
     viewModel: TagManageViewModel = hiltViewModel()
 ) {
     val tagsWithCount by viewModel.tagsWithCount.collectAsStateWithLifecycle()
@@ -98,8 +97,7 @@ fun TagManageScreen(
         floatingActionButton = {
             SpeedDialFAB(
                 onCreatePrimary = { viewModel.showAddDialog() },
-                showSecondButton = false,
-                modifier = if (showFabPadding) Modifier.padding(bottom = 88.dp) else Modifier
+                showSecondButton = false
             )
         }
     ) { padding ->

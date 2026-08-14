@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -173,6 +174,11 @@ fun MainScreen(
 
         val showBottomBar = currentRoute == Screen.MainTabs.route
 
+        // 当前 tab 是否有 FAB：有则底栏向左避让，FAB 位于右侧同一行
+        val hasFab = showBottomBar && tabConfig.getOrNull(currentTabIndex)?.let {
+            it == BottomTab.DEVICE_LIST || it == BottomTab.TAG_MANAGE
+        } ?: false
+
         // ── 公平运行内存：冷启动时恢复被查杀前的导航现场 ──
         LaunchedEffect(Unit) {
             val saved = com.labfreezer.FairMemoryReceiver.run {
@@ -327,7 +333,7 @@ fun MainScreen(
                     DeviceTypeManageScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.TagManage.route) {
-                    TagManageScreen(navController, showBackButton = true, showFabPadding = false)
+                    TagManageScreen(navController, showBackButton = true)
                 }
                 composable(
                     route = Screen.TagDetail.route,
@@ -376,6 +382,7 @@ fun MainScreen(
                     tabList = tabConfig,
                     onTabSelected = { currentTabIndex = it },
                     backdrop = appBackdrop,
+                    hasFab = hasFab,
                     modifier = Modifier.align(Alignment.BottomCenter)
                 )
             }
@@ -396,16 +403,23 @@ private fun FloatingBottomNav(
     tabList: List<BottomTab>,
     onTabSelected: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    backdrop: Backdrop
+    backdrop: Backdrop,
+    hasFab: Boolean = false
 ) {
     val colorScheme = MaterialTheme.colorScheme
     val context = LocalContext.current
+
+    // 有 FAB 时底栏向右避让，给右侧 FAB（56dp + 边距 16dp + 间距 16dp）留出 88dp
+    val endPadding by animateDpAsState(
+        targetValue = if (hasFab) 88.dp else 16.dp,
+        label = "bottom_nav_end_padding"
+    )
 
     Box(
         modifier = modifier
             .fillMaxWidth()
             .navigationBarsPadding()
-            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            .padding(start = 16.dp, end = endPadding, bottom = 16.dp)
     ) {
         if (tabList.isNotEmpty()) {
             LiquidBottomTabs(
@@ -491,8 +505,8 @@ private fun MainTabPager(
         label = "MainTabTransition"
     ) { targetPage ->
         when (tabConfig.getOrNull(targetPage)) {
-            BottomTab.DEVICE_LIST -> DeviceListScreen(navController, showFabPadding = true)
-            BottomTab.TAG_MANAGE -> TagManageScreen(navController, showBackButton = false, showFabPadding = true)
+            BottomTab.DEVICE_LIST -> DeviceListScreen(navController)
+            BottomTab.TAG_MANAGE -> TagManageScreen(navController, showBackButton = false)
             BottomTab.SEARCH -> SearchScreen(navController, showBackButton = false, scope = SearchScope(ScopeType.ALL))
             BottomTab.SETTINGS -> SettingsScreen(
                 onNavigateToPersonalization = onNavigateToPersonalization,

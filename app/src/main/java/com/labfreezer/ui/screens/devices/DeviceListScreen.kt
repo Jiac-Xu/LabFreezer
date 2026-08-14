@@ -88,7 +88,6 @@ import com.labfreezer.ui.screens.layers.BoxDialog
 @Composable
 fun DeviceListScreen(
     navController: NavController,
-    showFabPadding: Boolean = true,
     viewModel: DeviceListViewModel = hiltViewModel()
 ) {
     val devices by viewModel.devices.collectAsStateWithLifecycle()
@@ -208,7 +207,7 @@ fun DeviceListScreen(
                     showSecondButton = true,
                     secondButtonLabel = stringResource(R.string.device_list_add_device),
                     secondButtonIcon = Icons.Default.DeviceHub,
-                    modifier = if (showFabPadding) Modifier.padding(bottom = 88.dp) else Modifier
+                    modifier = Modifier
                 )
             }
         }
