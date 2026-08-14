@@ -333,7 +333,7 @@ fun MainScreen(
                     DeviceTypeManageScreen(onBack = { navController.popBackStack() })
                 }
                 composable(Screen.TagManage.route) {
-                    TagManageScreen(navController, showBackButton = true)
+                    TagManageScreen(navController, showBackButton = true, alignFabWithBar = false)
                 }
                 composable(
                     route = Screen.TagDetail.route,

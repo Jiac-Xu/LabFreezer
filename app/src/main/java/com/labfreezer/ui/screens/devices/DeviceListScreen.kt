@@ -207,7 +207,8 @@ fun DeviceListScreen(
                     showSecondButton = true,
                     secondButtonLabel = stringResource(R.string.device_list_add_device),
                     secondButtonIcon = Icons.Default.DeviceHub,
-                    modifier = Modifier
+                    // 底栏胶囊高 64dp，FAB 高 56dp，底部对齐时中心差 (64-56)/2=4dp，抬高使其垂直居中
+                    modifier = Modifier.padding(bottom = 4.dp)
                 )
             }
         }
