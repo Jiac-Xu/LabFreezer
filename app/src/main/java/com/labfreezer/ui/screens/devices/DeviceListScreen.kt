@@ -80,7 +80,7 @@ import com.labfreezer.data.repository.RecentBox
 import com.labfreezer.data.search.ScopeType
 import com.labfreezer.ui.screens.move.MoveState
 import com.labfreezer.ui.screens.move.MoveTarget
-import com.labfreezer.ui.components.GlassFabScaffold
+import com.labfreezer.ui.components.GlassScaffold
 import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.layers.BoxDialog
@@ -111,7 +111,7 @@ fun DeviceListScreen(
     val editingBox by viewModel.editingBox.collectAsStateWithLifecycle()
     val deletingBox by viewModel.deletingBox.collectAsStateWithLifecycle()
 
-    // FAB 玻璃采样层由 GlassFabScaffold 自动提供
+    // 玻璃采样层由 GlassScaffold 自动提供
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(lifecycleOwner) {
@@ -133,7 +133,7 @@ fun DeviceListScreen(
         else -> stringResource(R.string.app_name)
     }
 
-    GlassFabScaffold(
+    GlassScaffold(
         topBar = {
             TopAppBar(
                 title = {

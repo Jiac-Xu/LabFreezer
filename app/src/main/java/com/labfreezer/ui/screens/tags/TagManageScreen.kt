@@ -60,7 +60,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.labfreezer.R
 import com.labfreezer.data.db.entity.TagEntity
-import com.labfreezer.ui.components.GlassFabScaffold
+import com.labfreezer.ui.components.GlassScaffold
 import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.navigation.Screen
 
@@ -79,7 +79,7 @@ fun TagManageScreen(
     val editingTag by viewModel.editingTag.collectAsStateWithLifecycle()
     val deletingTag by viewModel.deletingTag.collectAsStateWithLifecycle()
 
-    GlassFabScaffold(
+    GlassScaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.tag_manage_title), fontWeight = FontWeight.SemiBold) },

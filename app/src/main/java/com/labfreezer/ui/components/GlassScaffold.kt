@@ -18,16 +18,16 @@ import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.labfreezer.ui.glass.LocalGlassBackdrop
 
 /**
- * 支持真实玻璃磨砂的 Scaffold。
+ * 支持真实液态玻璃磨砂的 Scaffold。
  *
  * 与 [Scaffold] 完全同参，额外把屏幕内容记录成真实图层，并通过 [LocalGlassBackdrop]
- * 提供给其中的 LiquidFAB 采样——FAB 会自动磨砂出背后的真实内容（与底栏效果一致），
+ * 提供给其中的玻璃组件（LiquidFAB、LiquidButton、LiquidSlider 等）采样——玻璃组件会自动磨砂出背后的真实内容，
  * 无需在调用方逐个传 backdrop。
  *
- * FAB 位于 Scaffold 的 floatingActionButton 槽中，是内容层的兄弟节点，可安全采样不自我引用。
+ * 悬浮槽与 FAB 位于 Scaffold 内容层的外部/兄弟节点，可安全采样不自我引用。
  */
 @Composable
-fun GlassFabScaffold(
+fun GlassScaffold(
     modifier: Modifier = Modifier,
     topBar: @Composable () -> Unit = {},
     bottomBar: @Composable () -> Unit = {},
@@ -39,9 +39,9 @@ fun GlassFabScaffold(
     contentWindowInsets: WindowInsets = ScaffoldDefaults.contentWindowInsets,
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    val fabBackdrop = rememberLayerBackdrop()
+    val contentBackdrop = rememberLayerBackdrop()
 
-    CompositionLocalProvider(LocalGlassBackdrop provides fabBackdrop) {
+    CompositionLocalProvider(LocalGlassBackdrop provides contentBackdrop) {
         Scaffold(
             modifier = modifier,
             topBar = topBar,
@@ -53,8 +53,8 @@ fun GlassFabScaffold(
             contentColor = contentColor,
             contentWindowInsets = contentWindowInsets,
         ) { padding ->
-            // 记录屏幕内容层，供 FAB 玻璃采样磨砂
-            Box(modifier = Modifier.fillMaxSize().layerBackdrop(fabBackdrop)) {
+            // 记录屏幕内容层，供悬浮液态玻璃组件采样磨砂
+            Box(modifier = Modifier.fillMaxSize().layerBackdrop(contentBackdrop)) {
                 content(padding)
             }
         }

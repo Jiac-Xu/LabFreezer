@@ -62,7 +62,7 @@ import com.labfreezer.R
 import com.labfreezer.data.model.NodeType
 import com.labfreezer.data.model.VisibleTreeNode
 import com.labfreezer.data.search.ScopeType
-import com.labfreezer.ui.components.GlassFabScaffold
+import com.labfreezer.ui.components.GlassScaffold
 import com.labfreezer.ui.components.SpeedDialFAB
 import com.labfreezer.ui.navigation.Screen
 import com.labfreezer.ui.screens.move.MoveState
@@ -84,7 +84,7 @@ fun LayerDetailScreen(navController: NavController, layerId: Long, viewModel: La
     var showDeleteBatchConfirm by remember { mutableStateOf(false) }
     var speedDialExpanded by remember { mutableStateOf(false) }
 
-    GlassFabScaffold(
+    GlassScaffold(
         topBar = {
             TopAppBar(
                 title = {

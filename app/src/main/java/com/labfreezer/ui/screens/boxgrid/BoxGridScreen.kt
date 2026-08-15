@@ -69,6 +69,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -94,10 +95,13 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.compose.material3.Scaffold
 import coil.compose.AsyncImage
 import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawBackdrop
+import com.labfreezer.ui.glass.LocalGlassBackdrop
 import com.kyant.backdrop.effects.blur
 import com.kyant.backdrop.effects.lens
 import com.kyant.backdrop.effects.vibrancy
@@ -295,12 +299,13 @@ fun BoxGridScreen(
 
             val gridBackdrop = rememberLayerBackdrop()
             Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .layerBackdrop(gridBackdrop)
-                    .horizontalScroll(rememberScrollState())
-            ) {
+                // 网格内容层：记录为真实图层供悬浮缩放条采样磨砂
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .layerBackdrop(gridBackdrop)
+                        .horizontalScroll(rememberScrollState())
+                ) {
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(cols),
                         modifier = Modifier.width(totalGridWidth).padding(horizontal = 4.dp),
@@ -358,50 +363,56 @@ Box(
                 }
 
                 if (zoomSliderEnabled) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .align(Alignment.BottomCenter)
-                            .navigationBarsPadding()
-                            .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
-                    ) {
-                        // 液态玻璃容器：采样网格内容层，磨砂 + 折射
-                        val containerColor = MaterialTheme.colorScheme.surface
+                    // 缩放条作为网格内容层的兄弟节点，安全采样 gridBackdrop
+                    CompositionLocalProvider(LocalGlassBackdrop provides gridBackdrop) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .drawBackdrop(
-                                    backdrop = gridBackdrop,
-                                    shape = { Capsule() },
-                                    effects = {
-                                        vibrancy()
-                                        blur(8f.dp.toPx())
-                                        lens(8f.dp.toPx(), 10f.dp.toPx())
-                                    },
-                                    highlight = { Highlight.Default.copy(alpha = 0.4f) },
-                                    shadow = { Shadow(radius = 8f.dp, color = Color.Black.copy(alpha = 0.08f)) },
-                                    onDrawSurface = { drawRect(containerColor.copy(alpha = 0.45f)) }
-                                )
+                                .align(Alignment.BottomCenter)
+                                .navigationBarsPadding()
+                                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().height(64.dp)
-                                    .padding(horizontal = 20.dp, vertical = 12.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                            // 液态玻璃容器：采样网格内容层，磨砂 + 折射
+                            val containerColor = MaterialTheme.colorScheme.surface
+                            val canvasBackdrop = rememberCanvasBackdrop {
+                                drawRect(containerColor.copy(alpha = 0.45f))
+                            }
+                            val effectiveBackdrop = LocalGlassBackdrop.current ?: canvasBackdrop
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .drawBackdrop(
+                                        backdrop = effectiveBackdrop,
+                                        shape = { Capsule() },
+                                        effects = {
+                                            vibrancy()
+                                            blur(8f.dp.toPx())
+                                            lens(8f.dp.toPx(), 10f.dp.toPx())
+                                        },
+                                        highlight = { Highlight.Default.copy(alpha = 0.4f) },
+                                        shadow = { Shadow(radius = 8f.dp, color = Color.Black.copy(alpha = 0.08f)) },
+                                        onDrawSurface = { drawRect(containerColor.copy(alpha = 0.45f)) }
+                                    )
                             ) {
-                                Icon(Icons.Default.ZoomOut, contentDescription = stringResource(R.string.content_description_zoom_out), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
-                                Spacer(modifier = Modifier.width(12.dp))
-                                LiquidSlider(
-                                    value = { visibleCols },
-                                    onValueChange = { visibleCols = it },
-                                    valueRange = 3f..max(3f, cols.toFloat()),
-                                    visibilityThreshold = 0.01f,
-                                    backdrop = gridBackdrop,
-                                    modifier = Modifier.weight(1f),
-                                    accentColor = MaterialTheme.colorScheme.primary,
-                                    trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Icon(Icons.Default.ZoomIn, contentDescription = stringResource(R.string.content_description_zoom_in), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                Row(
+                                    modifier = Modifier.fillMaxWidth().height(64.dp)
+                                        .padding(horizontal = 20.dp, vertical = 12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(Icons.Default.ZoomOut, contentDescription = stringResource(R.string.content_description_zoom_out), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    LiquidSlider(
+                                        value = { visibleCols },
+                                        onValueChange = { visibleCols = it },
+                                        valueRange = 3f..max(3f, cols.toFloat()),
+                                        visibilityThreshold = 0.01f,
+                                        modifier = Modifier.weight(1f),
+                                        accentColor = MaterialTheme.colorScheme.primary,
+                                        trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)
+                                    )
+                                    Spacer(modifier = Modifier.width(12.dp))
+                                    Icon(Icons.Default.ZoomIn, contentDescription = stringResource(R.string.content_description_zoom_in), modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.outline)
+                                }
                             }
                         }
                     }

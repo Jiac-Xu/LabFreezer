@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -18,6 +19,7 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
@@ -32,6 +34,7 @@ import androidx.compose.ui.util.lerp
 import com.kyant.backdrop.Backdrop
 import com.kyant.backdrop.backdrops.layerBackdrop
 import com.kyant.backdrop.backdrops.rememberBackdrop
+import com.kyant.backdrop.backdrops.rememberCanvasBackdrop
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 import com.kyant.backdrop.drawBackdrop
@@ -45,7 +48,7 @@ import kotlinx.coroutines.flow.collectLatest
 
 /**
  * 移植自 Kyant0/AndroidLiquidGlass catalog（com.kyant.backdrop.catalog.components.LiquidSlider）
- * 改动：accentColor/trackColor 由调用方从 MaterialTheme 传入（原实现硬编码 iOS 蓝）
+ * 统一模糊接口：优先从显式传入的 [backdrop] 或 [LocalGlassBackdrop] 获取真实采样层，无真实采样层时自动退化为画布底色。
  */
 @Composable
 fun LiquidSlider(
@@ -53,11 +56,23 @@ fun LiquidSlider(
     onValueChange: (Float) -> Unit,
     valueRange: ClosedFloatingPointRange<Float>,
     visibilityThreshold: Float,
-    backdrop: Backdrop,
+    backdrop: Backdrop? = null,
     modifier: Modifier = Modifier,
     accentColor: Color = Color(0xFF0088FF),
-    trackColor: Color = Color(0xFF787878).copy(alpha = 0.2f)
+    trackColor: Color = Color(0xFF787878).copy(alpha = 0.2f),
+    backdropColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    backdropAlpha: Float = 0.3f
 ) {
+    val canvasBackdrop = rememberCanvasBackdrop {
+        drawRect(backdropColor.copy(alpha = backdropAlpha))
+        drawRect(
+            Brush.verticalGradient(
+                0f to backdropColor.copy(alpha = (backdropAlpha + 0.15f).coerceIn(0f, 1f)),
+                1f to backdropColor.copy(alpha = (backdropAlpha - 0.05f).coerceIn(0f, 1f))
+            )
+        )
+    }
+    val effectiveBackdrop = backdrop ?: LocalGlassBackdrop.current ?: canvasBackdrop
     val trackBackdrop = rememberLayerBackdrop()
 
     BoxWithConstraints(
@@ -148,8 +163,8 @@ fun LiquidSlider(
                 }
                 .then(dampedDragAnimation.modifier)
                 .drawBackdrop(
-backdrop = rememberCombinedBackdrop(
-                        backdrop,
+                    backdrop = rememberCombinedBackdrop(
+                        effectiveBackdrop,
                         rememberBackdrop(trackBackdrop) { drawBackdrop ->
                             val progress = dampedDragAnimation.pressProgress
                             val scaleX = lerp(2f / 3f, 1f, progress)

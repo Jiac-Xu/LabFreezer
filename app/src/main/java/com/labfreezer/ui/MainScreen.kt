@@ -231,7 +231,7 @@ fun MainScreen(
             // 液态玻璃：记录 NavHost 内容层，悬浮底栏作为兄弟节点从中采样折射
             val appBackdrop = rememberLayerBackdrop()
 
-            // 全局玻璃采样层：NavHost 内容 + 悬浮底栏（非屏幕内，取不到屏幕的 GlassFabScaffold 层）
+            // 全局玻璃采样层：NavHost 内容 + 悬浮底栏（非屏幕内，取不到屏幕的 GlassScaffold 层）
             CompositionLocalProvider(LocalGlassBackdrop provides appBackdrop) {
             NavHost(
                 navController = navController,

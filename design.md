@@ -310,7 +310,7 @@
 | 类型 | 样式 | 用途 | 位置 |
 |---|---|---|---|
 | FAB / SmallFAB | 圆形、`primary`/`onPrimary` 或 `surfaceContainerHigh`/`onSurfaceVariant` | 主操作、SpeedDial | `SpeedDialFAB.kt` |
-| SpeedDial 选项 | 标签 Card（12dp 圆角、1dp、`surfaceContainerHigh`）+ SmallFAB | 创建盒子/层级 | `SpeedDialFAB.kt:168-205` |
+| SpeedDial 选项 | 标签 LiquidButton（12dp 圆角 LiquidGlass 磨砂、`surfaceContainerHigh @ 0.75f`）+ SmallFAB | 创建盒子/层级 | `SpeedDialFAB.kt:168-205` |
 | 实心 Button | `containerColor = surfaceContainerLow`、无边框、内容色 `primary`（危险操作用 `error`）；禁用态保持底色、内容 `outline @ 0.5f` | 照片操作 4 按钮 | `SampleEditScreen.kt:299-365` |
 | 实心 Button | `containerColor = primary` / `onPrimary` | 导入确认、批量 OCR、更新 | `MainScreen.kt:750`, `OcrSettingsScreen.kt:298` |
 | 实心 Button | `errorContainer` / `onErrorContainer` | 图片清理全宽按钮 | `ImageCleanupScreen.kt:114` |
