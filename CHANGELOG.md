@@ -3,9 +3,11 @@
 ## Unreleased
 
 ### 液态玻璃与 UI 统一重构
+- **LiquidButton 精简与增强** — 移除拖拽位移阻尼，保留原位弹性按压缩放与跟手光斑；新增 `enabled` 禁用态支持
+- **页面主体操作按钮升级 LiquidButton** — 样本编辑照片操作按钮、关于页面检查更新按钮、图片清理扫描/清理按钮、批量 OCR 按钮全面升级为 `LiquidButton`
 - **SpeedDial 文字按钮适配 LiquidGlass** — 展开文字标签升级为 `LiquidButton`，与右侧 SmallFAB 共享统一的模糊、磨砂光影及按压微交互
 - **统一模糊接口与通用组件提取** — 新增通用 `LiquidButton` 组件，`LiquidSlider` 统一接入 `LocalGlassBackdrop` 自动采样机制
-- **GlassScaffold 重构** — `GlassFabScaffold` 重命名为通用 `GlassScaffold`，全屏统一提供背景采样层，`BoxGridScreen` 移除手动 backdrop 样板代码
+- **GlassScaffold 重构** — `GlassFabScaffold` 重命名为通用 `GlassScaffold`，全屏统一提供背景采样层，`BoxGridScreen` 针对网格层与缩放条解耦避免递归采样闪退
 
 ## v1.3.1 (2026-08-08)
 

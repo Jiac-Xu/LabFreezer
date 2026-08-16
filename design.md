@@ -311,9 +311,9 @@
 |---|---|---|---|
 | FAB / SmallFAB | 圆形、`primary`/`onPrimary` 或 `surfaceContainerHigh`/`onSurfaceVariant` | 主操作、SpeedDial | `SpeedDialFAB.kt` |
 | SpeedDial 选项 | 标签 LiquidButton（12dp 圆角 LiquidGlass 磨砂、`surfaceContainerHigh @ 0.75f`）+ SmallFAB | 创建盒子/层级 | `SpeedDialFAB.kt:168-205` |
-| 实心 Button | `containerColor = surfaceContainerLow`、无边框、内容色 `primary`（危险操作用 `error`）；禁用态保持底色、内容 `outline @ 0.5f` | 照片操作 4 按钮 | `SampleEditScreen.kt:299-365` |
-| 实心 Button | `containerColor = primary` / `onPrimary` | 导入确认、批量 OCR、更新 | `MainScreen.kt:750`, `OcrSettingsScreen.kt:298` |
-| 实心 Button | `errorContainer` / `onErrorContainer` | 图片清理全宽按钮 | `ImageCleanupScreen.kt:114` |
+| 实心操作 LiquidButton | `containerColor = surfaceContainerLow`、12dp 圆角磨砂，内容色 `primary`（危险操作用 `error`）；禁用态自动半透明 | 照片操作 4 按钮 | `SampleEditScreen.kt` |
+| 实心操作 LiquidButton | `containerColor = primary @ 0.85f` / `onPrimary`，12dp 圆角磨砂 | 批量 OCR、检查更新 | `OcrSettingsScreen.kt`, `AboutScreen.kt` |
+| 实心操作 LiquidButton | `containerColor = errorContainer @ 0.85f` / `onErrorContainer`，12dp 圆角磨砂 | 图片清理全宽按钮 | `ImageCleanupScreen.kt:116` |
 | 实心 Button | `containerColor = error` / `onError` | 危险确认（删除/覆盖） | `MainScreen.kt:657`, `ImageCleanupScreen.kt:216` |
 | 对话框按钮 | `TextButton`，确认文字 `SemiBold` | 对话框确认/取消 | 全部对话框 |
 | 多选操作 | 图标按钮：全选 `TextButton`(Medium)、移动 `OpenWith`(primary)、删除 `Delete`(error) | 批量操作 | 各多选屏 |

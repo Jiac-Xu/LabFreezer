@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -44,9 +45,8 @@ import androidx.compose.material.icons.filled.RotateRight
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material.icons.filled.Tag
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedButton
+import com.labfreezer.ui.components.LabButton
+import com.labfreezer.ui.components.LabButtonDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -316,22 +316,9 @@ fun SampleEditScreen(
             }
             Spacer(Modifier.height(8.dp))
 
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                val surfaceButtonColors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    disabledContentColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                )
-                val surfaceDeleteButtonColors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    contentColor = MaterialTheme.colorScheme.error,
-                    disabledContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                    disabledContentColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.5f)
-                )
-
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Button(
+                    LabButton(
                         onClick = {
                             if (androidx.core.content.ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
                                 cameraLauncher.launch(viewModel.createPhotoUri())
@@ -340,18 +327,20 @@ fun SampleEditScreen(
                             }
                         },
                         modifier = Modifier.weight(1f),
-                        colors = surfaceButtonColors
+                        colors = LabButtonDefaults.surfaceColors(),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                     ) {
                         Icon(Icons.Default.CameraAlt, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(if (state.photoPath != null) stringResource(R.string.sample_edit_retake_photo) else stringResource(R.string.sample_edit_take_photo))
                     }
-                    Button(
+                    LabButton(
                         onClick = {
                             galleryLauncher.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly))
                         },
                         modifier = Modifier.weight(1f),
-                        colors = surfaceButtonColors
+                        colors = LabButtonDefaults.surfaceColors(),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                     ) {
                         Icon(Icons.Default.PhotoLibrary, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
@@ -360,22 +349,24 @@ fun SampleEditScreen(
                 }
                 Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     val ocrEnabled = state.ocrEnabled && state.photoPath != null
-                    Button(
+                    LabButton(
                         onClick = { if (state.ocrEnabled) viewModel.runOcrNow() },
                         enabled = ocrEnabled,
                         modifier = Modifier.weight(1f),
-                        colors = surfaceButtonColors
+                        colors = LabButtonDefaults.surfaceColors(),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                     ) {
                         Icon(Icons.Default.DocumentScanner, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
                         Text(stringResource(R.string.sample_edit_ocr_button))
                     }
                     val deletePhotoEnabled = state.photoPath != null
-                    Button(
+                    LabButton(
                         onClick = { viewModel.deletePhoto() },
                         enabled = deletePhotoEnabled,
                         modifier = Modifier.weight(1f),
-                        colors = surfaceDeleteButtonColors
+                        colors = LabButtonDefaults.surfaceColors(contentColor = MaterialTheme.colorScheme.error),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)
                     ) {
                         Icon(Icons.Default.Delete, contentDescription = null, modifier = Modifier.size(20.dp))
                         Spacer(Modifier.width(4.dp))
@@ -449,9 +440,16 @@ fun SampleEditScreen(
 
             Spacer(Modifier.height(16.dp))
 
-            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(stringResource(R.string.sample_edit_section_tags), style = MaterialTheme.typography.titleSmall)
-                TextButton(onClick = { navController.navigate(Screen.TagManage.route) }) {
+                TextButton(
+                    onClick = { navController.navigate(Screen.TagManage.route) },
+                    contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)
+                ) {
                     Icon(Icons.Default.Tag, contentDescription = null, modifier = Modifier.size(16.dp))
                     Spacer(Modifier.width(4.dp))
                     Text(stringResource(R.string.sample_edit_manage_tags))

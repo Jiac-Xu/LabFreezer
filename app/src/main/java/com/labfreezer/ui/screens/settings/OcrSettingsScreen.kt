@@ -3,6 +3,7 @@ import com.labfreezer.R
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,8 +22,7 @@ import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.DocumentScanner
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.SdStorage
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import com.labfreezer.ui.components.LabButton
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -275,11 +275,10 @@ fun OcrSettingsScreen(
 
                     Spacer(Modifier.height(12.dp))
 
-                    Button(
+                    LabButton(
                         onClick = { viewModel.runBatchOcr() },
                         enabled = !state.isBatchRunning && state.ocrEnabled,
-                        shape = RoundedCornerShape(12.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
                     ) {
                         if (state.isBatchRunning) {
                             Text(stringResource(R.string.ocr_settings_batch_running))

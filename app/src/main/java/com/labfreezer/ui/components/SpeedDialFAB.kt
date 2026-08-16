@@ -35,7 +35,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.labfreezer.R
-import com.labfreezer.ui.glass.LiquidButton
 import com.labfreezer.ui.glass.LiquidFAB
 
 /**
@@ -181,12 +180,10 @@ private fun SpeedDialItem(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(end = 8.dp)
     ) {
-        // 文字标签按钮（液态玻璃）
-        LiquidButton(
+        // 文字标签按钮（统一 LabButton 接入层）
+        LabButton(
             onClick = onClick,
-            shape = RoundedCornerShape(12.dp),
-            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh.copy(alpha = 0.75f),
-            contentColor = MaterialTheme.colorScheme.onSurface,
+            colors = LabButtonDefaults.tonalColors(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
         ) {
             Text(

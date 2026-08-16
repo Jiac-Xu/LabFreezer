@@ -19,8 +19,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import com.labfreezer.ui.components.LabButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -168,14 +167,11 @@ fun AboutScreen(onBack: () -> Unit) {
 
             if (updateInfo.isNotEmpty() && updateInfo != checkFailedStr) {
                 Spacer(Modifier.height(20.dp))
-                Button(
+                LabButton(
                     onClick = {
                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.pgyer.com/labfreezer"))
                         context.startActivity(intent)
                     },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary
-                    ),
                     shape = MaterialTheme.shapes.small
                 ) {
                     Text(
