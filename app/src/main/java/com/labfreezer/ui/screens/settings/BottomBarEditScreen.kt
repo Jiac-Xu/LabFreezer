@@ -62,8 +62,16 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
     val context = LocalContext.current
     val density = LocalDensity.current
 
-    // 从偏好读取当前可见列表
-    val visibleTabs = remember { mutableStateListOf<BottomTab>().also { it.addAll(BottomTabPreference.get(context)) } }
+    // 从偏好读取当前可见列表（强制包含设置）
+    val visibleTabs = remember {
+        mutableStateListOf<BottomTab>().also { list ->
+            val saved = BottomTabPreference.get(context)
+            list.addAll(saved)
+            if (BottomTab.SETTINGS !in list) {
+                list.add(BottomTab.SETTINGS)
+            }
+        }
+    }
     // 所有标签的全部列表（用于显示顺序及隐藏项）
     val allTabs = remember { BottomTab.entries }
 
@@ -119,7 +127,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
             BottomBarPreview(visibleTabs = visibleTabs)
             Spacer(Modifier.height(16.dp))
 
-            // ── 显示项 ──
+            // ── 可见标签 ──
             Text(
                 "  " + stringResource(R.string.bottom_bar_edit_section_visible),
                 style = MaterialTheme.typography.titleSmall,
@@ -128,14 +136,16 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
             )
             Spacer(Modifier.height(8.dp))
 
-            // 可见标签列表（可拖拽排序）
+            // 可见标签列表（可拖拽排序，设置标签锁定不可关闭）
             visibleTabs.forEachIndexed { index, tab ->
                 val isDragged = draggedIndex == index
+                val isLocked = (tab == BottomTab.SETTINGS)
                 TabCard(
                     tab = tab,
                     isDragged = isDragged,
                     dragOffset = dragOffset,
                     visible = true,
+                    isLocked = isLocked,
                     onDragStart = { draggedIndex = index; dragOffset = 0f },
                     onDrag = { change, dragAmount ->
                         change.consume()
@@ -152,7 +162,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                     },
                     onDragEnd = { draggedIndex = -1; dragOffset = 0f },
                     onDragCancel = { draggedIndex = -1; dragOffset = 0f },
-                    onToggle = { visibleTabs.remove(tab) }
+                    onToggle = { if (!isLocked) visibleTabs.remove(tab) }
                 )
             }
 
@@ -173,8 +183,8 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
 
             Spacer(Modifier.height(16.dp))
 
-            // ── 隐藏项 ──
-            val hiddenTabs = allTabs.filter { it !in visibleTabs }
+            // ── 隐藏项（设置标签不进隐藏项） ──
+            val hiddenTabs = allTabs.filter { it !in visibleTabs && it != BottomTab.SETTINGS }
             if (hiddenTabs.isNotEmpty()) {
                 Text(
                     "  " + stringResource(R.string.bottom_bar_edit_section_hidden),
@@ -190,6 +200,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                         isDragged = false,
                         dragOffset = 0f,
                         visible = false,
+                        isLocked = false,
                         onDragStart = {},
                         onDrag = { _, _ -> },
                         onDragEnd = {},
@@ -284,6 +295,7 @@ private fun TabCard(
     isDragged: Boolean,
     dragOffset: Float,
     visible: Boolean,
+    isLocked: Boolean = false,
     onDragStart: (androidx.compose.ui.geometry.Offset) -> Unit,
     onDrag: (androidx.compose.ui.input.pointer.PointerInputChange, androidx.compose.ui.geometry.Offset) -> Unit,
     onDragEnd: () -> Unit,
@@ -368,7 +380,8 @@ private fun TabCard(
 
             Switch(
                 checked = visible,
-                onCheckedChange = { onToggle() }
+                enabled = !isLocked,
+                onCheckedChange = { if (!isLocked) onToggle() }
             )
         }
     }

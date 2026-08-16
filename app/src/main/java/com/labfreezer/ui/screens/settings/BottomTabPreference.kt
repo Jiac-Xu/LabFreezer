@@ -41,12 +41,19 @@ object BottomTabPreference {
     fun get(context: Context): List<BottomTab> {
         val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
         val order = prefs.getString(KEY_ORDER, DEFAULT_ORDER) ?: DEFAULT_ORDER
-        return order.split(",").mapNotNull { BottomTab.fromId(it.trim()) }
+        val tabs = order.split(",").mapNotNull { BottomTab.fromId(it.trim()) }.toMutableList()
+        // 升级或之前关闭过设置时，强制将 SETTINGS 加回末尾并持久化，保证设置入口永不丢失
+        if (BottomTab.SETTINGS !in tabs) {
+            tabs.add(BottomTab.SETTINGS)
+            set(context, tabs)
+        }
+        return tabs
     }
 
     fun set(context: Context, tabs: List<BottomTab>) {
+        val safeTabs = if (BottomTab.SETTINGS !in tabs) tabs + BottomTab.SETTINGS else tabs
         context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit()
-            .putString(KEY_ORDER, tabs.joinToString(",") { it.id })
+            .putString(KEY_ORDER, safeTabs.joinToString(",") { it.id })
             .apply()
     }
 }
