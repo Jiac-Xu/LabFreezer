@@ -105,12 +105,12 @@ fun LabFreezerTheme(
         SideEffect {
             val window = (view.context as Activity).window
             WindowCompat.setDecorFitsSystemWindows(window, false)
-            window.navigationBarColor = android.graphics.Color.argb(
-                (colorScheme.background.alpha * 255).toInt(),
-                (colorScheme.background.red * 255).toInt(),
-                (colorScheme.background.green * 255).toInt(),
-                (colorScheme.background.blue * 255).toInt()
-            )
+            window.statusBarColor = android.graphics.Color.TRANSPARENT
+            window.navigationBarColor = android.graphics.Color.TRANSPARENT
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                window.isNavigationBarContrastEnforced = false
+                window.isStatusBarContrastEnforced = false
+            }
             val controller = WindowCompat.getInsetsController(window, view)
             controller.isAppearanceLightStatusBars = !resolvedDarkTheme
             controller.isAppearanceLightNavigationBars = !resolvedDarkTheme

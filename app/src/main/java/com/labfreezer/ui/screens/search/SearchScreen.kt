@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -175,7 +176,14 @@ fun SearchScreen(
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp)) {
+        val bottomContentPadding = if (showBackButton) 16.dp + padding.calculateBottomPadding() else 100.dp + padding.calculateBottomPadding()
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding())
+                .imePadding()
+                .padding(horizontal = 16.dp)
+        ) {
             Spacer(Modifier.height(8.dp))
             OutlinedTextField(
                 value = query,
@@ -233,6 +241,7 @@ fun SearchScreen(
                         results = results,
                         navController = navController,
                         listState = listState,
+                        bottomPadding = bottomContentPadding,
                         onSampleClick = { sample ->
                             // 构建搜索浏览上下文
                             val sampleIds = results.filterIsInstance<SearchResultItem.Sample>()
@@ -304,13 +313,14 @@ private fun ResultsList(
     results: List<SearchResultItem>,
     navController: NavController,
     listState: androidx.compose.foundation.lazy.LazyListState,
+    bottomPadding: androidx.compose.ui.unit.Dp = 16.dp,
     onSampleClick: (SampleWithPath) -> Unit
 ) {
     LazyColumn(
         state = listState,
         modifier = Modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 12.dp)
+        contentPadding = PaddingValues(top = 12.dp, bottom = bottomPadding)
     ) {
         items(results, key = { when (it) {
             is SearchResultItem.Device -> "dev_${it.entity.id}"

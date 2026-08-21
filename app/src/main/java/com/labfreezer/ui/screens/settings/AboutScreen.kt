@@ -127,7 +127,11 @@ fun AboutScreen(onBack: () -> Unit) {
         }
     ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp).verticalScroll(rememberScrollState()),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding())
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(Modifier.height(48.dp))
@@ -183,6 +187,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     )
                 }
             }
+            Spacer(Modifier.height(32.dp + padding.calculateBottomPadding()))
         }
     }
 }

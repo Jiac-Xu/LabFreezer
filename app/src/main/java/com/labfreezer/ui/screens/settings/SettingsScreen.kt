@@ -108,7 +108,7 @@ fun SettingsScreen(
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
+        Column(modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(8.dp))
 
             // ── 偏好 (Preferences) ──
@@ -215,7 +215,7 @@ fun SettingsScreen(
                 onClick = { importLauncher.launch(arrayOf("application/zip")) },
                 trailing = { if (isLoading) CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp) }
             )
-            Spacer(Modifier.height(100.dp))
+            Spacer(Modifier.height(100.dp + padding.calculateBottomPadding()))
         }
     }
 }

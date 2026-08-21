@@ -111,7 +111,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding)
+                .padding(top = padding.calculateTopPadding())
                 .verticalScroll(rememberScrollState())
         ) {
             Spacer(Modifier.height(8.dp))
@@ -222,7 +222,7 @@ fun BottomBarEditScreen(onBack: () -> Unit) {
                 color = MaterialTheme.colorScheme.outline
             )
 
-            Spacer(Modifier.height(32.dp))
+            Spacer(Modifier.height(32.dp + padding.calculateBottomPadding()))
         }
     }
 }
@@ -235,7 +235,6 @@ private fun BottomBarPreview(visibleTabs: List<BottomTab>) {
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp)
-            .navigationBarsPadding()
     ) {
         Surface(
             color = MaterialTheme.colorScheme.surface,

@@ -92,7 +92,7 @@ fun PersonalizationScreen(
             )
         }
     ) { padding ->
-        Column(modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState())) {
+        Column(modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()).verticalScroll(rememberScrollState())) {
             Spacer(Modifier.height(8.dp))
 
             // ── 界面 (Appearance) ──
@@ -279,7 +279,7 @@ fun PersonalizationScreen(
                 onCheckedChange = { viewModel.setAutoKeyboardFromBottomBar(it) }
             )
 
-            Spacer(Modifier.height(100.dp))
+            Spacer(Modifier.height(32.dp + padding.calculateBottomPadding()))
         }
     }
 }

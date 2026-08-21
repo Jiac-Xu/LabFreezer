@@ -112,7 +112,7 @@ fun ImageCleanupScreen(
                 }
             }
         } else {
-            Column(modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp).verticalScroll(rememberScrollState())) {
+            Column(modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp)) {
                 Spacer(Modifier.height(8.dp))
 
                 LabButton(
@@ -195,7 +195,7 @@ fun ImageCleanupScreen(
                         }
                     }
                 }
-                Spacer(Modifier.height(80.dp))
+                Spacer(Modifier.height(32.dp + padding.calculateBottomPadding()))
             }
         }
     }

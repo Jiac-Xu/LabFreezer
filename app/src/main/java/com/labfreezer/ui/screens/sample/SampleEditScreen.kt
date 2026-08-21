@@ -25,6 +25,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -268,9 +269,14 @@ fun SampleEditScreen(
                 primaryButtonContentDescription = stringResource(R.string.content_description_save)
             )
         }
-        ) { padding ->
+    ) { padding ->
         Column(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp).verticalScroll(rememberScrollState())
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = padding.calculateTopPadding())
+                .imePadding()
+                .verticalScroll(rememberScrollState())
+                .padding(horizontal = 16.dp)
         ) {
             Spacer(Modifier.height(4.dp))
             Card(
@@ -488,6 +494,7 @@ fun SampleEditScreen(
                     }
                 }
             }
+            Spacer(Modifier.height(88.dp + padding.calculateBottomPadding()))
         }
     }
 

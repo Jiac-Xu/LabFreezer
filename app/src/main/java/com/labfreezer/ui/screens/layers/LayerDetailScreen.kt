@@ -162,9 +162,9 @@ fun LayerDetailScreen(navController: NavController, layerId: Long, viewModel: La
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()).padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(top = 12.dp, bottom = 88.dp + padding.calculateBottomPadding())
             ) {
                 items(visibleChildren, key = { "${it.type}_${it.id}" }) { node ->
                     val isSelected = node.id in selectedIds

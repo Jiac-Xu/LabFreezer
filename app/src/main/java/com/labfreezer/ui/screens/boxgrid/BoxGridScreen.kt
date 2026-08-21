@@ -298,7 +298,7 @@ fun BoxGridScreen(
             }
 
             val gridBackdrop = rememberLayerBackdrop()
-            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            Box(modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding())) {
                 // 网格内容层：记录为真实图层供悬浮缩放条采样磨砂
                 Box(
                     modifier = Modifier
@@ -309,7 +309,12 @@ fun BoxGridScreen(
                     LazyVerticalGrid(
                         columns = GridCells.Fixed(cols),
                         modifier = Modifier.width(totalGridWidth).padding(horizontal = 4.dp),
-                        contentPadding = PaddingValues(start = 4.dp, top = 4.dp, end = 4.dp, bottom = 100.dp),
+                        contentPadding = PaddingValues(
+                            start = 4.dp,
+                            top = 4.dp,
+                            end = 4.dp,
+                            bottom = if (zoomSliderEnabled) 96.dp + padding.calculateBottomPadding() else 16.dp + padding.calculateBottomPadding()
+                        ),
                         horizontalArrangement = Arrangement.spacedBy(2.dp),
                         verticalArrangement = Arrangement.spacedBy(2.dp)
                     ) {

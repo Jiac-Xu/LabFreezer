@@ -69,9 +69,9 @@ fun TagDetailScreen(navController: NavController, tagId: Long, viewModel: TagDet
             }
         } else {
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding).padding(horizontal = 16.dp),
+                modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()).padding(horizontal = 16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(vertical = 12.dp)
+                contentPadding = PaddingValues(top = 12.dp, bottom = 16.dp + padding.calculateBottomPadding())
             ) {
                 items(samples, key = { it.sampleId }) { result ->
                     val sampleIds = samples.map { it.sampleId }

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -30,6 +32,7 @@ import androidx.compose.material.icons.filled.DeviceHub
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -39,6 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -124,49 +128,8 @@ fun MoveBrowserScreen(
                     )
                 }
             }
-        }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            Box(modifier = Modifier.weight(1f)) {
-                when {
-                    isSearching -> { }
-                    currentLevel == MoveLevel.DEVICE -> {
-                        DeviceList(
-                            devices = devices,
-                            onDeviceClick = { viewModel.navigateToDevice(it.id) }
-                        )
-                    }
-                    currentLevel == MoveLevel.LAYER -> {
-                        LayerList(
-                            layers = layers,
-                            onLayerClick = { viewModel.navigateToLayer(it.id) }
-                        )
-                    }
-                    currentLevel == MoveLevel.BOX -> {
-                        BoxList(
-                            boxes = boxes,
-                            onBoxClick = { viewModel.navigateToBox(it.id) }
-                        )
-                    }
-                    currentLevel == MoveLevel.GRID -> {
-                        GridView(
-                            cells = gridCells,
-                            selectedPositions = selectedPositions,
-                            onCellClick = { cell ->
-                                if (!cell.occupied) {
-                                    viewModel.togglePosition(cell.row, cell.col)
-                                }
-                            },
-                            selectedCount = selectedCount
-                        )
-                    }
-                }
-            }
-
+        },
+        bottomBar = {
             ConfirmButton(
                 enabled = viewModel.canConfirm(),
                 label = when {
@@ -181,6 +144,47 @@ fun MoveBrowserScreen(
                 },
                 onClick = { viewModel.confirmMove(onBack) }
             )
+        }
+    ) { innerPadding ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding)
+                .imePadding()
+        ) {
+            when {
+                isSearching -> { }
+                currentLevel == MoveLevel.DEVICE -> {
+                    DeviceList(
+                        devices = devices,
+                        onDeviceClick = { viewModel.navigateToDevice(it.id) }
+                    )
+                }
+                currentLevel == MoveLevel.LAYER -> {
+                    LayerList(
+                        layers = layers,
+                        onLayerClick = { viewModel.navigateToLayer(it.id) }
+                    )
+                }
+                currentLevel == MoveLevel.BOX -> {
+                    BoxList(
+                        boxes = boxes,
+                        onBoxClick = { viewModel.navigateToBox(it.id) }
+                    )
+                }
+                currentLevel == MoveLevel.GRID -> {
+                    GridView(
+                        cells = gridCells,
+                        selectedPositions = selectedPositions,
+                        onCellClick = { cell ->
+                            if (!cell.occupied) {
+                                viewModel.togglePosition(cell.row, cell.col)
+                            }
+                        },
+                        selectedCount = selectedCount
+                    )
+                }
+            }
         }
     }
 }
@@ -479,21 +483,27 @@ private fun ConfirmButton(
     label: String,
     onClick: () -> Unit
 ) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+    Surface(
+        color = MaterialTheme.colorScheme.surface,
+        tonalElevation = 2.dp,
+        modifier = Modifier.fillMaxWidth()
     ) {
-        TextButton(
-            onClick = onClick,
-            enabled = enabled,
+        Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(48.dp),
-            shape = RoundedCornerShape(12.dp)
+                .navigationBarsPadding()
+                .padding(horizontal = 16.dp, vertical = 12.dp)
         ) {
-            Text(label, fontWeight = FontWeight.SemiBold)
+            Button(
+                onClick = onClick,
+                enabled = enabled,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(48.dp),
+                shape = RoundedCornerShape(12.dp)
+            ) {
+                Text(label, fontWeight = FontWeight.SemiBold)
+            }
         }
     }
 }

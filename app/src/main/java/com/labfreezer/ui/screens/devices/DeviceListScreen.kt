@@ -246,9 +246,9 @@ fun DeviceListScreen(
                     .getBoolean("group_by_type_enabled", true)
             }
             LazyColumn(
-                modifier = Modifier.fillMaxSize().padding(padding),
+                modifier = Modifier.fillMaxSize().padding(top = padding.calculateTopPadding()),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 100.dp)
+                contentPadding = PaddingValues(start = 16.dp, top = 12.dp, end = 16.dp, bottom = 100.dp + padding.calculateBottomPadding())
             ) {
                 if (recentBoxes.isNotEmpty()) {
                     item {
