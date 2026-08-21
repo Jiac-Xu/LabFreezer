@@ -32,7 +32,6 @@ import androidx.compose.material.icons.filled.DeviceHub
 import androidx.compose.material.icons.filled.Inventory2
 import androidx.compose.material.icons.filled.Layers
 import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -41,11 +40,9 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -54,9 +51,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.labfreezer.ui.components.GlassScaffold
+import com.labfreezer.ui.components.LabButton
+import com.labfreezer.ui.components.LabButtonDefaults
 import com.labfreezer.ui.screens.move.MoveBrowserViewModel.SearchResult
 import com.labfreezer.ui.screens.move.MoveState
 
@@ -80,7 +81,7 @@ fun MoveBrowserScreen(
     val selectedDeviceId by viewModel.selectedDeviceId.collectAsState()
     val selectedCount = MoveState.selectedItemIds.size
 
-    Scaffold(
+    GlassScaffold(
         topBar = {
             Column {
                 TopAppBar(
@@ -107,7 +108,11 @@ fun MoveBrowserScreen(
                         IconButton(onClick = onBack) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.content_description_back))
                         }
-                    }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                    )
                 )
 
                 BreadcrumbBar(
@@ -128,28 +133,13 @@ fun MoveBrowserScreen(
                     )
                 }
             }
-        },
-        bottomBar = {
-            ConfirmButton(
-                enabled = viewModel.canConfirm(),
-                label = when {
-                    MoveState.selectMode -> stringResource(R.string.move_confirm_target)
-                    MoveState.moveTarget == MoveTarget.BOX && currentLevel == MoveLevel.GRID ->
-                        stringResource(R.string.move_confirm_move_count, selectedCount)
-                    (MoveState.moveTarget == MoveTarget.LAYER || MoveState.moveTarget == MoveTarget.CONTAINER) && currentLevel == MoveLevel.DEVICE -> {
-                        if (selectedDeviceId != null) stringResource(R.string.move_confirm_to_device)
-                        else stringResource(R.string.move_confirm_to_root)
-                    }
-                    else -> stringResource(R.string.move_confirm_move)
-                },
-                onClick = { viewModel.confirmMove(onBack) }
-            )
         }
-    ) { innerPadding ->
+    ) { padding ->
+        val bottomContentPadding = 88.dp + padding.calculateBottomPadding()
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(innerPadding)
+                .padding(top = padding.calculateTopPadding())
                 .imePadding()
         ) {
             when {
@@ -157,18 +147,21 @@ fun MoveBrowserScreen(
                 currentLevel == MoveLevel.DEVICE -> {
                     DeviceList(
                         devices = devices,
+                        bottomPadding = bottomContentPadding,
                         onDeviceClick = { viewModel.navigateToDevice(it.id) }
                     )
                 }
                 currentLevel == MoveLevel.LAYER -> {
                     LayerList(
                         layers = layers,
+                        bottomPadding = bottomContentPadding,
                         onLayerClick = { viewModel.navigateToLayer(it.id) }
                     )
                 }
                 currentLevel == MoveLevel.BOX -> {
                     BoxList(
                         boxes = boxes,
+                        bottomPadding = bottomContentPadding,
                         onBoxClick = { viewModel.navigateToBox(it.id) }
                     )
                 }
@@ -176,12 +169,47 @@ fun MoveBrowserScreen(
                     GridView(
                         cells = gridCells,
                         selectedPositions = selectedPositions,
+                        bottomPadding = bottomContentPadding,
                         onCellClick = { cell ->
                             if (!cell.occupied) {
                                 viewModel.togglePosition(cell.row, cell.col)
                             }
                         },
                         selectedCount = selectedCount
+                    )
+                }
+            }
+
+            // 悬浮液态玻璃确认移动按钮（自动利用 LocalGlassBackdrop 磨砂底层穿透内容）
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .navigationBarsPadding()
+                    .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+            ) {
+                LabButton(
+                    onClick = { viewModel.confirmMove(onBack) },
+                    enabled = viewModel.canConfirm(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = LabButtonDefaults.primaryColors()
+                ) {
+                    Text(
+                        text = when {
+                            MoveState.selectMode -> stringResource(R.string.move_confirm_target)
+                            MoveState.moveTarget == MoveTarget.BOX && currentLevel == MoveLevel.GRID ->
+                                stringResource(R.string.move_confirm_move_count, selectedCount)
+                            (MoveState.moveTarget == MoveTarget.LAYER || MoveState.moveTarget == MoveTarget.CONTAINER) && currentLevel == MoveLevel.DEVICE -> {
+                                if (selectedDeviceId != null) stringResource(R.string.move_confirm_to_device)
+                                else stringResource(R.string.move_confirm_to_root)
+                            }
+                            else -> stringResource(R.string.move_confirm_move)
+                        },
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
                     )
                 }
             }
@@ -309,12 +337,13 @@ private fun SearchResultsList(
 @Composable
 private fun DeviceList(
     devices: List<com.labfreezer.data.db.entity.StorageDeviceEntity>,
+    bottomPadding: Dp = 16.dp,
     onDeviceClick: (com.labfreezer.data.db.entity.StorageDeviceEntity) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 12.dp)
+        contentPadding = PaddingValues(top = 12.dp, bottom = bottomPadding)
     ) {
         items(devices) { device ->
             Card(
@@ -340,12 +369,13 @@ private fun DeviceList(
 @Composable
 private fun LayerList(
     layers: List<com.labfreezer.data.db.entity.StorageLayerEntity>,
+    bottomPadding: Dp = 16.dp,
     onLayerClick: (com.labfreezer.data.db.entity.StorageLayerEntity) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 12.dp)
+        contentPadding = PaddingValues(top = 12.dp, bottom = bottomPadding)
     ) {
         items(layers) { layer ->
             Card(
@@ -376,12 +406,13 @@ private fun LayerList(
 @Composable
 private fun BoxList(
     boxes: List<com.labfreezer.data.db.entity.StorageBoxEntity>,
+    bottomPadding: Dp = 16.dp,
     onBoxClick: (com.labfreezer.data.db.entity.StorageBoxEntity) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
-        contentPadding = PaddingValues(vertical = 12.dp)
+        contentPadding = PaddingValues(top = 12.dp, bottom = bottomPadding)
     ) {
         items(boxes) { box ->
             Card(
@@ -411,12 +442,14 @@ private fun BoxList(
 private fun GridView(
     cells: List<GridCellInfo>,
     selectedPositions: Set<Pair<Int, Int>>,
+    bottomPadding: Dp = 16.dp,
     onCellClick: (GridCellInfo) -> Unit,
     selectedCount: Int
 ) {
     val cols = if (cells.isNotEmpty()) (cells.maxOf { it.col } + 1) else 1
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
+    Column(modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp)) {
+        Spacer(Modifier.height(12.dp))
         Text(
             text = stringResource(R.string.move_instruction, selectedPositions.size, selectedCount),
             style = MaterialTheme.typography.bodySmall,
@@ -428,7 +461,8 @@ private fun GridView(
             columns = GridCells.Fixed(cols),
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(4.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+            verticalArrangement = Arrangement.spacedBy(4.dp),
+            contentPadding = PaddingValues(bottom = bottomPadding)
         ) {
             items(cells, key = { it.row * 1000 + it.col }) { cell ->
                 val isSelected = (cell.row to cell.col) in selectedPositions
@@ -472,37 +506,6 @@ private fun GridView(
                         }
                     }
                 }
-            }
-        }
-    }
-}
-
-@Composable
-private fun ConfirmButton(
-    enabled: Boolean,
-    label: String,
-    onClick: () -> Unit
-) {
-    Surface(
-        color = MaterialTheme.colorScheme.surface,
-        tonalElevation = 2.dp,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .navigationBarsPadding()
-                .padding(horizontal = 16.dp, vertical = 12.dp)
-        ) {
-            Button(
-                onClick = onClick,
-                enabled = enabled,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(48.dp),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Text(label, fontWeight = FontWeight.SemiBold)
             }
         }
     }
