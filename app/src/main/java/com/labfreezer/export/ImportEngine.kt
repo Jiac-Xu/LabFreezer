@@ -3,6 +3,7 @@ package com.labfreezer.export
 import android.content.Context
 import android.net.Uri
 import com.labfreezer.data.db.AppDatabase
+import androidx.room.withTransaction
 import com.labfreezer.data.db.HIDDEN_MARKER
 import com.labfreezer.data.db.entity.SamplePositionEntity
 import com.labfreezer.data.db.entity.StorageBoxEntity
@@ -125,86 +126,88 @@ class ImportEngine @Inject constructor(
             boxPositions.getOrPut(BoxKey(r.deviceName, r.layerName, r.boxName)) { mutableSetOf() }.add(pos)
         }
 
-        var imported = 0
-        for (r in rows) {
-            val pos = Position.parse(r.posLabel) ?: continue
+        return appDatabase.withTransaction {
+            var imported = 0
+            for (r in rows) {
+                val pos = Position.parse(r.posLabel) ?: continue
 
-            // 设备名为空 → 使用 hidden 占位
-            val deviceName = r.deviceName.ifBlank { HIDDEN_MARKER }
-            var device = if (deviceName == HIDDEN_MARKER) {
-                deviceRepository.getOrCreateHiddenDevice()
-            } else {
-                val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
-                var dev = allDevices.find { it.name == deviceName }
-                if (dev == null) {
-                    val newId = deviceRepository.insert(StorageDeviceEntity(name = deviceName))
-                    dev = deviceRepository.getById(newId)
-                }
-                dev
-            } ?: continue
-
-            // 层名为创建按使用 hidden 占位
-            val layerName = r.layerName.ifBlank { HIDDEN_MARKER }
-            var layer = if (layerName == HIDDEN_MARKER) {
-                layerRepository.getOrCreateHiddenLayer(device.id)
-            } else {
-                val allLayers = layerRepository.getByDeviceIdAll(device.id)
-                var lay = allLayers.find { it.name == layerName }
-                if (lay == null) {
-                    val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = layerName))
-                    lay = layerRepository.getById(newId)
-                }
-                lay
-            } ?: continue
-
-            var box = boxRepository.getByLayerId(layer.id).find { it.name == r.boxName }
-            if (box == null) {
-                val key = BoxKey(r.deviceName, r.layerName, r.boxName)
-                val positions = boxPositions[key] ?: emptySet()
-                val maxRow = (positions.maxOfOrNull { it.first } ?: pos.first) + 1
-                val maxCol = (positions.maxOfOrNull { it.second } ?: pos.second) + 1
-                val newId = boxRepository.insert(StorageBoxEntity(
-                    layerId = layer.id, name = r.boxName,
-                    rows = maxRow.coerceAtLeast(1), cols = maxCol.coerceAtLeast(1)
-                ))
-                box = boxRepository.getById(newId) ?: continue
-            }
-
-            val photoPath = photoResolver?.invoke(r, box, pos)
-            val existing = sampleRepository.getByPosition(box.id, pos.first, pos.second)
-
-            val sampleId = if (existing != null) {
-                if (!overwriteExisting) continue
-                sampleRepository.update(existing.copy(
-                    name = r.sampleName ?: existing.name,
-                    date = r.date ?: existing.date,
-                    note = r.note ?: existing.note,
-                    photoPath = photoPath ?: existing.photoPath
-                ))
-                existing.id
-            } else {
-                sampleRepository.insert(SamplePositionEntity(
-                    boxId = box.id, row = pos.first, col = pos.second,
-                    name = r.sampleName, date = r.date, note = r.note,
-                    photoPath = photoPath
-                ))
-            }
-
-            if (r.tags.isNotBlank()) {
-                val tagNames = r.tags.split(";").map { it.trim() }.filter { it.isNotBlank() }
-                val tagIds = tagNames.map { tagName ->
-                    var tag = tagRepository.getByName(tagName)
-                    if (tag == null) {
-                        val newTagId = tagRepository.insert(TagEntity(name = tagName, color = "#007AFF"))
-                        tag = tagRepository.getById(newTagId)
+                // 设备名为空 → 使用 hidden 占位
+                val deviceName = r.deviceName.ifBlank { HIDDEN_MARKER }
+                var device = if (deviceName == HIDDEN_MARKER) {
+                    deviceRepository.getOrCreateHiddenDevice()
+                } else {
+                    val allDevices = deviceRepository.getAll() + deviceRepository.getAllHidden()
+                    var dev = allDevices.find { it.name == deviceName }
+                    if (dev == null) {
+                        val newId = deviceRepository.insert(StorageDeviceEntity(name = deviceName))
+                        dev = deviceRepository.getById(newId)
                     }
-                    tag!!.id
+                    dev
+                } ?: continue
+
+                // 层名为创建按使用 hidden 占位
+                val layerName = r.layerName.ifBlank { HIDDEN_MARKER }
+                var layer = if (layerName == HIDDEN_MARKER) {
+                    layerRepository.getOrCreateHiddenLayer(device.id)
+                } else {
+                    val allLayers = layerRepository.getByDeviceIdAll(device.id)
+                    var lay = allLayers.find { it.name == layerName }
+                    if (lay == null) {
+                        val newId = layerRepository.insert(StorageLayerEntity(deviceId = device.id, name = layerName))
+                        lay = layerRepository.getById(newId)
+                    }
+                    lay
+                } ?: continue
+
+                var box = boxRepository.getByLayerId(layer.id).find { it.name == r.boxName }
+                if (box == null) {
+                    val key = BoxKey(r.deviceName, r.layerName, r.boxName)
+                    val positions = boxPositions[key] ?: emptySet()
+                    val maxRow = (positions.maxOfOrNull { it.first } ?: pos.first) + 1
+                    val maxCol = (positions.maxOfOrNull { it.second } ?: pos.second) + 1
+                    val newId = boxRepository.insert(StorageBoxEntity(
+                        layerId = layer.id, name = r.boxName,
+                        rows = maxRow.coerceAtLeast(1), cols = maxCol.coerceAtLeast(1)
+                    ))
+                    box = boxRepository.getById(newId) ?: continue
                 }
-                tagRepository.setSampleTags(sampleId, tagIds)
+
+                val photoPath = photoResolver?.invoke(r, box, pos)
+                val existing = sampleRepository.getByPosition(box.id, pos.first, pos.second)
+
+                val sampleId = if (existing != null) {
+                    if (!overwriteExisting) continue
+                    sampleRepository.update(existing.copy(
+                        name = r.sampleName ?: existing.name,
+                        date = r.date ?: existing.date,
+                        note = r.note ?: existing.note,
+                        photoPath = photoPath ?: existing.photoPath
+                    ))
+                    existing.id
+                } else {
+                    sampleRepository.insert(SamplePositionEntity(
+                        boxId = box.id, row = pos.first, col = pos.second,
+                        name = r.sampleName, date = r.date, note = r.note,
+                        photoPath = photoPath
+                    ))
+                }
+
+                if (r.tags.isNotBlank()) {
+                    val tagNames = r.tags.split(";").map { it.trim() }.filter { it.isNotBlank() }
+                    val tagIds = tagNames.map { tagName ->
+                        var tag = tagRepository.getByName(tagName)
+                        if (tag == null) {
+                            val newTagId = tagRepository.insert(TagEntity(name = tagName, color = "#007AFF"))
+                            tag = tagRepository.getById(newTagId)
+                        }
+                        tag!!.id
+                    }
+                    tagRepository.setSampleTags(sampleId, tagIds)
+                }
+                imported++
             }
-            imported++
+            imported
         }
-        return imported
     }
 
     /**

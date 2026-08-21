@@ -1,6 +1,6 @@
 Android Studio在D:\Program Files\AndroidStudio
 adb在C:\Users\Administrator\AppData\Local\Android\Sdk\platform-tools\adb.exe
-JAVA_HOME用Android Studio的JBR：D:\Program Files\AndroidStudio\jbr
+JAVA_HOME用本机Zulu JDK 17：C:\Program Files\Zulu\zulu-17（或 Android Studio JBR：D:\Program Files\AndroidStudio\jbr）
 
 每次修改完成后请git保存
 

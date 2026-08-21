@@ -41,16 +41,32 @@ class PhotoManager @Inject constructor(
                 ?.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
                 ?: ExifInterface.ORIENTATION_NORMAL
 
-            val inputStream = context.contentResolver.openInputStream(sourceUri) ?: return null
-            val bitmap = BitmapFactory.decodeStream(inputStream)
-            inputStream.close()
-
-            if (bitmap == null) return null
-
-            val rotatedBitmap = rotateBitmap(bitmap, orientation)
-            if (rotatedBitmap !== bitmap) bitmap.recycle()
-
             val maxSize = 1080
+
+            // 1. 读取原图尺寸
+            val boundsOptions = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            context.contentResolver.openInputStream(sourceUri)?.use {
+                BitmapFactory.decodeStream(it, null, boundsOptions)
+            }
+            if (boundsOptions.outWidth <= 0 || boundsOptions.outHeight <= 0) return null
+
+            // 2. 计算 inSampleSize 降采样解码
+            val decodeOptions = BitmapFactory.Options().apply {
+                inSampleSize = calculateInSampleSize(boundsOptions, maxSize, maxSize)
+            }
+            val decodedBitmap = context.contentResolver.openInputStream(sourceUri)?.use {
+                BitmapFactory.decodeStream(it, null, decodeOptions)
+            } ?: return null
+
+            // 3. 旋转校正
+            val rotatedBitmap = rotateBitmap(decodedBitmap, orientation)
+            if (rotatedBitmap !== decodedBitmap) {
+                decodedBitmap.recycle()
+            }
+
+            // 4. 精确缩放到 maxSize 范围
             val width = rotatedBitmap.width
             val height = rotatedBitmap.height
             val scale = minOf(maxSize.toFloat() / width, maxSize.toFloat() / height, 1f)
@@ -59,19 +75,37 @@ class PhotoManager @Inject constructor(
             } else {
                 rotatedBitmap
             }
+            if (scaledBitmap !== rotatedBitmap) {
+                rotatedBitmap.recycle()
+            }
 
             val file = File(photosDir, getPhotoFileName(boxId, row, col))
             FileOutputStream(file).use { out ->
                 scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 80, out)
             }
 
-            if (scaledBitmap !== rotatedBitmap) scaledBitmap.recycle()
-            rotatedBitmap.recycle()
+            scaledBitmap.recycle()
 
             Uri.fromFile(file).toString()
         } catch (e: Exception) {
             null
         }
+    }
+
+    private fun calculateInSampleSize(options: BitmapFactory.Options, reqWidth: Int, reqHeight: Int): Int {
+        val height = options.outHeight
+        val width = options.outWidth
+        var inSampleSize = 1
+
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight = height / 2
+            val halfWidth = width / 2
+
+            while ((halfHeight / inSampleSize) >= reqHeight && (halfWidth / inSampleSize) >= reqWidth) {
+                inSampleSize *= 2
+            }
+        }
+        return inSampleSize
     }
 
     private fun rotateBitmap(bitmap: Bitmap, orientation: Int): Bitmap {
