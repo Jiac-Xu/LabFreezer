@@ -37,10 +37,18 @@ android {
             enableV4Signing = false
         }
         create("release") {
-            storeFile = rootProject.file("release.keystore")
-            storePassword = "labfreezer"
-            keyAlias = "release"
-            keyPassword = "labfreezer"
+            val envKeystore = System.getenv("KEYSTORE_FILE")
+            val keystoreFile = if (envKeystore != null) {
+                rootProject.file(envKeystore)
+            } else {
+                rootProject.file("release.keystore")
+            }
+            if (keystoreFile.exists()) {
+                storeFile = keystoreFile
+                storePassword = System.getenv("KEYSTORE_PASSWORD") ?: "labfreezer"
+                keyAlias = System.getenv("KEY_ALIAS") ?: "release"
+                keyPassword = System.getenv("KEY_PASSWORD") ?: "labfreezer"
+            }
         }
     }
 
