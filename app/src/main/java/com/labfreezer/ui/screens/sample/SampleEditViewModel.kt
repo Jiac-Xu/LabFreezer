@@ -255,7 +255,7 @@ class SampleEditViewModel @Inject constructor(
         autoSaveJob?.cancel()
         autoSaveJob = viewModelScope.launch {
             delay(600) // 600ms 防抖，避免每次按键都保存
-            save()
+            save(showToast = false)
         }
     }
 
