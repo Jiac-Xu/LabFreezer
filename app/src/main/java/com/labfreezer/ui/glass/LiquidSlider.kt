@@ -46,7 +46,6 @@ import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
-import kotlin.math.abs
 
 /**
  * 移植自 Kyant0/AndroidLiquidGlass catalog（com.kyant.backdrop.catalog.components.LiquidSlider）
@@ -98,18 +97,7 @@ fun LiquidSlider(
                 onDragStarted = {},
                 onDragStopped = {
                     if (didDrag) {
-                        val rangeSpan = valueRange.endInclusive - valueRange.start
-                        if (rangeSpan > 0f) {
-                            val snapThreshold = rangeSpan * 0.05f
-                            val closestSnap = snapPoints.firstOrNull { abs(it - targetValue) <= snapThreshold }
-                            val finalValue = closestSnap ?: targetValue
-                            if (closestSnap != null) {
-                                animateToValue(finalValue)
-                            }
-                            onValueChange(finalValue)
-                        } else {
-                            onValueChange(targetValue)
-                        }
+                        onValueChange(targetValue)
                     }
                 },
                 onDrag = { _, dragAmount ->
@@ -122,9 +110,7 @@ fun LiquidSlider(
                         val rawValue =
                             if (isLtr) (targetValue + delta).coerceIn(valueRange)
                             else (targetValue - delta).coerceIn(valueRange)
-                        val snapThreshold = rangeSpan * 0.035f
-                        val snappedValue = snapPoints.firstOrNull { abs(it - rawValue) <= snapThreshold } ?: rawValue
-                        onValueChange(snappedValue)
+                        onValueChange(rawValue)
                     }
                 }
             )
@@ -143,7 +129,7 @@ fun LiquidSlider(
                 Modifier
                     .clip(Capsule())
                     .background(trackColor)
-                    .pointerInput(animationScope, valueRange, isLtr, snapPoints) {
+                    .pointerInput(animationScope, valueRange, isLtr) {
                         detectTapGestures { position ->
                             val rangeSpan = valueRange.endInclusive - valueRange.start
                             if (rangeSpan > 0f) {
@@ -152,11 +138,8 @@ fun LiquidSlider(
                                     (if (isLtr) valueRange.start + delta
                                     else valueRange.endInclusive - delta)
                                         .coerceIn(valueRange)
-                                val snapThreshold = rangeSpan * 0.08f
-                                val closestSnap = snapPoints.firstOrNull { abs(it - rawValue) <= snapThreshold }
-                                val targetValue = closestSnap ?: rawValue
-                                dampedDragAnimation.animateToValue(targetValue)
-                                onValueChange(targetValue)
+                                dampedDragAnimation.animateToValue(rawValue)
+                                onValueChange(rawValue)
                             }
                         }
                     }
