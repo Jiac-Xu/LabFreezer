@@ -287,6 +287,15 @@ fun BoxGridScreen(
         } else {
             val cols = box!!.cols
             var visibleCols by remember(cols) { mutableFloatStateOf(cols.toFloat()) }
+            val minCols = 3f
+            val maxCols = max(3f, cols.toFloat())
+            val snapPoints = remember(cols) {
+                listOfNotNull(
+                    minCols,
+                    if (minCols < 5f && 5f < maxCols) 5f else null,
+                    if (maxCols > minCols) maxCols else null
+                ).distinct()
+            }
 
             val configuration = LocalConfiguration.current
             val screenWidth = configuration.screenWidthDp.dp
@@ -409,8 +418,9 @@ fun BoxGridScreen(
                                     LiquidSlider(
                                         value = { visibleCols },
                                         onValueChange = { visibleCols = it },
-                                        valueRange = 3f..max(3f, cols.toFloat()),
+                                        valueRange = minCols..maxCols,
                                         visibilityThreshold = 0.01f,
+                                        snapPoints = snapPoints,
                                         modifier = Modifier.weight(1f),
                                         accentColor = MaterialTheme.colorScheme.primary,
                                         trackColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f)

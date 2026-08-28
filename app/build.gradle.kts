@@ -18,8 +18,8 @@ android {
         applicationId = "com.labfreezer"
         minSdk = 26
         targetSdk = 37
-        versionCode = 14
-        versionName = "1.3.1"
+        versionCode = 15
+        versionName = "1.3.2"
 
         ndk {
             abiFilters.addAll(listOf("arm64-v8a", "armeabi-v7a"))

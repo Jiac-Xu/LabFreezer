@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +46,7 @@ import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import com.kyant.shapes.Capsule
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.abs
 
 /**
  * 移植自 Kyant0/AndroidLiquidGlass catalog（com.kyant.backdrop.catalog.components.LiquidSlider）
@@ -58,6 +60,7 @@ fun LiquidSlider(
     visibilityThreshold: Float,
     backdrop: Backdrop? = null,
     modifier: Modifier = Modifier,
+    snapPoints: List<Float> = emptyList(),
     accentColor: Color = Color(0xFF0088FF),
     trackColor: Color = Color(0xFF787878).copy(alpha = 0.2f),
     backdropColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
@@ -84,7 +87,7 @@ fun LiquidSlider(
         val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
         val animationScope = rememberCoroutineScope()
         var didDrag by remember { mutableStateOf(false) }
-        val dampedDragAnimation = remember(animationScope) {
+        val dampedDragAnimation = remember(animationScope, valueRange, snapPoints) {
             DampedDragAnimation(
                 animationScope = animationScope,
                 initialValue = value(),
@@ -95,18 +98,34 @@ fun LiquidSlider(
                 onDragStarted = {},
                 onDragStopped = {
                     if (didDrag) {
-                        onValueChange(targetValue)
+                        val rangeSpan = valueRange.endInclusive - valueRange.start
+                        if (rangeSpan > 0f) {
+                            val snapThreshold = rangeSpan * 0.05f
+                            val closestSnap = snapPoints.firstOrNull { abs(it - targetValue) <= snapThreshold }
+                            val finalValue = closestSnap ?: targetValue
+                            if (closestSnap != null) {
+                                animateToValue(finalValue)
+                            }
+                            onValueChange(finalValue)
+                        } else {
+                            onValueChange(targetValue)
+                        }
                     }
                 },
                 onDrag = { _, dragAmount ->
                     if (!didDrag) {
                         didDrag = dragAmount.x != 0f
                     }
-                    val delta = (valueRange.endInclusive - valueRange.start) * (dragAmount.x / trackWidth)
-                    onValueChange(
-                        if (isLtr) (targetValue + delta).coerceIn(valueRange)
-                        else (targetValue - delta).coerceIn(valueRange)
-                    )
+                    val rangeSpan = valueRange.endInclusive - valueRange.start
+                    if (rangeSpan > 0f) {
+                        val delta = rangeSpan * (dragAmount.x / trackWidth)
+                        val rawValue =
+                            if (isLtr) (targetValue + delta).coerceIn(valueRange)
+                            else (targetValue - delta).coerceIn(valueRange)
+                        val snapThreshold = rangeSpan * 0.035f
+                        val snappedValue = snapPoints.firstOrNull { abs(it - rawValue) <= snapThreshold } ?: rawValue
+                        onValueChange(snappedValue)
+                    }
                 }
             )
         }
@@ -124,15 +143,21 @@ fun LiquidSlider(
                 Modifier
                     .clip(Capsule())
                     .background(trackColor)
-                    .pointerInput(animationScope) {
+                    .pointerInput(animationScope, valueRange, isLtr, snapPoints) {
                         detectTapGestures { position ->
-                            val delta = (valueRange.endInclusive - valueRange.start) * (position.x / trackWidth)
-                            val targetValue =
-                                (if (isLtr) valueRange.start + delta
-                                else valueRange.endInclusive - delta)
-                                    .coerceIn(valueRange)
-                            dampedDragAnimation.animateToValue(targetValue)
-                            onValueChange(targetValue)
+                            val rangeSpan = valueRange.endInclusive - valueRange.start
+                            if (rangeSpan > 0f) {
+                                val delta = rangeSpan * (position.x / trackWidth)
+                                val rawValue =
+                                    (if (isLtr) valueRange.start + delta
+                                    else valueRange.endInclusive - delta)
+                                        .coerceIn(valueRange)
+                                val snapThreshold = rangeSpan * 0.08f
+                                val closestSnap = snapPoints.firstOrNull { abs(it - rawValue) <= snapThreshold }
+                                val targetValue = closestSnap ?: rawValue
+                                dampedDragAnimation.animateToValue(targetValue)
+                                onValueChange(targetValue)
+                            }
                         }
                     }
                     .height(6f.dp)
@@ -152,6 +177,50 @@ fun LiquidSlider(
                         }
                     }
             )
+
+            // 吸附点指示圆点
+            snapPoints.forEach { snapValue ->
+                if (snapValue in valueRange && (valueRange.endInclusive - valueRange.start) > 0f) {
+                    val snapProgress = (snapValue - valueRange.start) / (valueRange.endInclusive - valueRange.start)
+                    val isPassed = dampedDragAnimation.progress >= snapProgress
+                    Box(
+                        Modifier
+                            .align(Alignment.CenterStart)
+                            .graphicsLayer {
+                                val x = trackWidth * (if (isLtr) snapProgress else 1f - snapProgress)
+                                translationX = (x - size.width / 2f).fastCoerceIn(0f, trackWidth - size.width)
+                            }
+                            .size(6.dp)
+                            .clip(CircleShape)
+                            .background(
+                                if (isPassed) Color.White.copy(alpha = 0.85f)
+                                else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                    )
+                }
+            }
+        }
+
+        // 吸附点触摸扩展区域（点击即可精确切换至吸附值）
+        snapPoints.forEach { snapValue ->
+            if (snapValue in valueRange && (valueRange.endInclusive - valueRange.start) > 0f) {
+                val snapProgress = (snapValue - valueRange.start) / (valueRange.endInclusive - valueRange.start)
+                Box(
+                    Modifier
+                        .align(Alignment.CenterStart)
+                        .graphicsLayer {
+                            val x = trackWidth * (if (isLtr) snapProgress else 1f - snapProgress)
+                            translationX = (x - size.width / 2f).fastCoerceIn(0f, trackWidth - size.width)
+                        }
+                        .size(40.dp, 32.dp)
+                        .pointerInput(snapValue, animationScope) {
+                            detectTapGestures {
+                                dampedDragAnimation.animateToValue(snapValue)
+                                onValueChange(snapValue)
+                            }
+                        }
+                )
+            }
         }
 
         Box(
